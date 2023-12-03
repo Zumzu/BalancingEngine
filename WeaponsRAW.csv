@@ -1,0 +1,70 @@
+Techtronica Stundart Pistol,100,E,-1,2D10+5 STN,1 | 1,6m,VR,Pierces 5sp soft, consumable,1,,,Volt(spensive),J,1,1
+Dai Lung Streetmaster,150,E +,0,2D6+1,2 | 12,12m,ST,,1,,,10mm,J,2,12
+Federated Arms Enforcer,250,C,1,2D6+3,3 | 12,16m,ST,,1,,,.38,J,3,12
+Arasaka WSA Autopistol,450,C +,1,2D6+1,20 | 20,10m,ST,,1,,,,J,20,20
+Millitech M1911,450,C +,0,3D6+1,2 | 7,14m,ST,,1,,,.357,J,2,7
+Arasaka Ghost,500,U -,1,3D6+2,2 | 12,16m,ST,Internally Supressed,1,,,12mm,J,2,12
+Towa Type 13 Police Pistol,500,U -,3,3D6+2,2 | 20,12m,VR,,1,,,12mm,J,2,20
+Techtronica Volt Pistol,500,U,1,2D10+5 STN,1 | 6,8m,ST,Peirces 10sp soft, if cyberlimb deal as SDP damage instead,1,,,Volt(spensive),J,1,6
+Glock-30 Machine Pistol,800,P,2,2D6+3,30 | 60,8m,ST,Optional 30 round for reduced concealability by one tier,1,Default stick clip,,,,30,60
+FN Five-Seven,1000,P,3,3D6+3,2 | 20,16m,ST,B:AP,1,,,,,2,20
+Dai Lung Six-Shooter,200,C -,1,3D6+2,1 | 6,16m,VR,,1,,,,,,
+BAM™ 46 Drifter,200,C,0,5D6,1 | 3,12m,NR,Always jams on 1 & 2,1,,,.45,,1,3
+Nomad .45 Magnum Revolver,500,C +,1,4D6+2,1 | 6,16m,VR,,1,,,.45,J,1,6
+IMI Desert Eagle,600,C +,2,4D6+1,1 | 8,18m,ST,,1,,,12mm,J,1,8
+Towa Manufacturing "Super Chief",650,U -,2,4D6+3,1 | 5,16m,VR,,1,,,.44,J,1,5
+Espinoza One-Shot "Longhorn",550,P,-3,6D6+1,1 | 1,16m,NR,,2,Break-Action pistol,,7.62,J,1,1
+Malorian Arms 3516,2000/8k,P,2,6D6+1,1 | 6,16m,VR,by special order only, custom grip, only -1 to quickdraw, +2 fashion/style, comes bio-coded, can be linked to trauma team,1,,,14mm,J,1,6
+Ingram MAC 10,175,C -,-4,2D6+1,50 | 50,8m,NR,,1,,,9mm,L,50,50
+Uzi Miniauto 9,350,C -,-2,2D6+1,40 | 40,10m,ST,,1,,,9mm,J,40,40
+Federated Arms UMP45,450,C,0,2D6+2,3/20 | 35,12m,ST, ,2,,,10mm,J,3/20,35
+BAM™ Cobra SMG,450,C,-1,2D6+3,30 | 53,12m,NR,Always jams on 1 & 2,2,The silencer doesn't work,,,,,
+Millitech Viper SMG,600,C +,0,2D6+3,30 | 60,12m,VR,Comes silenced,2,,,10mm,J,30,60
+*RUS* SR-2 "Dynamo",600,U -,1,2D6+2,20 | 60,10m,ST,,1,,,,,20,60
+IMI Gamadii,700,U -,2,2D6+3,30 | 30x2,12m,ST,Has "half moon" carriers for ammo, each magazine can be reloaded for free once,2,,,10mm,N,30,30x2
+Nomad MP5,825,U,0,3D6+2,40 | 40,12m,ST,,2,,,,,40,40
+Federated Arms Scorpion EVO,950,U +,2,3D6+3,3/20 | 35,14m,ST,,2,,,12mm,L,3/20,35
+H&K MP7 (sim to vector, ap like 5-7),2000,P,1,2D6+1 AP,40 | 60,12m,ST,Proprietary B:AP ,2,Comes with armour piercing rounds,,,,40,60
+KRISS Vector,2000,P,4,3D6+2,30 | 30,12m,ST,,2,,,,,30,30
+Arasaka Honey Badger PDW,3000,P =,2,3D6+3,40 | 80,16m,ST,Internally suppressed,2,,,,J,40,80
+BAM™ ARK-21,750,U,-2,4D6+1,10 | 19,18m,NR,Always jams on 1 & 2 on full auto,2,,,5.56*,N,,
+Nomad AKR-20,1250,U +,-2,5D6+1,10 | 25,20m,ST,,2,,,5.56,N,10,25
+Darra-Polytechnic M-9 AR,1250,U +,0,4D6+2,10 | 20,20m,ST,,2,,,5.56,N,10,20
+Towa Manuufacting Type-18 Phantom,2500,P =,1,5D6+1,10 | 35,16m,ST,comes supressed,2,,,5.56,N,10,35
+Millitech Vandal Medium Assault,2500,P =,-1,6D6+1,10 | 30,20m,ST,,2,,,7.62,N,10,30
+Millitech M-31 Maplestrike,3500,P,0,5D6+1,20 | 100,20m,NR,comes paired with mini-grenade launcher as underbarrel,2,,,5.56,N,20,100
+Militech Mox Bullpup,4000,P +,2,5D6+1,10 | 20,20m,VR,Proprietary Ammo,2,,,5.56*,N,10,20
+FA-RAL Heavy Assault Rifle,4000,P +,0,6D6+2,3/15 | 30,20m,ST,,2,,,7.62,N,3/15,30
+Nomad.44 Magnum Lever-Action Rifle,600,C,0,3D6+1,2 | 8,20m,VR,,2,,,0.44,L,2,8
+Arasaka Marshal Scout Rifle,800,U,0,4D6+1,2 | 6,26m,ST,,2,,,5.56,,2,6
+*RUS* SKS,1100,U +,1,4D6+3,2 | 12,26m,ST,,2,,,,N,2,12
+*RUS* VSS Subsonic,1400,P -,3,3D6+3,10 | 20,26m,ST,Subsonic rounds,2,,,,N,10,20
+Millitech "Guardian" Marksman SDR,2250,P,1,6D6+1,2 | 12,26m,ST,,2,,,7.62,N,2,12
+*RUS* SVD,2750,P +,2,6D6+2,2 | 10,30m,ST,,2,,,,,2,10
+Nomad M30 Bolt Action,600,C,0,4D6+1,1 | 5,32m,VR,,2,,,,,1,5
+BAM™ Golden Rod,600,U,-1,5D6+1,1 | 2,26m,NR,Always jams on 1 & 2,2,,,,,1,2
+Arasaka Firecracker,1000,U,1,4D6+3,1 | 7,30m,ST,Proprietary Explosive Ammunition (1D3 extra armour degredation),2,,,,,1,7
+Nomad L96,1250,U +,0,5D6+3,1 | 4,32m,ST,,2,,,,,1,4
+Federated Arms "Triple Take",2000,P,1,5D6+1,3 | 12,32m,ST,Has to burst fire, when aimed hit all 3 shots (cannot called shot head),2,Fires 3 rounds a shot,,5.56,N,3,12
+Arasaka Mosin "Archangel",2250,P,2,6D6+1,1 | 6,32m,VR,,2,,,7.62,N,1,6
+Techtronica 120kV "Pulse Rifle",3500,P,0,5D6+1**,1** | 6,32m,NR,On damage through, additional 2D10+5 STN (which forces additional stun check), has to cool down for a turn between shots (does not require action),2,,,Volt,N,1**,6
+Towa Manufacting AWP,4000,P +,2,7D6+1,1 | 5,32m,ST,,2,,,.300WM,N,1,5
+Millitech AXMC "Lapua",5000,P +,0,8D6+1,1 | 4,36m,ST,,2,,,,N,1,4
+Malorian Arms Silver Lance,5000/16k,P +,2,6D6+2,2 | 2,32m,VR,by special order only, comes with an IR scope, custom grip, +2 fashion/style, comes bio-coded, can be linked to trauma team,2,,,,,2,2
+Millitech Cyborg Rifle,12k,R,1,7D6+3T:AP,2 | 15,30m,VR,Do the to the extreme weight of this weapon, it cannot be fired standing by anyone weighing under body 9 or without borgware, if someone does so they are knocked prone. If the gun is fired while not resting against something (e.g. a bipod), it is fired with -3 WA,2,,,.300WM,N,2,15
+BAM™ LastChance,175,C -,-1,5D6+3,1 | 1,6m,NR,Always jams on 1 & 2,1,,,12 Guage,J,1,1
+Nomad Shorty Shotgun,300,C,1,3D6+1,2 | 2,4m,VR,,1,,,20 Guage,J,2,2
+Nomad Model 2020 "Trench Gun",400,C,2,4D6+2,1 | 5,8m,ST,,2,,,12 Guage,L,1,5
+Millitech Crusher Shotgun Pistol,400,U -,0,3D6+1,2 | 6,6m,ST,Uses Pistol Skill,1,,,20 Guage,J,2,6
+Nomad Double Barrel 12,550,U -,0,4D6+2,2 | 2,6m,ST,,2,,,12 Guage,N,2,2
+Millitech Pump Shotgun 10,1000,U,2,5D6+3,1 | 6,8m,ST,,2,,,10 Guage,N,1,6
+Federated Arms City Reaper,1100,P -,2,4D6+3,3 | 12,6m,ST,,2,,,12 Guage,L,3,12
+Millitech Stakeout 10,1750,P,1,5D6+3,2 | 10,6m,ST,,2,,,10 Guage,N,2,10
+Malorian Arms Luigi Franchi "King Buck" Multi-Magnum,4000/12k,P,1,7D6+1,1 | 4,6m,ST,by special order only, shotgun templates are 1m wider, custom grip, +2 fashion/style, comes bio-coded, can be linked to trauma team,2,,,10 Guage,N,1,4
+Arasaka Rapid Assault 12,3500,R,0,5D6+3,10 | 20,6m,ST,,2,,,12 Guage,N,10,20
+Nomad RPK LMG,1100,U +,-2,4D6+1,40 | 120,20m,VR,,2,,,,N,40,120
+Millitech Ares LMG,1100,U +,-4,5D6+1,50 | 100,20m,NR,,2,,,5.56?,N,50,100
+Millitech Odin LMG,2250,P,-3,6D6+1,50 | 200,20m,ST,,2,,,7.62?,N,50,200
+Towa MA70 Defender LMG,2500,P,-3,5D6+3,80 | 240,26m,ST,Two turns to setup, reload as slow action, +1 EV (2 EV total),,Liquid Cooled ?,,,,80,240
+*RUS* DP-27 "Dinnerplate" LMG,3000,P,-1,6D6+1,47 | 47,20m,ST,,2,,,,,47,47
+Millitech M249 LMG,4000,P +,-2,6D6+3,50 | 100,26m,ST,,2,,,,N,50,100
