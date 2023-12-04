@@ -1,0 +1,63 @@
+NAME                                - Skill: 9    Skill: 12   Skill: 15   Skill: 17   Skill: 20   
+Dai Lung Streetmaster               -          0.0         0.0         0.0         0.0         0.0
+Federated Arms Enforcer             -          0.0         0.0         0.0         0.0         0.0
+Arasaka WSA Autopistol              -          0.0         0.0         0.0         0.0         0.0
+Millitech M1911                     -          0.0         0.0         0.0         0.0         0.0
+Arasaka Ghost                       -          0.0         0.0         0.0         0.0         0.0
+Towa Type 13 Police Pistol          -          0.0         0.0         0.0         0.0         0.0
+Glock-30 Machine Pistol             -          0.1         0.2         0.3         0.6         1.1
+FN Five-Seven                       -          0.1         0.1         0.1         0.1         0.1
+Dai Lung Six-Shooter                -          0.0         0.0         0.0         0.0         0.0
+BAM 46 Drifter                      -          0.3         0.6         0.7         0.6         0.7
+Nomad .45 Magnum Revolver           -          0.2         0.3         0.3         0.3         0.3
+IMI Desert Eagle                    -          0.2         0.2         0.2         0.2         0.2
+Towa Manufacturing "Super Chief"    -          0.4         0.5         0.4         0.5         0.5
+Espinoza One-Shot "Longhorn"        -          0.4         0.8         1.4         1.4         1.5
+Ingram MAC 10                       -          0.0         0.0         0.0         0.0         0.0
+Uzi Miniauto 9                      -          0.0         0.0         0.0         0.0         0.1
+Federated Arms UMP45                -          0.0         0.0         0.0         0.1         0.1
+BAM Cobra SMG                       -          0.1         0.1         0.2         0.2         0.5
+Millitech Viper SMG                 -          0.1         0.1         0.2         0.4         0.6
+*RUS* SR-2 "Dynamo"                 -          0.0         0.0         0.1         0.1         0.2
+IMI Gamadii                         -          0.1         0.2         0.3         0.4         0.8
+Nomad MP5                           -          0.3         0.5         1.1         1.8         3.2
+Federated Arms Scorpion EVO         -          0.5         1.1         1.7         2.5         3.7
+KRISS Vector                        -          0.6         1.2         1.9         3.0         4.3
+Arasaka Honey Badger PDW            -          1.2         2.1         3.6         4.8         8.0
+BAM ARK-21                          -          0.3         0.5         1.1         1.5         2.0
+Nomad AKR-20                        -          1.6         3.3         6.2         8.1        11.0
+Darra-Polytechnic M-9 AR            -          0.9         1.9         3.1         3.9         4.7
+Towa Manuufacting Type-18 Phantom   -          3.8         7.1        10.5        11.9        13.8
+Millitech Vandal Medium Assault     -          5.3        11.4        19.6        24.9        30.0
+Millitech M-31 Maplestrike          -          4.9         9.4        15.0        19.2        26.7
+Militech Mox Bullpup                -          4.2         7.1        10.1        11.2        12.6
+FA-RAL Heavy Assault Rifle          -          9.0        16.4        26.4        33.8        44.5
+Nomad.44 Magnum Lever-Action Rifle  -          0.0         0.0         0.0         0.0         0.0
+Arasaka Marshal Scout Rifle         -          0.2         0.3         0.3         0.3         0.3
+*RUS* SKS                           -          0.7         1.0         1.1         1.0         1.1
+*RUS* VSS Subsonic                  -          0.4         0.7         1.0         1.2         1.2
+Millitech "Guardian" Marksman SDR   -          3.7         5.7         5.7         5.6         6.1
+*RUS* SVD                           -          4.9         6.6         6.6         7.0         7.1
+Nomad M30 Bolt Action               -          0.1         0.2         0.2         0.2         0.2
+BAM Golden Rod                      -          0.3         0.6         0.7         0.8         0.8
+Arasaka Firecracker                 -          0.3         0.5         0.5         0.5         0.5
+Nomad L96                           -          0.9         1.6         1.6         1.7         1.7
+Federated Arms "Triple Take"        -          1.7         1.7         1.7         1.6         1.7
+Arasaka Mosin "Archangel"           -          2.1         2.7         2.7         2.8         3.0
+Towa Manufacting AWP                -          3.8         5.0         5.1         4.8         5.4
+Millitech AXMC "Lapua"              -          4.0         6.4         7.4         7.5         7.8
+BAM LastChance                      -          0.5         0.8         1.0         1.0         1.1
+Nomad Shorty Shotgun                -          0.0         0.0         0.0         0.0         0.0
+Nomad Model 2020 "Trench Gun"       -          0.2         0.3         0.3         0.3         0.3
+Millitech Crusher Shotgun Pistol    -          0.0         0.0         0.0         0.0         0.0
+Nomad Double Barrel 12              -          0.2         0.3         0.3         0.4         0.4
+Millitech Pump Shotgun 10           -          1.5         1.7         1.9         1.9         1.8
+Federated Arms City Reaper          -          0.8         0.8         0.8         0.8         0.9
+Millitech Stakeout 10               -          2.3         3.6         3.6         3.8         3.8
+Arasaka Rapid Assault 12            -          4.4         8.6        14.1        17.0        19.9
+Nomad RPK LMG                       -          1.3         2.3         4.2         6.2         9.0
+Millitech Ares LMG                  -          3.4         6.7        11.0        14.7        21.2
+Millitech Odin LMG                  -         11.9        20.7        33.7        43.7        56.1
+Towa MA70 Defender LMG              -         14.5        22.3        32.3        39.8        53.9
+*RUS* DP-27 "Dinnerplate" LMG       -          9.2        16.6        22.9        29.5        39.1
+Millitech M249 LMG                  -         17.0        30.0        43.2        54.6        70.7
