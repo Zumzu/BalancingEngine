@@ -3,14 +3,17 @@ import copy
 from math import ceil, floor
 from random import choice,random
 
+import numpy as np
+
 CLOSE_RANGE=15
 CALLED_HEAD_PENALTY=8
 BURST_BONUS=2
 WOUND_CAP=50
 
 class Gun:
-    def __init__(self,name,wa,d6,more,rof,mag):
+    def __init__(self,name:str,cost:int,wa:int,d6:int,more:int,rof:int,mag:int):
         self.name=name
+        self.cost=cost
         self.wa=wa
         self.d6=d6
         self.more=more
@@ -202,7 +205,7 @@ class User:
                 return True
         return False 
         
-        
+
 def compare(gun1,gun2,iterations,ws,sp,body):
     score1=0
     prototypeUser1=User(gun1,ws,sp,body)
@@ -241,7 +244,7 @@ def TTK(gun,iterations,ws,sp,body):
     return totalTurns/iterations
 
 
-TTK_TURN_LIMIT=12
+TTK_TURN_LIMIT=16
 def fightLength(attacker,dummy):
     turns=0
     for _ in range(TTK_TURN_LIMIT):
@@ -251,17 +254,21 @@ def fightLength(attacker,dummy):
     return TTK_TURN_LIMIT
 
 
-WEAPON_SKILL=15
+WEAPON_SKILLS=[8,9,10,11,12,13,14,15,16,17,18]
+WS_LABELS=[8,9,10,11,12,13,14,15,16,17,18]
 SP=[[0]*6,[6]*6,[8]*6,[10]*6,[12]*6,[14]*6,[16]*6,[18]*6,[20]*6,[22]*6,[25]*6]
 SP_LABELS=[0,6,8,10,12,14,16,18,20,22,25,28,32]
+
+TTK_WS=18
+TTK_SP=[14,14,14,14,10,10]
 BODY=7
 
-def plotAgainst(baseline,guns):
+def plotCompareOnArmour(baseline,guns):
     results=[]
     for gun in guns:
         result=[]
         for i in range(len(SP)):
-            result.append(compare(gun,baseline,3000,WEAPON_SKILL,SP[i],BODY))
+            result.append(compare(gun,baseline,3000,WEAPON_SKILL[4],SP[i],BODY))
 
         results.append(result)
 
@@ -275,12 +282,12 @@ def plotAgainst(baseline,guns):
     plt.legend()
 
 
-def plotTTK(guns):
+def plotTTKonArmour(guns):
     results=[]
     for gun in guns:
         result=[]
         for i in range(len(SP)):
-            result.append(TTK(gun,3000,WEAPON_SKILL,SP[i],BODY))
+            result.append(TTK(gun,3000,WEAPON_SKILLS[4],SP[i],BODY))
 
         results.append(result)
 
@@ -294,54 +301,51 @@ def plotTTK(guns):
     plt.axhline(y=4, color='b', linestyle='dotted')
     plt.legend()
 
-if __name__=="__main__":
+
+def plotTTKonCost(guns):
+    cost=[]
+    ttk=[]
+    for gun in guns:
+        if(gun.rof<1):
+            color="tab:black"
+        elif(gun.rof==1):
+            color="tab:blue"
+        elif(gun.rof==2):
+            color="tab:green"
+        elif(gun.rof==3):
+            color="tab:orange"
+        else:#auto
+            color="tab:red"
+        
+        newCost=gun.cost
+        newTTK=TTK(gun,3000,TTK_WS,TTK_SP,BODY)
+        plt.scatter(newCost,newTTK,color=color,alpha=0.7,edgecolors='none')
+        cost.append(newCost)
+        ttk.append(newTTK)
+
+    plt.axhline(y=1, color='r', linestyle='dotted')
+    plt.axhline(y=4, color='b', linestyle='dotted')
+    plt.ylabel("TTK in turns")
+    plt.xlabel("Cost of weapon")
+    plt.title(f"TTK vs Cost for skill [{TTK_WS}]")
+    
+    cost,ttk = zip(*sorted(zip(cost,ttk))) 
+
+    x=np.array(cost)
+    y=np.array(ttk)
+    a,b=np.polyfit(np.log(x),y,1)
+    plt.plot(x,a*np.log(x)+b,color='steelblue',linestyle='--')
+
+def generateGunList(name):
     guns=[]
-    #guns.append(Gun("Darra",0,4,2,10,20))
-    #guns.append(Gun("Viper",0,2,3,30,60))
-    
-    #guns.append(Gun("Evo Auto",2,3,3,20,35))
-    #guns.append(Gun("Evo Burst",2,3,3,3,35))
-    #guns.append(Gun("Super Chief",2,4,3,1,5))
-    #guns.append(Gun("AKR",-2,5,1,10,25))
-    #guns.append(Gun("AKR Burst",-2,5,1,3,25))
+    with open(name,'r') as f:
+        for line in f:
+            data=line.split(",")
+            guns.append(Gun(data[0],int(data[1]),int(data[2]),int(data[3]),int(data[4]),int(data[5]),int(data[6])))
+    return guns
 
-    #guns.append(Gun("RPK Setup",-1,4,1,40,120))
-    #guns.append(Gun("RPK NOT Setup",-3,4,1,10,120))
+if __name__=="__main__":
 
-    #guns.append(Gun("M1911",0,3,1,2,7))
-    
-    #guns.append(Gun("SKS AIM+HS",1,4,3,-2,12))
-    #guns.append(Gun("SKS HS",1,4,3,-1,12))
-    #guns.append(Gun("SKS BURST",1,4,3,3,12))
+    guns=generateGunList("Zanetown.csv")
 
-    #guns.append(Gun("L96",0,5,3,1,4))
-    #guns.append(Gun("L96 HS",0,5,3,-1,4))
-    #guns.append(Gun("L96 AIM+HS",0,5,3,-2,4))
-
-    #guns.append(Gun("Pumpy",4,5,3,1,6))
-    #guns.append(Gun("Pumpy PB",1,7,3,1,6))
-    #guns.append(Gun("Saiga",1,4,3,2,6))
-    #guns.append(Gun("Saiga PB",-2,6,3,2,6))
-    #guns.append(Gun("Slamfire",1,5,3,2,6))
-
-    #guns.append(Gun("TripleTake",1,5,1,3,12))
-
-    #guns.append(Gun("RPK",-1,4,1,40,120))
-    #guns.append(Gun("Ares",-4,5,1,50,100))
-    #guns.append(Gun("Odin",-3,6,1,50,200))
-    #guns.append(Gun("MA70",-3,5,3,80,240))
-    #guns.append(Gun("DP27",-1,6,1,47,47))
-    guns.append(Gun("M249",-2,6,3,50,100))
-
-    guns.append(Gun("Vandal",-1,6,1,10,25))
-    guns.append(Gun("RAL",0,6,2,15,30))
-    guns.append(Gun("MOX",2,5,1,10,20))
-
-    #baseline=Gun("Slamfire",1,5,3,2,6)
-    #baseline=Gun("SKS",1,4,3,2,12)
-    #baseline=Gun("Viper",0,2,3,30,60)
-    #baseline=Gun("Darra",0,4,2,10,20)
-    baseline=Gun("RPK",-1,4,1,40,120)
-    plotAgainst(baseline,guns)
-
-    #plotTTK(guns)
+    plotTTKonCost(guns)
