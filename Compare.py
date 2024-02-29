@@ -243,8 +243,20 @@ def TTK(gun,iterations,ws,sp,body):
 
     return totalTurns/iterations
 
+def Instakill(gun,iterations,ws,sp,body):
+    successes=0
+    protoAttacker=User(gun,ws,sp,body)
+    protoDummy=User(gun,ws,sp,body)
+    for _ in range(iterations):
+        attacker=copy.deepcopy(protoAttacker)
+        dummy=copy.deepcopy(protoDummy)
+        if(attacker.attack(dummy)):
+            successes+=1
 
-TTK_TURN_LIMIT=16
+    return successes/iterations
+
+
+TTK_TURN_LIMIT=50
 def fightLength(attacker,dummy):
     turns=0
     for _ in range(TTK_TURN_LIMIT):
@@ -259,8 +271,6 @@ WS_LABELS=[8,9,10,11,12,13,14,15,16,17,18]
 SP=[[0]*6,[6]*6,[8]*6,[10]*6,[12]*6,[14]*6,[16]*6,[18]*6,[20]*6,[22]*6,[25]*6]
 SP_LABELS=[0,6,8,10,12,14,16,18,20,22,25,28,32]
 
-TTK_WS=18
-TTK_SP=[14,14,14,14,10,10]
 BODY=7
 
 def plotCompareOnArmour(baseline,guns):
@@ -268,7 +278,7 @@ def plotCompareOnArmour(baseline,guns):
     for gun in guns:
         result=[]
         for i in range(len(SP)):
-            result.append(compare(gun,baseline,3000,WEAPON_SKILL[4],SP[i],BODY))
+            result.append(compare(gun,baseline,3000,WEAPON_SKILLS[4],SP[i],BODY))
 
         results.append(result)
 
@@ -302,13 +312,11 @@ def plotTTKonArmour(guns):
     plt.legend()
 
 
-def plotTTKonCost(guns):
+def plotTTKonCost(guns,mark=None):
     cost=[]
     ttk=[]
     for gun in guns:
-        if(gun.rof<1):
-            color="tab:black"
-        elif(gun.rof==1):
+        if(gun.rof==1):
             color="tab:blue"
         elif(gun.rof==2):
             color="tab:green"
@@ -316,6 +324,9 @@ def plotTTKonCost(guns):
             color="tab:orange"
         else:#auto
             color="tab:red"
+
+        if(mark is not None and mark.lower() in gun.name.lower()):
+            color="black"
         
         newCost=gun.cost
         newTTK=TTK(gun,3000,TTK_WS,TTK_SP,BODY)
@@ -324,17 +335,38 @@ def plotTTKonCost(guns):
         ttk.append(newTTK)
 
     plt.axhline(y=1, color='r', linestyle='dotted')
-    plt.axhline(y=4, color='b', linestyle='dotted')
+    plt.axhline(y=3.5, color='b', linestyle='dotted')
+    #plt.axvline(x=450, color='b', linestyle='dotted')
     plt.ylabel("TTK in turns")
     plt.xlabel("Cost of weapon")
-    plt.title(f"TTK vs Cost for skill [{TTK_WS}]")
+    plt.title(f"TTK vs Cost for skill [{TTK_WS}] armour {TTK_SP}")
     
-    cost,ttk = zip(*sorted(zip(cost,ttk))) 
+    #cost,ttk = zip(*sorted(zip(cost,ttk))) 
+    #x=np.array(cost)
+    #y=np.array(ttk)
+    #a,b=np.polyfit(np.log10(x),y,1)
+    #plt.plot(x,a*np.log10(x)+b,color='steelblue',linestyle='--')
 
-    x=np.array(cost)
-    y=np.array(ttk)
-    a,b=np.polyfit(np.log(x),y,1)
-    plt.plot(x,a*np.log(x)+b,color='steelblue',linestyle='--')
+def plotInstakillOnCost(guns,mark=None):
+    for gun in guns:
+        if(gun.rof==1):
+            color="tab:blue"
+        elif(gun.rof==2):
+            color="tab:green"
+        elif(gun.rof==3):
+            color="tab:orange"
+        else:#auto
+            color="tab:red"
+
+        if(mark is not None and mark.lower() in gun.name.lower()):
+            color="black"
+        
+        plt.scatter(gun.cost,Instakill(gun,3000,TTK_WS,TTK_SP,BODY),color=color,alpha=0.7,edgecolors='none')
+
+    plt.ylabel("Percentile chance to instantly kill")
+    plt.xlabel("Cost of weapon")
+    plt.title(f"Instakill vs Cost for skill [{TTK_WS}] armour {TTK_SP}")
+
 
 def generateGunList(name):
     guns=[]
@@ -344,8 +376,13 @@ def generateGunList(name):
             guns.append(Gun(data[0],int(data[1]),int(data[2]),int(data[3]),int(data[4]),int(data[5]),int(data[6])))
     return guns
 
+TTK_WS=12
+#TTK_SP=[10,10,10,10,10,10]
+TTK_SP=[14,14,14,14,10,10]
+#TTK_SP=[18]*6
+
 if __name__=="__main__":
 
-    guns=generateGunList("Zanetown.csv")
-
-    plotTTKonCost(guns)
+    guns=generateGunList("Proposed.csv")
+    plotTTKonCost(guns,"LMG")
+    #plotInstakillOnCost(guns,"LMG")
