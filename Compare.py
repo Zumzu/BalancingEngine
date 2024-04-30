@@ -109,7 +109,8 @@ class User:
     def fullAuto(self,enemy): # Full auto, returns true if target dies, false otherwise
         rof=min(self.gun.currentAmmo,self.gun.rof)
         self.gun.currentAmmo-=rof
-        bulletsHit=self.attackRoll()+rof//10-(CLOSE_RANGE-1) # since 15 should be one hit, so 15-(15-1)=1
+        bulletsHit=self.attackRoll()+rof//10-(CLOSE_RANGE-1)
+        
         bulletsHit=min(bulletsHit,rof)
         for _ in range(bulletsHit):
             if(enemy.damage(self.gun.getDamage())):
@@ -367,7 +368,6 @@ def plotInstakillOnCost(guns,mark=None):
     plt.xlabel("Cost of weapon")
     plt.title(f"Instakill vs Cost for skill [{TTK_WS}] armour {TTK_SP}")
 
-
 def generateGunList(name):
     guns=[]
     with open(name,'r') as f:
@@ -384,5 +384,6 @@ TTK_SP=[14,14,14,14,10,10]
 if __name__=="__main__":
 
     guns=generateGunList("Proposed.csv")
-    plotTTKonCost(guns,"LMG")
-    #plotInstakillOnCost(guns,"LMG")
+    #guns=generateGunList("OG.csv")
+    #plotTTKonCost(guns,"LMG")
+    plotInstakillOnCost(guns,"LMG")
