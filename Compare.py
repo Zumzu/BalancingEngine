@@ -3,6 +3,7 @@ import copy
 import numpy as np
 from random import choice,random
 
+from GunScraper import scrape
 from BaseModule import User,generateGunList
 
 def compare(gun1,gun2,iterations,ws,sp,body):
@@ -168,8 +169,9 @@ WS=12
 SP=[14,14,14,14,10,10]
 
 if __name__=="__main__":
-
-    guns=generateGunList("Proposed.csv")
-    #guns=generateGunList("OG.csv")
-    #plotTTKonCost(guns,"LMG")
-    plotInstakillOnCost(guns,"LMG")
+    # scrape when main list changes!!
+    #scrape()
+    
+    guns=generateGunList()
+    plotTTKonCost(guns,"LMG")
+    #plotInstakillOnCost(guns,"LMG")

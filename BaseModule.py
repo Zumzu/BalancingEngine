@@ -6,7 +6,7 @@ CALLED_HEAD_PENALTY=8
 BURST_BONUS=2
 WOUND_CAP=50
 
-def generateGunList(name):
+def generateGunList(name='Scraped.csv'):
     guns=[]
     with open(name,'r') as f:
         for line in f:
@@ -40,7 +40,7 @@ class Gun:
     
 
 class User:
-    def __init__(self,gun,ws,sp,body):
+    def __init__(self,gun:Gun,ws:int,sp,body:int):
         self.gun=gun
         self.ws=ws
         self.sp=sp
