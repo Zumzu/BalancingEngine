@@ -12,6 +12,8 @@ def generateGunList(name='Scraped.csv'):
         for line in f:
             data=line.split(",")
             guns.append(Gun(data[0],int(data[1]),int(data[2]),int(data[3]),int(data[4]),int(data[5]),int(data[6])))
+        
+    guns.sort(key=lambda gun: gun.cost)
     return guns
 
 class Gun:
@@ -51,6 +53,30 @@ class User:
         self.stunned=False
         self.multiPenalty=0
         self.aim=False
+
+    def __str__(self):
+        output=f"[{self.sp[0]}] [{self.sp[1]}] [{self.sp[2]}|{self.sp[3]}] [{self.sp[4]}|{self.sp[5]}] | {self.gun.name}"
+        i=0
+        output+="\n["
+        for _ in range(self.wounds):
+            i+=1
+            output+="#"
+            if(i%10==0):
+                output+="]["
+            elif(i%5==0):
+                output+="|"
+            if(i==50):
+                dead=True
+                break
+        for _ in range(50-self.wounds):
+            i+=1
+            output+="."
+            if(i%10==0):
+                output+="]["
+            elif(i%5==0):
+                output+="|"
+        return output[:-1]
+
     
     def attack(self,enemy): #handle reload and stun and shit
         self.multiPenalty=0
@@ -209,3 +235,21 @@ class User:
                 self.stunned=False
                 return True
         return False 
+    
+    def cost(self):
+        total=self.gun.cost
+
+        if self.sp[0]==0:
+            total+=175
+        elif self.sp[1]<=12:
+            total+=375
+        elif self.sp[1]<=15:
+            total+=750
+        elif self.sp[1]<=18 or self.sp[0]<20:
+            total+=900
+        else:
+            total+=1500
+
+
+        return total
+        
