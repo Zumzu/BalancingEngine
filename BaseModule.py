@@ -26,7 +26,7 @@ class Gun:
         self.currentAmmo=mag
     
     def __str__(self) -> str:
-        return f"{self.wa}wa, {self.d6}D6+{self.more}, {self.rof} | {self.mag}, {self.rel}"
+        return f"{self.wa}wa, {self.d6}D6+{self.more}, {self.rof}|{self.mag}"
     
     def getDamage(self):
         total=self.more
