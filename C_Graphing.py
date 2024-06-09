@@ -3,8 +3,8 @@ import copy
 import numpy as np
 from random import choice,random
 
-from GunScraper import scrape
-from BaseModule import User,generateGunList
+from C_BaseModule import User,generateGunList
+from C_GunScraper import scrape
 
 def compare(gun1,gun2,iterations,ws,sp,body):
     score1=0

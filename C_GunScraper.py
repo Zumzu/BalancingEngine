@@ -22,3 +22,6 @@ def scrape():
     with open('Scraped.csv','w') as f: # save to file, ternary is just to remove last '\n'
         for gun in guns:
             f.write(','.join(gun) + ('\n' if gun!=guns[-1] else ''))
+
+if __name__=='__main__':
+    scrape()

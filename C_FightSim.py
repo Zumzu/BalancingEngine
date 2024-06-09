@@ -1,8 +1,8 @@
 from random import choice,random
 from copy import deepcopy
 
-from BaseModule import Gun,User,generateGunList
-from GunScraper import scrape
+from C_BaseModule import Gun,User,generateGunList
+from C_GunScraper import scrape
 
 FIGHT_TURN_LIMIT=30
 FAVOUR_ITERATIONS=3000
@@ -111,7 +111,7 @@ if __name__=='__main__':
     unitsA.append(User(searchGunList('scorpion'),14,[12]*6,7)) # 14 all pump
     unitsA.append(User(searchGunList('desert'),15,[14]*6,8)) # 14 all pump
     
-    for _ in range(8):
+    for _ in range(7):
         unitsB.append(User(searchGunList('police'),12,[10]*6,7))
 
     unitsB.append(User(searchGunList('ares'),13,[12]*6,8))

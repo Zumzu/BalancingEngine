@@ -1,5 +1,5 @@
 from math import ceil, floor
-from random import choice,random
+from random import choice
 
 CLOSE_RANGE=15
 CALLED_HEAD_PENALTY=8
