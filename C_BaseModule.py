@@ -1,5 +1,7 @@
 from math import ceil, floor
 from random import choice
+from copy import deepcopy
+from C_Dice import d10E,d10EDown,d6,locationDie
 
 CLOSE_RANGE=15
 CALLED_HEAD_PENALTY=8
@@ -17,7 +19,7 @@ def generateGunList(name='Scraped.csv'):
     return guns
 
 class Gun:
-    def __init__(self,name:str,cost:int,wa:int,d6:int,more:int,rof:int,mag:int):
+    def __init__(self,name:str,cost:int,wa:int,d6:int,more:int,rof:int,mag:int,ammotype:str="norm"):
         self.name=name
         self.cost=cost
         self.wa=wa
@@ -26,6 +28,7 @@ class Gun:
         self.rof=rof
         self.mag=mag
         self.currentAmmo=mag
+        self.ammotype=ammotype
     
     def __str__(self) -> str:
         return f"{self.wa}wa, {self.d6}D6+{self.more}, {self.rof}|{self.mag}"
@@ -33,20 +36,45 @@ class Gun:
     def getDamage(self):
         total=self.more
         for _ in range(self.d6):
-            total+=self.rollD6()
+            total+=d6()
         return total
+    
+    def reload(self):
+        self.currentAmmo=self.mag
 
-    def rollD6(self):
-        d6=[1,2,3,4,5,6]
-        return choice(d6)
+    def expend(self,bullets=1):
+        self.currentAmmo-=bullets
+    
+    
+class Armour:
+    def __init__(self,name:str,cost:int,sp,mv:int,ev:int,type='soft'):
+        self.name=name
+        self.cost=cost
+        self.sp=deepcopy(sp)
+        self.spMax=deepcopy(sp)
+        self.mv=abs(mv)
+        self.ev=abs(ev)
+        self.type=type
+    
+    def __str__(self) -> str:
+        return f"{self.sp}{self.type.upper()}, {self.mv} MV, {self.ev} EV"
+    
+    def apply(self,loc:int,damage:int):
+        output=max(damage-self.sp[loc],0)
+        if damage>=self.sp[loc]//2 and self.sp[loc]>0:
+            self.sp[loc]-=1
+            
+        return output
+
     
 
 class User:
-    def __init__(self,gun:Gun,ws:int,sp,body:int):
+    def __init__(self,gun:Gun,armour:Armour,ws:int,body:int,cool:int):
         self.gun=gun
+        self.armour=armour
         self.ws=ws
-        self.sp=sp
         self.body=body
+        self.cool=cool
 
         self.btm=self.bodyToBTM()
         self.wounds=0
@@ -66,7 +94,6 @@ class User:
             elif(i%5==0):
                 output+="|"
             if(i==50):
-                dead=True
                 break
         for _ in range(50-self.wounds):
             i+=1
@@ -82,23 +109,14 @@ class User:
         self.multiPenalty=0
 
         if(self.unstun()):
-            self.multiPenalty+=3
+            self.multiAction()
 
         if(self.stunned):
             return False
 
-        if(self.gun.currentAmmo<min(self.gun.rof,10)): # if ammo is less than ROF, or 10 if ROF is greater than 10, then reload and apply multiaction
-            self.gun.currentAmmo=self.gun.mag
-            self.multiPenalty+=3
-
-        if(self.gun.rof==-2):#stun doesnt cancel aim rn is fine, also unstun aim is possible etc
-            if(self.aim):
-                self.aim=False
-                self.multiPenalty-=5
-                return self.calledShotHead(enemy)
-            else:
-                self.aim=True
-                return False
+        if(self.gun.currentAmmo<min(abs(self.gun.rof),10)): # if ammo is less than ROF, or 10 if ROF is greater than 10, then reload and apply multiaction
+            self.gun.reload()
+            self.multiAction()
 
         elif(self.gun.rof==-1):
             return self.calledShotHead(enemy)
@@ -121,14 +139,14 @@ class User:
 
     def normalAttack(self,enemy): # Just single fires as many times as it can up to 2, returns true if target dies, false otherwise
         for _ in range(min(self.gun.rof,2)):
-            self.gun.currentAmmo-=1
+            self.gun.expend()
             if(self.attackRoll()>=CLOSE_RANGE):
                 if(enemy.damage(self.gun.getDamage())):
                     return True
         return False
     
     def burstAttack(self,enemy): # Burst, returns true if target dies, false otherwise
-        self.gun.currentAmmo-=3
+        self.gun.expend(3)
         if(self.attackRoll()+BURST_BONUS>=CLOSE_RANGE):
             loc=self.rollLocation()
             for _ in range(3):
@@ -138,8 +156,8 @@ class User:
 
     def fullAuto(self,enemy): # Full auto, returns true if target dies, false otherwise
         rof=min(self.gun.currentAmmo,self.gun.rof)
-        self.gun.currentAmmo-=rof
-        bulletsHit=self.attackRoll()+rof//10-(CLOSE_RANGE-1)
+        self.gun.expend(rof)
+        bulletsHit=self.autoAttackRoll(rof)-(CLOSE_RANGE-1)
         
         bulletsHit=min(bulletsHit,rof)
         for _ in range(bulletsHit):
@@ -150,13 +168,11 @@ class User:
 
     def damage(self,dmg,loc=-1): # returns true if unit died or went uncon, false otherwise
         if(loc==-1):
-            loc=self.rollLocation()
+            loc=locationDie()
 
-        dmg-=self.sp[loc] # factor SP
-        if(dmg+self.sp[loc]>=self.sp[loc]/2 and self.sp[loc]>0):
-            self.sp[loc]-=1 # degrade SP if applicable
+        dmg=self.armour.apply(loc,dmg)
 
-        if(dmg<=0): # return early if no damage
+        if(dmg==0): # return early if no damage
             return False
 
         if(loc==0): # double if head
@@ -164,8 +180,7 @@ class User:
 
         dmg=max(1,floor(dmg)-self.btm) # apply btm
 
-        if(dmg>=8 and loc!=1): # check if dies due to headshot
-            #CURRENTLY TUNED FOR CRITICAL INJURY TREATED AS KILL
+        if (dmg>=8 and loc!=1) or dmg>=15: # check if dies due to headshot
             return True
         
         self.wounds+=dmg
@@ -184,33 +199,20 @@ class User:
         else:
             return floor(self.body/2-1)
         
-    def d10(self): # d10 result factoring explosions
-        d10=[1,2,3,4,5,6,7,8,9,10]
-        roll=choice(d10)
-        total=roll
+    def multiAction(self):
+        self.multiPenalty += 2+self.armour.mv
 
-        if(roll==1):
-            while(True):
-                roll=choice(d10)
-                total-=roll
-                if(roll!=10):
-                    break
-
-        elif(roll==10):
-            while(True):
-                roll=choice(d10)
-                total+=roll
-                if(roll!=10):
-                    break
-
-        return total
-
-    def rollLocation(self):
-        locations=[0,1,1,1,1,1,2,3,4,5]
-        return choice(locations)
-    
     def attackRoll(self):
-        return self.ws+self.d10()+self.gun.wa-self.allNegative()-self.multiPenalty
+        output = d10E()
+        output+= self.ws + self.gun.wa
+        output-= self.armour.ev + self.multiPenalty + self.allNegative()
+        return output
+    
+    def autoAttackRoll(self,rof):
+        output = d10EDown()
+        output+= self.ws + self.gun.wa + rof//10
+        output-= self.armour.ev + self.multiPenalty + self.allNegative()
+        return output
 
     def stunMod(self):
         return floor((self.wounds-1)/5)
@@ -220,7 +222,7 @@ class User:
 
     def rollStun(self):
         if(not self.stunned):
-            if(self.d10()>self.body-self.stunMod()):
+            if(self.d10()>max(self.body,self.cool)-self.stunMod()):
                 self.stunned=True
 
         if(self.stunned and self.wounds>15):
@@ -237,19 +239,6 @@ class User:
         return False 
     
     def cost(self):
-        total=self.gun.cost
+        return self.gun.cost+self.armour.cost
 
-        if self.sp[0]==0:
-            total+=175
-        elif self.sp[1]<=12:
-            total+=375
-        elif self.sp[1]<=15:
-            total+=750
-        elif self.sp[1]<=18 or self.sp[0]<20:
-            total+=900
-        else:
-            total+=1500
-
-
-        return total
         

@@ -2,7 +2,7 @@ from random import choice,random
 from copy import deepcopy
 
 from C_BaseModule import Gun,User,generateGunList
-from C_GunScraper import scrape
+from C_Scraper import scrapeGuns
 
 FIGHT_TURN_LIMIT=30
 FAVOUR_ITERATIONS=3000

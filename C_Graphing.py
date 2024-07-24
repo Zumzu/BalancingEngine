@@ -4,7 +4,7 @@ import numpy as np
 from random import choice,random
 
 from C_BaseModule import User,generateGunList
-from C_GunScraper import scrape
+from C_Scraper import scrapeGuns
 
 def compare(gun1,gun2,iterations,ws,sp,body):
     score1=0
@@ -81,27 +81,6 @@ def plotCompareOnArmour(baseline,guns):
     plt.axhline(y=0.5, color='r', linestyle='dotted')
     plt.legend()
 
-
-def plotTTKonArmour(guns):
-    results=[]
-    for gun in guns:
-        result=[]
-        for i in range(len(SPS)):
-            result.append(TTK(gun,3000,WS,SPS[i],BODY))
-
-        results.append(result)
-
-    plt.gca().set_xticks(range(len(SP_LABELS)))
-    plt.gca().set_xticklabels(SP_LABELS)
-    plt.ylabel(f"TTK in turns")
-    plt.xlabel("SP All")
-    for i in range(len(results)):
-        plt.plot(results[i],label=guns[i].name)
-    plt.axhline(y=1, color='r', linestyle='dotted')
-    plt.axhline(y=4, color='b', linestyle='dotted')
-    plt.legend()
-
-
 def plotTTKonCost(guns,mark=None):
     cost=[]
     ttk=[]
@@ -159,13 +138,12 @@ def plotInstakillOnCost(guns,mark=None):
 
 #Input data for graphing a weapons effectiveness across differing weapon skills and SP sets
 WEAPON_SKILLS=[8,9,10,11,12,13,14,15,16,17,18]
-WS_LABELS=[8,9,10,11,12,13,14,15,16,17,18]
 SPS=[[0]*6,[6]*6,[8]*6,[10]*6,[12]*6,[14]*6,[16]*6,[18]*6,[20]*6,[22]*6,[25]*6]
 SP_LABELS=[0,6,8,10,12,14,16,18,20,22,25]
 
 #The body, WS, and SP to be used for individual applications such as TTK or instakill on cost
 BODY=7
-WS=12
+WS=15
 SP=[14,14,14,14,10,10]
 
 if __name__=="__main__":
@@ -173,5 +151,5 @@ if __name__=="__main__":
     #scrape()
     
     guns=generateGunList()
-    plotTTKonCost(guns,"LMG")
+    plotTTKonCost(guns,"lmg")
     #plotInstakillOnCost(guns,"LMG")

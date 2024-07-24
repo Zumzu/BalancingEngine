@@ -7,7 +7,7 @@ def processDamage(rawInput):
 
     return (d6,more)
 
-def scrape():
+def scrapeGuns():
     html = requests.get('https://docs.google.com/spreadsheets/d/1Q5rBjDjx-MNGIl-JAVhtFT33W-T9RpQgg4bTRQuFYPA/gviz/tq?tqx=out:html&tq&gid=1296179088').text
     soup = BeautifulSoup(html, 'lxml') # lxml and bs4 required
     table = soup.find_all('table')[0]
@@ -24,4 +24,4 @@ def scrape():
             f.write(','.join(gun) + ('\n' if gun!=guns[-1] else ''))
 
 if __name__=='__main__':
-    scrape()
+    scrapeGuns()
