@@ -106,15 +106,15 @@ if __name__=='__main__':
 
     unitsA,unitsB=[],[]
 
-    unitsA.append(User(searchGunList('akr'),15,[20]*6,9)) # full metal AKR
-    unitsA.append(User(searchGunList('pump'),15,[14]*6,8)) # 14 all pump
-    unitsA.append(User(searchGunList('scorpion'),14,[12]*6,7)) # 14 all pump
-    unitsA.append(User(searchGunList('desert'),15,[14]*6,8)) # 14 all pump
+    unitsA.append(User(searchGunList('akr'),armour,15,9,9)) # full metal AKR
+    unitsA.append(User(searchGunList('pump'),armour,15,8,8)) # 14 all pump
+    unitsA.append(User(searchGunList('scorpion'),armour,14,7,7)) # 14 all pump
+    unitsA.append(User(searchGunList('desert'),armour,15,8,8)) # 14 all pump
     
     for _ in range(7):
-        unitsB.append(User(searchGunList('police'),12,[10]*6,7))
+        unitsB.append(User(searchGunList('police'),armour,12,7,7))
 
-    unitsB.append(User(searchGunList('ares'),13,[12]*6,8))
+    unitsB.append(User(searchGunList('ares'),armour,13,8,8))
 
     teamA=Team(unitsA)
     teamB=Team(unitsB)
