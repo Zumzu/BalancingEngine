@@ -1,26 +1,11 @@
 from random import choice,random
 from copy import deepcopy
 
-from C_BaseModule import Gun,User,generateGunList
-from C_Scraper import scrapeGuns
+from C_BaseModule import Gun,User
+from C_Scraper import searchGunList
 
 FIGHT_TURN_LIMIT=30
 FAVOUR_ITERATIONS=3000
-GUN_LIST=generateGunList()
-
-def searchGunList(name):
-    prospectGun=None
-    for gun in GUN_LIST:
-        if name.lower() in gun.name.lower():
-            if prospectGun is not None:
-                print(f'Warning: Multiple guns found by search "{name}", likely incorrect')
-                break
-            prospectGun=gun
-
-    if prospectGun is None:
-        raise Exception(f'Error: Gun not found by search "{name}"')
-    else:
-        return prospectGun
 
 class Team:
     units=[]

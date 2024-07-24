@@ -1,10 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
 
-def processDamage(rawInput):
+from C_BaseModule import Gun,Armour,ArmourSet
+from copy import deepcopy
+
+def processDamage(rawInput): #helper for scrape
     d6 = rawInput[0]
     more = rawInput.split(' ')[0].split('+')[1] if '+' in rawInput else '0'
-
     return (d6,more)
 
 def scrapeGuns():
@@ -19,9 +21,127 @@ def scrapeGuns():
             d6,more=processDamage(row[4])
             guns.append([row[0],row[1],row[3],d6,more,row[14],row[15]])
 
-    with open('Scraped.csv','w') as f: # save to file, ternary is just to remove last '\n'
+    with open('D_Guns.csv','w') as f: # save to file, ternary is just to remove last '\n'
         for gun in guns:
             f.write(','.join(gun) + ('\n' if gun!=guns[-1] else ''))
 
+def generateGunList(name='D_Guns.csv'):
+    guns=[]
+    with open(name,'r') as f:
+        for line in f:
+            data=line.split(",")
+            guns.append(Gun(data[0],int(data[1]),int(data[2]),int(data[3]),int(data[4]),int(data[5]),int(data[6])))
+        
+    guns.sort(key=lambda gun: gun.cost)
+    return guns
+
+def searchGunList(name):
+    prospectGun=None
+    for gun in GUN_LIST:
+        if name.lower() in gun.name.lower():
+            if prospectGun is not None:
+                print(f'Warning: Multiple guns found by search "{name}", likely incorrect')
+                break
+            prospectGun=gun
+
+    if prospectGun is None:
+        raise Exception(f'Error: Gun not found by search "{name}"')
+    else:
+        return prospectGun
+    
+################################
+
+def processSP(rawInput:str): #helper for scrape
+    if 'all' in rawInput.lower():
+        return f'{';'.join([rawInput.strip().split(' ')[0]]*6)}'
+    
+    output=''
+    for c in rawInput.strip():
+        if c=='[' or c==']':
+            continue
+        elif c=='|' or c==' ':
+            output+=';'
+        elif c=='-':
+            output+='0'
+        else:
+            output+=c
+
+    return output
+
+def scrapeArmour():
+    html = requests.get('https://docs.google.com/spreadsheets/d/1Q5rBjDjx-MNGIl-JAVhtFT33W-T9RpQgg4bTRQuFYPA/gviz/tq?tqx=out:html&tq&gid=997775131').text
+    soup = BeautifulSoup(html, 'lxml') # lxml and bs4 required
+    table = soup.find_all('table')[0]
+    rows = [[td.text for td in row.find_all("td")] for row in table.find_all('tr')] # html magic
+
+    armour=[]
+    for row in rows: # construct armour
+        if row[6]!='\xa0' and row[6]!='': # check if hard or soft
+            sp=processSP(row[3])
+            armour.append([row[0],row[1],sp,str(abs(int(row[4]))),str(abs(int(row[5]))),row[6].lower()])
+
+    with open('D_Armour.csv','w') as f: # save to file, ternary is just to remove last '\n'
+        for a in armour:
+            f.write(','.join(a) + ('\n' if a!=armour[-1] else ''))
+
+def generateArmourList(name='D_Armour.csv'):
+    armour=[]
+    with open(name,'r') as f:
+        for line in f:
+            data=line.split(",")
+            armour.append(Armour(data[0],data[1],data[2].split(';'),data[3],data[4],data[5].strip()))
+
+    return armour
+
+def wearable(currentSP,armour):
+    for i in range(6):
+        if armour.sp[i]!=0 and currentSP!=0:
+            False
+    True
+
+def findArmour(sp):
+    assert all(isinstance(value,int) for value in sp), "SP values must be integer"
+    prospectArmour=deepcopy(ARMOUR_LIST)
+    outputSP=[-1 if value==0 else value for value in sp]
+    outputArmour=[]
+
+    for i in range(6):
+        prospectArmour=[a for a in prospectArmour if a.sp[i]==outputSP[i] or a.sp[i]==0]
+
+    while prospectArmour != []:
+        outputSP=[0]*6
+        outputArmour=[]
+
+        for a in prospectArmour:
+            if not wearable(outputSP,a):
+                continue
+
+            outputArmour.append(a)
+            for i in range(6):
+                if a.sp[i]!=0:
+                    outputSP[i]=a.sp[i]
+
+        if outputSP==sp:
+            return ArmourSet(outputArmour)
+
+    #fail condition/approx
+
+
+
+    for a in prospectArmour:
+        print(a)
+
+GUN_LIST=generateGunList()
+ARMOUR_LIST=generateArmourList()
+
 if __name__=='__main__':
-    scrapeGuns()
+    #scrapeGuns()
+    scrapeArmour()
+
+    findArmour([14,10,10,10,8,8])
+    print("--")
+    findArmour([20,20,20,20,20,20])
+    print("--")
+    findArmour([12,12,10,10,15,15])
+    print("--")
+    findArmour([0,10,0,0,20,20])

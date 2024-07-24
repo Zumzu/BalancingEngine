@@ -1,0 +1,31 @@
+Motorcycle Helmet,50,10;0;0;0;0;0,0,0,soft
+Millitech Light Helmet,125,12;0;0;0;0;0,0,0,hard
+Old-war Steel Helmet,250,14;0;0;0;0;0,0,0,hard
+Plot Armour,250,14;0;0;0;0;0,0,0,soft
+Nylon Military Helmet,600,20;0;0;0;0;0,0,0,hard
+Altyn "Spetsnaz Helmet",1200,25;0;0;0;0;0,0,1,hard
+Ultralite™ Jacket,175,0;10;10;10;0;0,0,0,soft
+Padded Jacket,175,0;12;12;12;0;0,1,0,soft
+Security Jacket,275,0;15;15;15;0;0,2,0,soft
+Light Armourjack,350,0;14;14;14;0;0,1,0,soft
+Medium Armourjack,500,0;16;16;16;0;0,2,0,hard
+Heavy Armourjack,550,0;18;18;18;0;0,2,1,hard
+Deflector Jacket,1200,0;16;16;16;0;0,1,0,soft
+Kevlar Vest,100,0;10;0;0;0;0,0,0,soft
+Flak Vest,200,0;16;0;0;0;0,2,0,soft
+Ultralite™ Tactical Vest,150,0;12;0;0;0;0,0,0,soft
+Heavy Body Armour,500,0;20;0;0;0;0,1,1,hard
+Plate Carrier,1000,0;22;0;0;0;0,1,1,hard
+Door Gunners Vest,1200,0;25;0;0;0;0,4,1,hard
+Light Armpads,75,0;0;10;10;0;0,0,0,soft
+Heavy Armplates,150,0;0;15;15;0;0,1,0,hard
+Deflector Armpads,400,0;0;14;14;0;0,0,0,soft
+Padded Jeans,75,0;0;0;0;8;8,0,0,soft
+Kevlar Jeans,150,0;0;0;0;10;10,0,0,soft
+Flak Pants,250,0;0;0;0;15;15,1,0,soft
+Plated Leggings,400,0;0;0;0;20;20,2,0,hard
+Sneak Suit,600,10;10;10;10;10;10,1,0,soft
+Stealth Suit,1400,16;16;16;16;16;16,1,1,soft
+Millitech Full Metal,1500,20;20;20;20;20;20,3,2,hard
+Towa Mk55 "Warplate",3250,22;22;22;22;22;22,1,2,hard
+Towa Sentinel Armour Suite,6000,25;25;25;25;25;25,2,2,hard

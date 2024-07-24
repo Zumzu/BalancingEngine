@@ -1,5 +1,4 @@
 from math import ceil, floor
-from random import choice
 from copy import deepcopy
 from C_Dice import d10E,d10EDown,d6,locationDie
 
@@ -7,16 +6,6 @@ CLOSE_RANGE=15
 CALLED_HEAD_PENALTY=8
 BURST_BONUS=2
 WOUND_CAP=50
-
-def generateGunList(name='Scraped.csv'):
-    guns=[]
-    with open(name,'r') as f:
-        for line in f:
-            data=line.split(",")
-            guns.append(Gun(data[0],int(data[1]),int(data[2]),int(data[3]),int(data[4]),int(data[5]),int(data[6])))
-        
-    guns.sort(key=lambda gun: gun.cost)
-    return guns
 
 class Gun:
     def __init__(self,name:str,cost:int,wa:int,d6:int,more:int,rof:int,mag:int,ammotype:str="norm"):
@@ -47,29 +36,63 @@ class Gun:
     
     
 class Armour:
-    def __init__(self,name:str,cost:int,sp,mv:int,ev:int,type='soft'):
+    def __init__(self,name,cost:int,sp,mv:int,ev:int,type='soft'):
         self.name=name
-        self.cost=cost
+        self.cost=int(cost)
+        sp=list(map(int,sp))
         self.sp=deepcopy(sp)
         self.spMax=deepcopy(sp)
-        self.mv=abs(mv)
-        self.ev=abs(ev)
+        self.mv=abs(int(mv))
+        self.ev=abs(int(ev))
         self.type=type
     
     def __str__(self) -> str:
-        return f"{self.sp}{self.type.upper()}, {self.mv} MV, {self.ev} EV"
+        return f"{self.sp}, {self.mv} MV, {self.ev} EV"
     
+class ArmourSet:
+    def __init__(self,armour):
+        self.armour=armour
+        self.sp=[0]*6
+        self.type=['soft']*6
+        for a in armour:
+            for i in range(6):
+                if a.sp[i]!=0:
+                    self.type[i]=a.type
+                    self.sp[i]=a.sp[i]
+
     def apply(self,loc:int,damage:int):
         output=max(damage-self.sp[loc],0)
         if damage>=self.sp[loc]//2 and self.sp[loc]>0:
             self.sp[loc]-=1
             
         return output
-
     
+    def ev(self):
+        total=0
+        for a in self.armour:
+            total+=a.ev
+        return total
+    
+    def mv(self):
+        total=0
+        for a in self.armour:
+            total+=a.mv
+        return total
+    
+    def cost(self):
+        total=0
+        for a in self.armour:
+            total+=a.cost
+        return total
+    
+    def typeAt(self,location):
+        return self.type[location]
+    
+    def __str__(self) -> str:
+        return f"{self.sp}, {self.mv} MV, {self.ev} EV"
 
 class User:
-    def __init__(self,gun:Gun,armour:Armour,ws:int,body:int,cool:int):
+    def __init__(self,gun:Gun,armour:ArmourSet,ws:int,body:int,cool:int):
         self.gun=gun
         self.armour=armour
         self.ws=ws
@@ -200,18 +223,18 @@ class User:
             return floor(self.body/2-1)
         
     def multiAction(self):
-        self.multiPenalty += 2+self.armour.mv
+        self.multiPenalty += 2+self.armour.mv()
 
     def attackRoll(self):
         output = d10E()
         output+= self.ws + self.gun.wa
-        output-= self.armour.ev + self.multiPenalty + self.allNegative()
+        output-= self.armour.ev() + self.multiPenalty + self.allNegative()
         return output
     
     def autoAttackRoll(self,rof):
         output = d10EDown()
         output+= self.ws + self.gun.wa + rof//10
-        output-= self.armour.ev + self.multiPenalty + self.allNegative()
+        output-= self.armour.ev() + self.multiPenalty + self.allNegative()
         return output
 
     def stunMod(self):
@@ -239,6 +262,6 @@ class User:
         return False 
     
     def cost(self):
-        return self.gun.cost+self.armour.cost
+        return self.gun.cost+self.armour.cost()
 
         
