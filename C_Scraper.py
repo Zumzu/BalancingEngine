@@ -35,7 +35,7 @@ def generateGunList(name='D_Guns.csv'):
     guns.sort(key=lambda gun: gun.cost)
     return guns
 
-def searchGunList(name):
+def findGun(name):
     prospectGun=None
     for gun in GUN_LIST:
         if name.lower() in gun.name.lower():
@@ -95,17 +95,17 @@ def generateArmourList(name='D_Armour.csv'):
 
 def wearable(currentSP,armour):
     for i in range(6):
-        if armour.sp[i]!=0 and currentSP!=0:
-            False
-    True
+        if armour.sp[i]!=0 and currentSP[i]!=0:
+            return False
+    return True
 
 def findArmour(sp):
     assert all(isinstance(value,int) for value in sp), "SP values must be integer"
     prospectArmour=deepcopy(ARMOUR_LIST)
-    outputSP=[-1 if value==0 else value for value in sp]
+    outputSP=[-1 if value==0 else value for value in sp] #set 0 in input to -1 to prevent false positives
     outputArmour=[]
 
-    for i in range(6):
+    for i in range(6): #remove all armour that conflicts with given SP
         prospectArmour=[a for a in prospectArmour if a.sp[i]==outputSP[i] or a.sp[i]==0]
 
     while prospectArmour != []:
@@ -113,35 +113,23 @@ def findArmour(sp):
         outputArmour=[]
 
         for a in prospectArmour:
-            if not wearable(outputSP,a):
-                continue
-
-            outputArmour.append(a)
-            for i in range(6):
-                if a.sp[i]!=0:
-                    outputSP[i]=a.sp[i]
+            if wearable(outputSP,a):
+                outputArmour.append(a)
+                for i in range(6):
+                    if a.sp[i]!=0:
+                        outputSP[i]=a.sp[i]
 
         if outputSP==sp:
             return ArmourSet(outputArmour)
+        
+        prospectArmour=prospectArmour[1:]
 
+    raise "Invalid or nonstandard set of armour, update equipment list with appropriate armour option or manually construct the armour set"
     #fail condition/approx
-
-
-
-    for a in prospectArmour:
-        print(a)
 
 GUN_LIST=generateGunList()
 ARMOUR_LIST=generateArmourList()
 
 if __name__=='__main__':
-    #scrapeGuns()
+    scrapeGuns()
     scrapeArmour()
-
-    findArmour([14,10,10,10,8,8])
-    print("--")
-    findArmour([20,20,20,20,20,20])
-    print("--")
-    findArmour([12,12,10,10,15,15])
-    print("--")
-    findArmour([0,10,0,0,20,20])

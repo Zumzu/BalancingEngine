@@ -2,7 +2,7 @@ from random import choice,random
 from copy import deepcopy
 
 from C_BaseModule import Gun,User
-from C_Scraper import searchGunList
+from C_Scraper import findGun,findArmour
 
 FIGHT_TURN_LIMIT=30
 FAVOUR_ITERATIONS=3000
@@ -77,29 +77,20 @@ def favour(protoTeamA,protoTeamB): # returns ([0-1 % win for A],[Avg combat leng
     return (totalWins/FAVOUR_ITERATIONS,totalTurns/FAVOUR_ITERATIONS)
 
 def compareTeam(teamA,teamB):
-    print(f'[Team A] cost: ~{teamA.cost()}',f'bottleneck: {teamA.bottleneck}' if teamA.bottleneck<len(teamA.units) else '')
-    print(f'[Team B] cost: ~{teamB.cost()}',f'bottleneck: {teamB.bottleneck}' if teamB.bottleneck<len(teamB.units) else '')
+    print(f'[Team A] cost: {teamA.cost()}',f'bottleneck: {teamA.bottleneck}' if teamA.bottleneck<len(teamA.units) else '')
+    print(f'[Team B] cost: {teamB.cost()}',f'bottleneck: {teamB.bottleneck}' if teamB.bottleneck<len(teamB.units) else '')
     results=favour(teamA,teamB)
     print(f'\n[Team A] will win {round(results[0]*100,1)}% of the time, in an average of {round(results[1],1)} turns')
 
-def generateTeam(maxUnitCost=2000,uniqueUnits=4,style='any'):
-    pass
-
 if __name__=='__main__':
-    # scrape when main list changes!!
-    #scrape()
-
     unitsA,unitsB=[],[]
 
-    unitsA.append(User(searchGunList('akr'),armour,15,9,9)) # full metal AKR
-    unitsA.append(User(searchGunList('pump'),armour,15,8,8)) # 14 all pump
-    unitsA.append(User(searchGunList('scorpion'),armour,14,7,7)) # 14 all pump
-    unitsA.append(User(searchGunList('desert'),armour,15,8,8)) # 14 all pump
-    
-    for _ in range(7):
-        unitsB.append(User(searchGunList('police'),armour,12,7,7))
+    #armour presets
+    light=findArmour([14,14,14,14,10,10])
+    #ultralite=findArmour([12,10,10,10,8,8])
 
-    unitsB.append(User(searchGunList('ares'),armour,13,8,8))
+    unitsA.append(User(findGun('viper'),light,15,8,5))
+    unitsB.append(User(findGun('viper'),light,15,5,8))
 
     teamA=Team(unitsA)
     teamB=Team(unitsB)

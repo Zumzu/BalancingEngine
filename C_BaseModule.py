@@ -59,6 +59,23 @@ class ArmourSet:
                 if a.sp[i]!=0:
                     self.type[i]=a.type
                     self.sp[i]=a.sp[i]
+        self.ev=0
+        for a in self.armour:
+            self.ev+=a.ev
+
+        self.mv=0
+        for a in self.armour:
+            self.mv+=a.mv
+
+        self.cost=0
+        for a in self.armour:
+            self.cost+=a.cost
+
+    def __str__(self) -> str:
+        output=''
+        for a in self.armour:
+            output+=str(a)+"\n"
+        return output[:-1]
 
     def apply(self,loc:int,damage:int):
         output=max(damage-self.sp[loc],0)
@@ -67,34 +84,13 @@ class ArmourSet:
             
         return output
     
-    def ev(self):
-        total=0
-        for a in self.armour:
-            total+=a.ev
-        return total
-    
-    def mv(self):
-        total=0
-        for a in self.armour:
-            total+=a.mv
-        return total
-    
-    def cost(self):
-        total=0
-        for a in self.armour:
-            total+=a.cost
-        return total
-    
     def typeAt(self,location):
         return self.type[location]
-    
-    def __str__(self) -> str:
-        return f"{self.sp}, {self.mv} MV, {self.ev} EV"
 
 class User:
     def __init__(self,gun:Gun,armour:ArmourSet,ws:int,body:int,cool:int):
-        self.gun=gun
-        self.armour=armour
+        self.gun=deepcopy(gun)
+        self.armour=deepcopy(armour)
         self.ws=ws
         self.body=body
         self.cool=cool
@@ -171,7 +167,7 @@ class User:
     def burstAttack(self,enemy): # Burst, returns true if target dies, false otherwise
         self.gun.expend(3)
         if(self.attackRoll()+BURST_BONUS>=CLOSE_RANGE):
-            loc=self.rollLocation()
+            loc=locationDie()
             for _ in range(3):
                 if(enemy.damage(self.gun.getDamage(),loc)):
                     return True
@@ -223,18 +219,18 @@ class User:
             return floor(self.body/2-1)
         
     def multiAction(self):
-        self.multiPenalty += 2+self.armour.mv()
+        self.multiPenalty += 2+self.armour.mv
 
     def attackRoll(self):
         output = d10E()
         output+= self.ws + self.gun.wa
-        output-= self.armour.ev() + self.multiPenalty + self.allNegative()
+        output-= self.armour.ev + self.multiPenalty + self.allNegative()
         return output
     
     def autoAttackRoll(self,rof):
         output = d10EDown()
         output+= self.ws + self.gun.wa + rof//10
-        output-= self.armour.ev() + self.multiPenalty + self.allNegative()
+        output-= self.armour.ev + self.multiPenalty + self.allNegative()
         return output
 
     def stunMod(self):
@@ -245,23 +241,23 @@ class User:
 
     def rollStun(self):
         if(not self.stunned):
-            if(self.d10()>max(self.body,self.cool)-self.stunMod()):
+            if(d10E()>max(self.body,self.cool)-self.stunMod()):
                 self.stunned=True
 
         if(self.stunned and self.wounds>15):
-            if(self.d10()>self.body-self.allNegative()):
+            if(d10E()>self.body-self.allNegative()):
                 return True
 
         return False
 
     def unstun(self): # unit attempts unstun, if they succeed stunned is set to false and this function returns true if they went from stunned to unstunned
         if(self.stunned):
-            if(self.d10()<=self.body-self.stunMod()):
+            if(d10E()<=self.body-self.stunMod()):
                 self.stunned=False
                 return True
         return False 
     
     def cost(self):
-        return self.gun.cost+self.armour.cost()
+        return self.gun.cost+self.armour.cost
 
         
