@@ -5,7 +5,7 @@ from C_BaseModule import Gun,User
 from C_Scraper import findGun,findArmour
 
 FIGHT_TURN_LIMIT=30
-FAVOUR_ITERATIONS=3000
+FAVOUR_ITERATIONS=10000
 
 class Team:
     units=[]
@@ -85,18 +85,14 @@ def compareTeam(teamA,teamB):
 if __name__=='__main__':
     unitsA,unitsB=[],[]
 
-    #armour presets
-    light=findArmour([14,14,14,14,10,10])
-    #ultralite=findArmour([12,10,10,10,8,8])
+    u1=User(findGun("darra"),findArmour([20,20,20,20,20,20]),17,10)
+    u2=User(findGun("police"),findArmour([10,10,10,10,8,8]),14,6,8)
 
-    unitsA.append(User(findGun('viper'),light,15,8,5))
-    unitsB.append(User(findGun('viper'),light,15,5,8))
+    unitsA.append(u1)
+
+    for _ in range(6):
+        unitsB.append(u2)
 
     teamA=Team(unitsA)
-    teamB=Team(unitsB)
-
-    #teamFight(teamA,teamB)
-    #print('[Team A]:\n'+str(teamA))
-    #print('[Team B]:\n'+str(teamB))
-
+    teamB=Team(unitsB,20)
     compareTeam(teamA,teamB)

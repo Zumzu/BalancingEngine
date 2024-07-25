@@ -53,7 +53,7 @@ def findGun(name):
 
 def processSP(rawInput:str): #helper for scrape
     if 'all' in rawInput.lower():
-        return f'{';'.join([rawInput.strip().split(' ')[0]]*6)}'
+        return f'{";".join([rawInput.strip().split(" ")[0]]*6)}'
     
     output=''
     for c in rawInput.strip():

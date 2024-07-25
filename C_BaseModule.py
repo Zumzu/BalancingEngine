@@ -21,7 +21,7 @@ class Gun:
     
     def __str__(self) -> str:
         return f"{self.wa}wa, {self.d6}D6+{self.more}, {self.rof}|{self.mag}"
-    
+
     def getDamage(self):
         total=self.more
         for _ in range(self.d6):
@@ -33,15 +33,14 @@ class Gun:
 
     def expend(self,bullets=1):
         self.currentAmmo-=bullets
-    
+
     
 class Armour:
     def __init__(self,name,cost:int,sp,mv:int,ev:int,type='soft'):
         self.name=name
         self.cost=int(cost)
         sp=list(map(int,sp))
-        self.sp=deepcopy(sp)
-        self.spMax=deepcopy(sp)
+        self.sp=sp
         self.mv=abs(int(mv))
         self.ev=abs(int(ev))
         self.type=type
@@ -59,6 +58,9 @@ class ArmourSet:
                 if a.sp[i]!=0:
                     self.type[i]=a.type
                     self.sp[i]=a.sp[i]
+
+        self.spMax=list(self.sp)
+
         self.ev=0
         for a in self.armour:
             self.ev+=a.ev
@@ -76,6 +78,9 @@ class ArmourSet:
         for a in self.armour:
             output+=str(a)+"\n"
         return output[:-1]
+    
+    def reset(self):
+        self.sp=list(self.spMax)
 
     def apply(self,loc:int,damage:int):
         output=max(damage-self.sp[loc],0)
@@ -86,14 +91,19 @@ class ArmourSet:
     
     def typeAt(self,location):
         return self.type[location]
+    
+    
 
 class User:
-    def __init__(self,gun:Gun,armour:ArmourSet,ws:int,body:int,cool:int):
+    def __init__(self,gun:Gun,armour:ArmourSet,ws:int,body:int,cool:int=-1):
         self.gun=deepcopy(gun)
         self.armour=deepcopy(armour)
         self.ws=ws
         self.body=body
-        self.cool=cool
+        if cool==-1:
+            self.cool=body
+        else:
+            self.cool=cool
 
         self.btm=self.bodyToBTM()
         self.wounds=0
@@ -122,6 +132,15 @@ class User:
             elif(i%5==0):
                 output+="|"
         return output[:-1]
+
+    def reset(self):
+        self.gun.reload()
+        self.armour.reset()
+
+        self.wounds=0
+        self.stunned=False
+        self.multiPenalty=0
+        self.aim=False
 
     
     def attack(self,enemy): #handle reload and stun and shit
