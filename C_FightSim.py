@@ -44,9 +44,35 @@ class Team:
         for unit in self.units:
             total+=unit.cost()
         return total
+    
+def fight(unitA,unitB): # Fight until conclusion, True for unit A, False for unit B. Randomizes engaging unit
+    unitA.reset()
+    unitB.reset()
+    if random() < .5:
+        for _ in range(1,FIGHT_TURN_LIMIT):
+            if(unitA.attack(unitB)):
+                return True
+            if(unitB.attack(unitA)):
+                return False
+    else:
+        for _ in range(1,FIGHT_TURN_LIMIT):
+            if(unitB.attack(unitA)):
+                return False
+            if(unitA.attack(unitB)):
+                return True
 
+    raise Exception('TURN LIMIT REACHED')
+
+def favour(unitA,unitB): # returns ([0-1 % win for A],[Avg combat length in turns])
+    totalWins=0
+    for _ in range(10000):
+        totalWins+=1 if fight(unitA,unitB) else 0
+
+    return totalWins/10000
 
 def teamFight(teamA,teamB): # Fight until conclusion, True for team A, False for team B. Randomizes engaging team
+    teamA=deepcopy(teamA)
+    teamB=deepcopy(teamB)
     if random() < .5:
         for i in range(1,FIGHT_TURN_LIMIT):
             if(teamA.attack(teamB)):
@@ -63,12 +89,10 @@ def teamFight(teamA,teamB): # Fight until conclusion, True for team A, False for
     raise Exception('TURN LIMIT REACHED')
 
 
-def favour(protoTeamA,protoTeamB): # returns ([0-1 % win for A],[Avg combat length in turns])
+def teamFavor(teamA,teamB): # returns ([0-1 % win for A],[Avg combat length in turns])
     totalWins=0
     totalTurns=0
     for _ in range(FAVOUR_ITERATIONS):
-        teamA=deepcopy(protoTeamA)
-        teamB=deepcopy(protoTeamB)
         result=teamFight(teamA,teamB)
 
         totalWins+=1 if result[0] else 0
@@ -79,7 +103,7 @@ def favour(protoTeamA,protoTeamB): # returns ([0-1 % win for A],[Avg combat leng
 def compareTeam(teamA,teamB):
     print(f'[Team A] cost: {teamA.cost()}',f'bottleneck: {teamA.bottleneck}' if teamA.bottleneck<len(teamA.units) else '')
     print(f'[Team B] cost: {teamB.cost()}',f'bottleneck: {teamB.bottleneck}' if teamB.bottleneck<len(teamB.units) else '')
-    results=favour(teamA,teamB)
+    results=teamFavor(teamA,teamB)
     print(f'\n[Team A] will win {round(results[0]*100,1)}% of the time, in an average of {round(results[1],1)} turns')
 
 if __name__=='__main__':

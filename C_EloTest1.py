@@ -2,6 +2,7 @@ from random import random,sample,choice
 
 from C_BaseModule import User
 from C_Scraper import findGun,findArmour
+from C_FightSim import fight
 
 FIGHT_TURN_LIMIT=30
 
@@ -24,24 +25,6 @@ class Player:
     def estimation(self,opponent):
         return 1/(1+10**((opponent.elo-self.elo)/1000))
 
-def fight(unitA,unitB): # Fight until conclusion, True for unit A, False for unit B. Randomizes engaging unit
-    unitA.reset()
-    unitB.reset()
-    if random() < .5:
-        for _ in range(1,FIGHT_TURN_LIMIT):
-            if(unitA.attack(unitB)):
-                return True
-            if(unitB.attack(unitA)):
-                return False
-    else:
-        for _ in range(1,FIGHT_TURN_LIMIT):
-            if(unitB.attack(unitA)):
-                return False
-            if(unitA.attack(unitB)):
-                return True
-
-    raise Exception('TURN LIMIT REACHED')
-
 def battle(playerA,playerB):
     if fight(playerA.unit,playerB.unit):
         playerA.win(playerB)
@@ -57,13 +40,6 @@ def simlulateNew(newPlayer,players,iterations):
     for _ in range(iterations):
         p2=choice(players)
         battle(newPlayer,p2)
-
-def favour(playerA,playerB): # returns ([0-1 % win for A],[Avg combat length in turns])
-    totalWins=0
-    for _ in range(10000):
-        totalWins+=1 if fight(playerA.unit,playerB.unit) else 0
-
-    return totalWins/10000
 
 if __name__=='__main__':
     players=[]

@@ -5,14 +5,6 @@ from random import random
 
 from C_BaseModule import User
 from C_Scraper import generateGunList,findArmour
-
-
-def fightWinner(user1,user2): # returns true if the first user wins, false if the second user wins
-    for _ in range(50):
-        if(user1.attack(user2)):
-            return True
-        if(user2.attack(user1)):
-            return False
         
 TTK_TURN_LIMIT=50
 def fightLength(attacker,dummy):

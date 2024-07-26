@@ -112,7 +112,7 @@ class User:
         self.aim=False
 
     def __str__(self):
-        output=f"[{self.sp[0]}] [{self.sp[1]}] [{self.sp[2]}|{self.sp[3]}] [{self.sp[4]}|{self.sp[5]}] | {self.gun.name}"
+        output=f"{self.gun.name}"
         i=0
         output+="\n["
         for _ in range(self.wounds):
@@ -218,10 +218,11 @@ class User:
 
         dmg=max(1,floor(dmg)-self.btm) # apply btm
 
+        self.wounds+=dmg
+
         if (dmg>=8 and loc!=1) or dmg>=15: # check if dies due to headshot
             return True
         
-        self.wounds+=dmg
         if(self.wounds>=WOUND_CAP): # apply wounds and check if unit goes off the wound track
             return True
         
