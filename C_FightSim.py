@@ -61,6 +61,9 @@ def fight(unitA,unitB): # Fight until conclusion, True for unit A, False for uni
             if(unitA.attack(unitB)):
                 return True
 
+    print(unitA) #err
+    print("--")
+    print(unitB)
     raise Exception('TURN LIMIT REACHED')
 
 def favour(unitA,unitB): # returns ([0-1 % win for A],[Avg combat length in turns])
@@ -86,6 +89,9 @@ def teamFight(teamA,teamB): # Fight until conclusion, True for team A, False for
             if(teamA.attack(teamB)):
                 return (True,i)
 
+    print(teamA) #err
+    print("--")
+    print(teamB)
     raise Exception('TURN LIMIT REACHED')
 
 

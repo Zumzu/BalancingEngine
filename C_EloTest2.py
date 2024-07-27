@@ -1,4 +1,5 @@
 from random import random,sample,choice
+from copy import deepcopy
 
 from C_BaseModule import User
 from C_Scraper import findGun,findArmour
@@ -14,7 +15,7 @@ class Player:
         self.fixed=fixed
 
     def win(self,opponent):
-        disparity=16
+        disparity=12.0001
         if not self.fixed:
             self.elo+=disparity
         if not opponent.fixed:
@@ -37,14 +38,14 @@ def matchMake(playerA,playerB):
         return tuple(reversed(balance(playerB.unit,playerB.elo,playerA.unit,playerA.elo)))
 
 def balance(strongUnit,strongElo,weakUnit,weakElo):
-    strongTeam=[strongUnit,strongUnit]
+    strongTeam=[deepcopy(strongUnit),deepcopy(strongUnit)]
     weakTeam=[]
-    for _ in range(round(strongElo*2/weakElo)):
-        weakTeam.append(weakUnit)
+    for _ in range(max(1,round(strongElo*2/weakElo))):
+        weakTeam.append(deepcopy(weakUnit))
     
     if weakTeam.__len__()%2==0:
-        strongTeam=[strongUnit]
-        weakTeam=weakTeam[:int(weakTeam.__len__()/2)]
+        strongTeam=strongTeam[:1]
+        weakTeam=weakTeam[:weakTeam.__len__()//2]
 
     return (strongTeam,weakTeam)
 
@@ -66,13 +67,13 @@ if __name__=='__main__':
     players.append(Player(User(findGun("sks"),findArmour([14,14,14,14,10,10]),15,7,9))) 
     players.append(Player(User(findGun("pump"),findArmour([14,14,14,14,10,10]),15,9))) 
     players.append(Player(User(findGun("vonya"),findArmour([12,14,14,14,10,10]),16,5,9))) 
-    players.append(Player(User(findGun("viper"),findArmour([12,12,12,12,8,8]),15,8),1000,True)) 
+    players.append(Player(User(findGun("viper"),findArmour([12,12,12,12,8,8]),15,8))) 
     players.append(Player(User(findGun("scout"),findArmour([12,12,12,12,10,10]),15,7))) 
     players.append(Player(User(findGun("chief"),findArmour([12,14,14,14,8,8]),14,7))) 
     players.append(Player(User(findGun("uzi"),findArmour([14,10,10,10,8,8]),13,6,8)))
     players.append(Player(User(findGun("police"),findArmour([10,10,10,10,8,8]),12,6)))
-
-    simlulate(players,100)
+  
+    simlulate(players,20000)
 
     for p in players:
         print(p.unit.cost(),'|',p.elo,'|',p.unit.gun.name)
