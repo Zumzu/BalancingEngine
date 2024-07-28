@@ -117,12 +117,22 @@ if __name__=='__main__':
     u1=User(findGun("darra"),findArmour([20,20,20,20,20,20]),16,10)
     u2=User(findGun("viper"),findArmour([12,12,12,12,8,8]),13,7,8)
     u3=User(findGun("police"),findArmour([10,10,10,10,8,8]),12,6)
+    u4=User(findGun("l96"),findArmour([14,16,16,16,15,15]),15,8,10)
+    u5=User(findGun("scorpion"),findArmour([14,16,16,16,15,15]),15,9)
+    u6=User(findGun("sks"),findArmour([14,14,14,14,10,10]),15,7,9)
+    u7=User(findGun("pump"),findArmour([14,14,14,14,10,10]),15,9)
+    u8=User(findGun("vonya"),findArmour([12,14,14,14,10,10]),16,5,9)
+    u9=User(findGun("scout"),findArmour([12,12,12,12,10,10]),15,7)
+    u10=User(findGun("chief"),findArmour([12,14,14,14,8,8]),14,7)
+    u11=User(findGun("uzi"),findArmour([14,10,10,10,8,8]),13,6,8)
 
-    for _ in range(3):
-        unitsA.append(deepcopy(u2))
+    uNew=User(findGun("scorpion"),findArmour([12,10,10,10,10,10]),16,5,5)
 
-    for _ in range(3):
-        unitsB.append(deepcopy(u3))
+    for _ in range(1):
+        unitsA.append(deepcopy(u1))
+
+    for _ in range(5):
+        unitsB.append(deepcopy(u11))
 
     teamA=Team(unitsA)
     teamB=Team(unitsB)
