@@ -14,9 +14,8 @@ class Team:
     # Its designed such that the units at the list start fight first, and the backfill replaces them when they die
     # If you intend to use this feature, place units in order of contact
 
-    def __init__(self,units,bottleneck=8):
+    def __init__(self,units):
         self.units=units
-        self.bottleneck=bottleneck
 
     def __str__(self):
         output=''
@@ -25,8 +24,8 @@ class Team:
         return output
 
     def attack(self,targetTeam):
-        for attacker in self.units[:self.bottleneck]:
-            target=choice(targetTeam.units[:targetTeam.bottleneck])
+        for attacker in self.units:
+            target=choice(targetTeam.units)
 
             if attacker.attack(target):
                 targetTeam.kill(target)
@@ -107,22 +106,25 @@ def teamFavor(teamA,teamB): # returns ([0-1 % win for A],[Avg combat length in t
     return (totalWins/FAVOUR_ITERATIONS,totalTurns/FAVOUR_ITERATIONS)
 
 def compareTeam(teamA,teamB):
-    print(f'[Team A] cost: {teamA.cost()}',f'bottleneck: {teamA.bottleneck}' if teamA.bottleneck<len(teamA.units) else '')
-    print(f'[Team B] cost: {teamB.cost()}',f'bottleneck: {teamB.bottleneck}' if teamB.bottleneck<len(teamB.units) else '')
+    print(f'[Team A] cost: {teamA.cost()}')
+    print(f'[Team B] cost: {teamB.cost()}')
     results=teamFavor(teamA,teamB)
     print(f'\n[Team A] will win {round(results[0]*100,1)}% of the time, in an average of {round(results[1],1)} turns')
 
 if __name__=='__main__':
     unitsA,unitsB=[],[]
 
-    u1=User(findGun("darra"),findArmour([20,20,20,20,20,20]),17,10)
-    u2=User(findGun("police"),findArmour([10,10,10,10,8,8]),14,6,8)
+    u1=User(findGun("darra"),findArmour([20,20,20,20,20,20]),16,10)
+    u2=User(findGun("viper"),findArmour([12,12,12,12,8,8]),13,7,8)
+    u3=User(findGun("police"),findArmour([10,10,10,10,8,8]),12,6)
 
-    unitsA.append(u1)
+    for _ in range(3):
+        unitsA.append(deepcopy(u2))
 
-    for _ in range(6):
-        unitsB.append(u2)
+    for _ in range(3):
+        unitsB.append(deepcopy(u3))
 
     teamA=Team(unitsA)
-    teamB=Team(unitsB,20)
+    teamB=Team(unitsB)
+
     compareTeam(teamA,teamB)
