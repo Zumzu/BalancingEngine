@@ -8,7 +8,7 @@ BURST_BONUS=2
 WOUND_CAP=50
 
 class Gun:
-    def __init__(self,name:str,cost:int,wa:int,d6:int,more:int,rof:int,mag:int,ammotype=None):
+    def __init__(self,name:str,cost:int,wa:int,d6:int,more:int,rof:int,mag:int,ammo=None):
         self.name=name
         self.cost=cost
         self.wa=wa
@@ -17,8 +17,8 @@ class Gun:
         self.rof=rof
         self.mag=mag
         self.currentAmmo=mag
-        if ammotype is not None:
-            self.ammotype=ammotype
+        if ammo is not None:
+            self.ammo=ammo
     
     def __str__(self) -> str:
         return f"{self.wa}wa, {self.d6}D6+{self.more}, {self.rof}|{self.mag}"
@@ -35,7 +35,28 @@ class Gun:
     def expend(self,bullets=1):
         self.currentAmmo-=bullets
 
-    
+class Ammo:
+    def __init__(self):
+        pass
+
+    def preEffect(self):
+        pass
+
+    def postEffect(self):
+        pass
+
+    def onDamage(self):
+        pass
+
+    def damageMod(self,dmg):
+        pass
+
+    def spMod(self,sp): #bad
+        pass
+
+    def barrierMod(self,barrier): #bad
+        pass
+
 class Armour:
     def __init__(self,name,cost:int,sp,mv:int,ev:int,type='soft'):
         self.name=name
@@ -93,8 +114,26 @@ class ArmourSet:
     def typeAt(self,location):
         return self.type[location]
     
+class CyberLimb:
+    def __init__(self):
+        pass
 
-class User:
+class Barrier:
+    def __init__(self,sp:int,covers:tuple):
+        self.sp=sp
+        self.covers=covers
+
+    def apply(self,loc:int,dmg:int):
+        if loc not in self.covers:
+            return dmg
+
+        output=dmg-self.sp
+        if self.sp>0:
+            self.sp-=1
+        return output
+        
+
+class Unit:
     def __init__(self,gun:Gun,armour:ArmourSet,ws:int,body:int,cool:int=-1):
         self.gun=deepcopy(gun)
         self.armour=deepcopy(armour)

@@ -3,7 +3,7 @@ import copy
 import numpy as np
 from random import random
 
-from Modules.Base import User
+from Modules.Base import Unit
 from Modules.Generator import generateGunList,findArmour
         
 TTK_TURN_LIMIT=50
@@ -17,8 +17,8 @@ def fightLength(attacker,dummy):
 
 def TTK(gun,iterations,armour,ws,body,cool):
     totalTurns=0
-    protoAttacker=User(gun,armour,ws,body,cool)
-    protoDummy=User(gun,armour,ws,body,cool)
+    protoAttacker=Unit(gun,armour,ws,body,cool)
+    protoDummy=Unit(gun,armour,ws,body,cool)
     for _ in range(iterations):
         attacker=copy.deepcopy(protoAttacker)
         dummy=copy.deepcopy(protoDummy)
@@ -28,8 +28,8 @@ def TTK(gun,iterations,armour,ws,body,cool):
 
 def Instakill(gun,iterations,armour,ws,body,cool):
     successes=0
-    protoAttacker=User(gun,armour,ws,body,cool)
-    protoDummy=User(gun,armour,ws,body,cool)
+    protoAttacker=Unit(gun,armour,ws,body,cool)
+    protoDummy=Unit(gun,armour,ws,body,cool)
     for _ in range(iterations):
         attacker=copy.deepcopy(protoAttacker)
         dummy=copy.deepcopy(protoDummy)

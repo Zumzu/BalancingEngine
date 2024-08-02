@@ -1,7 +1,7 @@
 from random import choice,random
 from copy import deepcopy
 
-from Modules.Base import Gun,User
+from Modules.Base import Gun,Unit
 from Modules.Generator import findGun,findArmour
 
 FIGHT_TURN_LIMIT=30
@@ -114,19 +114,19 @@ def compareTeam(teamA,teamB):
 if __name__=='__main__':
     unitsA,unitsB=[],[]
 
-    u1=User(findGun("darra"),findArmour([20,20,20,20,20,20]),16,10)
-    u2=User(findGun("viper"),findArmour([12,12,12,12,8,8]),13,7,8)
-    u3=User(findGun("police"),findArmour([10,10,10,10,8,8]),12,6)
-    u4=User(findGun("l96"),findArmour([14,16,16,16,15,15]),15,8,10)
-    u5=User(findGun("scorpion"),findArmour([14,16,16,16,15,15]),15,9)
-    u6=User(findGun("sks"),findArmour([14,14,14,14,10,10]),15,7,9)
-    u7=User(findGun("pump"),findArmour([14,14,14,14,10,10]),15,9)
-    u8=User(findGun("vonya"),findArmour([12,14,14,14,10,10]),16,5,9)
-    u9=User(findGun("scout"),findArmour([12,12,12,12,10,10]),15,7)
-    u10=User(findGun("chief"),findArmour([12,14,14,14,8,8]),14,7)
-    u11=User(findGun("uzi"),findArmour([14,10,10,10,8,8]),13,6,8)
+    u1=Unit(findGun("darra"),findArmour([20,20,20,20,20,20]),16,10)
+    u2=Unit(findGun("viper"),findArmour([12,12,12,12,8,8]),13,7,8)
+    u3=Unit(findGun("police"),findArmour([10,10,10,10,8,8]),12,6)
+    u4=Unit(findGun("l96"),findArmour([14,16,16,16,15,15]),15,8,10)
+    u5=Unit(findGun("scorpion"),findArmour([14,16,16,16,15,15]),15,9)
+    u6=Unit(findGun("sks"),findArmour([14,14,14,14,10,10]),15,7,9)
+    u7=Unit(findGun("pump"),findArmour([14,14,14,14,10,10]),15,9)
+    u8=Unit(findGun("vonya"),findArmour([12,14,14,14,10,10]),16,5,9)
+    u9=Unit(findGun("scout"),findArmour([12,12,12,12,10,10]),15,7)
+    u10=Unit(findGun("chief"),findArmour([12,14,14,14,8,8]),14,7)
+    u11=Unit(findGun("uzi"),findArmour([14,10,10,10,8,8]),13,6,8)
 
-    uNew=User(findGun("scorpion"),findArmour([12,10,10,10,10,10]),16,5,5)
+    uNew=Unit(findGun("scorpion"),findArmour([12,10,10,10,10,10]),16,5,5)
 
     for _ in range(1):
         unitsA.append(deepcopy(u1))
