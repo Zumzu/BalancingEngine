@@ -19,6 +19,8 @@ class Gun:
         self.currentAmmo=mag
         if ammo is not None:
             self.ammo=ammo
+        else:
+            self.ammo=Ammo()
     
     def __str__(self) -> str:
         return f"{self.wa}wa, {self.d6}D6+{self.more}, {self.rof}|{self.mag}"
@@ -201,6 +203,30 @@ class Unit:
         
         else:
             return self.normalAttack(enemy)
+        
+    def damage(self,dmg,loc=-1): # returns true if unit died or went uncon, false otherwise
+        if(loc==-1):
+            loc=locationDie()
+
+        dmg=self.armour.apply(loc,dmg)
+
+        if(dmg==0): # return early if no damage
+            return False
+
+        if(loc==0): # double if head
+            dmg*=2
+
+        dmg=max(1,floor(dmg)-self.btm) # apply btm
+
+        self.wounds+=dmg
+
+        if (dmg>=8 and loc!=1) or dmg>=15: # check if dies due to headshot
+            return True
+        
+        if(self.wounds>=WOUND_CAP): # apply wounds and check if unit goes off the wound track
+            return True
+        
+        return self.rollStun() # otherwise as a last effort apply stun and return wether or not they die from it
     
     def calledShotHead(self,enemy): # Called shot head, returns true if target dies, false otherwise
         self.gun.currentAmmo-=1
@@ -237,30 +263,6 @@ class Unit:
                 return True
         return False
 
-
-    def damage(self,dmg,loc=-1): # returns true if unit died or went uncon, false otherwise
-        if(loc==-1):
-            loc=locationDie()
-
-        dmg=self.armour.apply(loc,dmg)
-
-        if(dmg==0): # return early if no damage
-            return False
-
-        if(loc==0): # double if head
-            dmg*=2
-
-        dmg=max(1,floor(dmg)-self.btm) # apply btm
-
-        self.wounds+=dmg
-
-        if (dmg>=8 and loc!=1) or dmg>=15: # check if dies due to headshot
-            return True
-        
-        if(self.wounds>=WOUND_CAP): # apply wounds and check if unit goes off the wound track
-            return True
-        
-        return self.rollStun() # otherwise as a last effort apply stun and return wether or not they die from it
 
     def bodyToBTM(self):
         if(self.body>14):

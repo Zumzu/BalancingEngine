@@ -1,7 +1,7 @@
 from random import choice,random
 from copy import deepcopy
 
-from Modules.Base import Gun,Unit
+from Modules.Base import Unit
 from Modules.Generator import findGun,findArmour
 
 FIGHT_TURN_LIMIT=30
@@ -9,10 +9,6 @@ FAVOUR_ITERATIONS=10000
 
 class Team:
     units=[]
-
-    # the bottleneck is a simulation hard cap to the number of units that can act against the enemy at a time (default 8)
-    # Its designed such that the units at the list start fight first, and the backfill replaces them when they die
-    # If you intend to use this feature, place units in order of contact
 
     def __init__(self,units):
         self.units=units
@@ -115,7 +111,7 @@ if __name__=='__main__':
     unitsA,unitsB=[],[]
 
     u1=Unit(findGun("darra"),findArmour([20,20,20,20,20,20]),16,10)
-    u2=Unit(findGun("viper"),findArmour([12,12,12,12,8,8]),13,7,8)
+    u2=Unit(findGun("viper"),findArmour([12,12,12,12,8,8]),15,7,8)
     u3=Unit(findGun("police"),findArmour([10,10,10,10,8,8]),12,6)
     u4=Unit(findGun("l96"),findArmour([14,16,16,16,15,15]),15,8,10)
     u5=Unit(findGun("scorpion"),findArmour([14,16,16,16,15,15]),15,9)
@@ -126,13 +122,11 @@ if __name__=='__main__':
     u10=Unit(findGun("chief"),findArmour([12,14,14,14,8,8]),14,7)
     u11=Unit(findGun("uzi"),findArmour([14,10,10,10,8,8]),13,6,8)
 
-    uNew=Unit(findGun("scorpion"),findArmour([12,10,10,10,10,10]),16,5,5)
+    for _ in range(1):
+        unitsA.append(deepcopy(u2))
 
     for _ in range(1):
-        unitsA.append(deepcopy(u1))
-
-    for _ in range(5):
-        unitsB.append(deepcopy(u11))
+        unitsB.append(deepcopy(u10))
 
     teamA=Team(unitsA)
     teamB=Team(unitsB)

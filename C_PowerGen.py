@@ -1,4 +1,4 @@
-from random import random,sample,choice
+from random import sample,choice
 from copy import deepcopy
 from os import system
 

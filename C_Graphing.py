@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import copy
 import numpy as np
-from random import random
 
 from Modules.Base import Unit
 from Modules.Generator import generateGunList,findArmour
