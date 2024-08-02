@@ -1,8 +1,8 @@
 from random import choice,random
 from copy import deepcopy
 
-from C_BaseModule import Gun,User
-from C_Scraper import findGun,findArmour
+from Modules.Base import Gun,User
+from Modules.Generator import findGun,findArmour
 
 FIGHT_TURN_LIMIT=30
 FAVOUR_ITERATIONS=10000

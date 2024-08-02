@@ -2,8 +2,8 @@ from random import random,sample,choice
 from copy import deepcopy
 from os import system
 
-from C_BaseModule import User
-from C_Scraper import findGun,findArmour
+from Modules.Base import User
+from Modules.Generator import findGun,findArmour
 from C_FightSim import Team,teamFight
 
 class Player:

@@ -1,6 +1,6 @@
 from math import ceil, floor
 from copy import deepcopy
-from C_Dice import d10E,d10EDown,d6,locationDie
+from Modules.Dice import d10E,d10EDown,d6,locationDie
 
 CLOSE_RANGE=15
 CALLED_HEAD_PENALTY=8
@@ -8,7 +8,7 @@ BURST_BONUS=2
 WOUND_CAP=50
 
 class Gun:
-    def __init__(self,name:str,cost:int,wa:int,d6:int,more:int,rof:int,mag:int,ammotype:str="norm"):
+    def __init__(self,name:str,cost:int,wa:int,d6:int,more:int,rof:int,mag:int,ammotype=None):
         self.name=name
         self.cost=cost
         self.wa=wa
@@ -17,7 +17,8 @@ class Gun:
         self.rof=rof
         self.mag=mag
         self.currentAmmo=mag
-        self.ammotype=ammotype
+        if ammotype is not None:
+            self.ammotype=ammotype
     
     def __str__(self) -> str:
         return f"{self.wa}wa, {self.d6}D6+{self.more}, {self.rof}|{self.mag}"
@@ -92,7 +93,6 @@ class ArmourSet:
     def typeAt(self,location):
         return self.type[location]
     
-    
 
 class User:
     def __init__(self,gun:Gun,armour:ArmourSet,ws:int,body:int,cool:int=-1):
@@ -143,7 +143,7 @@ class User:
         self.aim=False
 
     
-    def attack(self,enemy): #handle reload and stun and shit
+    def attack(self,enemy):
         self.multiPenalty=0
 
         if(self.unstun()):

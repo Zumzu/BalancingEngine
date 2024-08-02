@@ -3,8 +3,8 @@ import copy
 import numpy as np
 from random import random
 
-from C_BaseModule import User
-from C_Scraper import generateGunList,findArmour
+from Modules.Base import User
+from Modules.Generator import generateGunList,findArmour
         
 TTK_TURN_LIMIT=50
 def fightLength(attacker,dummy):

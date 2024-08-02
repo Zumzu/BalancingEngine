@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 
-from C_BaseModule import Gun,Armour,ArmourSet
+from Modules.Base import Gun,Armour,ArmourSet
 from copy import deepcopy
 
 def processDamage(rawInput): #helper for scrape
