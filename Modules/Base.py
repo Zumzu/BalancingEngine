@@ -37,24 +37,19 @@ class Gun:
 
 class Ammo:
     def __init__(self):
+        self.pierceBar=0
+        self.pierceSP=0
+    
+    def bonusDamage(self,enemyUnit,loc:int):
+        return 0
+    
+    def preferred(self,enemyUnit,loc:int):
+        return False
+    
+    def onDamage(self,enemyUnit,loc:int):
         pass
 
-    def preEffect(self):
-        pass
-
-    def postEffect(self):
-        pass
-
-    def onDamage(self):
-        pass
-
-    def damageMod(self,dmg):
-        pass
-
-    def spMod(self,sp): #bad
-        pass
-
-    def barrierMod(self,barrier): #bad
+    def postEffect(self,enemyUnit,loc:int):
         pass
 
 class Armour:
