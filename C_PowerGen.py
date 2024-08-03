@@ -7,7 +7,7 @@ from Modules.Generator import findGun,findArmour
 from C_FightSim import Team,teamFight
 
 class Player:
-    def __init__(self,unit,elo=None,fixed=False):
+    def __init__(self,unit:Unit,elo=None,fixed=False):
         self.unit=unit
         if elo is None:
             self.elo=unit.cost()

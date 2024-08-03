@@ -51,7 +51,7 @@ class Gun:
         self.currentAmmo-=bullets
 
 class Armour:
-    def __init__(self,name,cost:int,sp,mv:int,ev:int,type='soft'):
+    def __init__(self,name:str,cost:int,sp,mv:int,ev:int,type:str='soft'):
         self.name=name
         self.cost=int(cost)
         sp=list(map(int,sp))
@@ -64,7 +64,7 @@ class Armour:
         return f"{self.sp}, {self.mv} MV, {self.ev} EV"
     
 class ArmourSet:
-    def __init__(self,armour):
+    def __init__(self,armour:list[Armour]):
         self.armour=armour
         self.sp=[0]*6
         self.type=['soft']*6
@@ -93,24 +93,24 @@ class ArmourSet:
 
     def apply(self,loc:int,damage:int,preferred:bool,pierce:int):
         if preferred:
-            output=max(0, damage-(self.sp[loc]//2-pierce))
+            output=max(0, damage-max(0,self.sp[loc]//2-pierce))
         else:
-            output=max(0, damage-(self.sp[loc]-pierce))
+            output=max(0, damage-max(0,self.sp[loc]-pierce))
 
         if damage>=self.sp[loc]//2 and self.sp[loc]>0:
             self.sp[loc]-=1
             
         return output
     
-    def typeAt(self,location):
-        return self.type[location]
+    def typeAt(self,loc:int):
+        return self.type[loc]
     
 class CyberLimb:
     def __init__(self):
         pass
 
 class Barrier:
-    def __init__(self,sp:int,covers:tuple):
+    def __init__(self,sp:int,covers:tuple[int]):
         self.sp=sp
         self.covers=covers
 
@@ -125,7 +125,7 @@ class Barrier:
         
 
 class Unit:
-    def __init__(self,gun:Gun,armour:ArmourSet,ws:int,body:int,cool:int=-1):
+    def __init__(self,gun:Gun,armour:ArmourSet,ws:int,body:int,cool:int=-1,cyber:list[int]=[0,0,0,0,0,0]):
         self.gun=deepcopy(gun)
         self.armour=deepcopy(armour)
         self.ws=ws
@@ -187,27 +187,23 @@ class Unit:
             self.gun.reload()
             self.multiAction()
 
-        elif(self.gun.rof==-1):
+        if(self.gun.rof==-1):
             return self.calledShotHead(enemy)
-
         elif(self.gun.rof>=10):
             return self.fullAuto(enemy)
-        
         elif(self.gun.rof==3):
             return self.burstAttack(enemy)
-        
         else:
             return self.normalAttack(enemy)
         
-    def damage(self,attacker,loc=-1,dmg=-1): # returns true if unit died or went uncon, false otherwise
-        if(loc==-1):
+    def damage(self,attacker,loc=None,dmg=None): # returns true if unit died or went uncon, false otherwise
+        if loc is None:
             loc=locationDie()
 
-        if(dmg==-1):
+        if dmg is None:
             dmg=attacker.gun.getDamage()
 
         dmg+=attacker.gun.ammotype.bonusDamage(self,loc)
-
         dmg=self.armour.apply(loc,dmg, attacker.gun.ammotype.preferred(self,loc), attacker.gun.ammotype.pierceSP)
 
         if(dmg<=0): # return early if no damage
@@ -229,7 +225,7 @@ class Unit:
             return True
         return self.rollStun() # otherwise as a last effort apply stun and return wether or not they die from it
     
-    def directToBody(self,dmg):
+    def directToBody(self,dmg:int):
         if dmg<=0: #return early if no damage
             return False
         
