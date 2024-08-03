@@ -1,8 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
+from copy import deepcopy
 
 from Modules.Base import Ammo,Gun,Armour,ArmourSet
-from copy import deepcopy
+
 
 def processDamage(rawInput): #helper for scrape
     d6 = rawInput[0]
@@ -134,7 +135,3 @@ def findArmour(sp):
 
 GUN_LIST=generateGunList()
 ARMOUR_LIST=generateArmourList()
-
-if __name__=='__main__':
-    scrapeGuns()
-    scrapeArmour()
