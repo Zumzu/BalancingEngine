@@ -10,6 +10,7 @@ WOUND_CAP=50
 class Ammo:
     def __init__(self):
         self.pierceSP=0
+        self.cybercontrol=False
     
     def bonusDamage(self,enemyUnit,loc:int):
         return 0
@@ -106,8 +107,28 @@ class ArmourSet:
         return self.type[loc]
     
 class CyberLimb:
-    def __init__(self):
-        pass
+    def __init__(self,sdp:int):
+        self.sdp=sdp
+        self.maxSdp=sdp
+        self.damaged=False
+        self.broken=False
+
+    def __str__(self):
+        return str(self.sdp)
+
+    def damage(self,dmg):
+        if dmg<=0:
+            return 
+        self.sdp=max(0,self.sdp-dmg)
+        if self.sdp<=self.maxSdp//2:
+            self.damaged=True
+        if self.sdp==0:
+            self.broken=True
+
+    def reset(self):
+        self.sdp=self.maxSdp
+        self.damaged=False
+        self.broken=False
 
 class Barrier:
     def __init__(self,sp:int,covers:tuple[int]):
@@ -135,6 +156,11 @@ class Unit:
         else:
             self.cool=cool
 
+        self.cyber=[]
+        for c in cyber:
+            self.cyber.append(CyberLimb(c) if c!=0 else None)
+        assert self.cyber.__len__()==6
+
         self.btm=bodyToBTM(body)
         self.wounds=0
         self.multiPenalty=0
@@ -145,7 +171,10 @@ class Unit:
 
     def __str__(self):
         i=0
-        output=f"{self.gun.name}\n{self.armour}{'  -STUN-' if self.stunned else ''}{'  ##UNCON##' if self.uncon else ''}\n["
+        output=f"{self.gun.name}\n{self.armour}{'  -STUN-' if self.stunned else ''}{'  ##UNCON##' if self.uncon else ''}\nCyber: ("
+        for c in self.cyber:
+            output+=f"{'-' if c is None else str(c)},"
+        output+="\b)\n["
         for _ in range(self.wounds):
             i+=1
             output+="#"
@@ -172,6 +201,9 @@ class Unit:
         self.aim=False
         self.stunned=False
         self.uncon=False
+        for c in self.cyber:
+            if c is not None:
+                c.reset()
 
     
     def attack(self,enemy):
@@ -209,21 +241,28 @@ class Unit:
         if(dmg<=0): # return early if no damage
             return False
 
-        if(loc==0): # double if head
-            dmg*=2
+        if self.cyber[loc] is None: # if not a cyberlimb
+            if(loc==0): # double if head
+                dmg*=2
 
-        dmg=max(1,floor(dmg)-self.btm) # apply btm
-        self.wounds+=dmg
-        attacker.gun.ammotype.onDamage(self,loc)
-        
-        if (dmg>=8 and loc!=1) or dmg>=15 or self.wounds>=WOUND_CAP: # check if dies due to headshot or wound cap
-            self.uncon=True
-        
+            dmg=max(1,floor(dmg)-self.btm) # apply btm
+            self.wounds+=dmg # apply wounds
+            attacker.gun.ammotype.onDamage(self,loc)
+
+            if (dmg>=8 and loc!=1) or dmg>=15 or self.wounds>=WOUND_CAP: # check if dies due to headshot or wound cap
+                self.uncon=True #current assumption is that loss of limb is death
+            self.rollStun()
+
+        else: #limb is cyberlimb
+            if attacker.gun.ammotype.cybercontrol:
+                dmg*=2
+                self.rollStun()
+            self.cyber[loc].damage(dmg)
+            if self.cyber[loc].broken:
+                self.uncon=True #current assumption is that loss of limb is death
+
         attacker.gun.ammotype.postEffect(self,loc)
-
-        if self.uncon:
-            return True
-        return self.rollStun() # otherwise as a last effort apply stun and return wether or not they die from it
+        return self.uncon# otherwise as a last effort apply stun and return wether or not they die from it
     
     def directToBody(self,dmg:int):
         if dmg<=0: #return early if no damage

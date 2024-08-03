@@ -47,6 +47,19 @@ class FragFlechette(Ammo):
     def preferred(self,enemyUnit:Unit,loc:int):
         return True
     
+class Cybercontrol(Ammo):
+    def __init__(self):
+        super().__init__()
+        self.cybercontrol=True
+
+class CybercontrolSlug(Ammo):
+    def __init__(self):
+        super().__init__()
+        self.cybercontrol=True
+    
+    def preferred(self,enemyUnit:Unit,loc:int):
+        return enemyUnit.armour.typeAt(loc)=='hard'
+    
 class Slug(Ammo):
     def preferred(self,enemyUnit:Unit,loc:int):
         return enemyUnit.armour.typeAt(loc)=='hard'
