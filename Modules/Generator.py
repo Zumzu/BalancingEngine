@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 
-from Modules.Base import Gun,Armour,ArmourSet
+from Modules.Base import Ammo,Gun,Armour,ArmourSet
 from copy import deepcopy
 
 def processDamage(rawInput): #helper for scrape
@@ -30,12 +30,12 @@ def generateGunList(name='D_Guns.csv'):
     with open(name,'r') as f:
         for line in f:
             data=line.split(",")
-            guns.append(Gun(data[0],int(data[1]),int(data[2]),int(data[3]),int(data[4]),int(data[5]),int(data[6])))
+            guns.append(Gun(data[0],int(data[1]),int(data[2]),int(data[3]),int(data[4]),int(data[5]),int(data[6]),Ammo()))
         
     guns.sort(key=lambda gun: gun.cost)
     return guns
 
-def findGun(name):
+def findGun(name,ammotype=None):
     prospectGun=None
     for gun in GUN_LIST:
         if name.lower() in gun.name.lower():
@@ -47,6 +47,11 @@ def findGun(name):
     if prospectGun is None:
         raise Exception(f'Error: Gun not found by search "{name}"')
     else:
+        if ammotype is None:
+            prospectGun.ammotype=Ammo()
+        else:
+            prospectGun.ammotype=ammotype
+        
         return prospectGun
     
 ################################

@@ -7,8 +7,24 @@ CALLED_HEAD_PENALTY=8
 BURST_BONUS=2
 WOUND_CAP=50
 
+class Ammo:
+    def __init__(self):
+        self.pierceSP=0
+    
+    def bonusDamage(self,enemyUnit,loc:int):
+        return 0
+    
+    def preferred(self,enemyUnit,loc:int):
+        return False
+    
+    def onDamage(self,enemyUnit,loc:int):
+        pass
+
+    def postEffect(self,enemyUnit,loc:int):
+        pass
+
 class Gun:
-    def __init__(self,name:str,cost:int,wa:int,d6:int,more:int,rof:int,mag:int,ammo=None):
+    def __init__(self,name:str,cost:int,wa:int,d6:int,more:int,rof:int,mag:int,ammotype:Ammo):
         self.name=name
         self.cost=cost
         self.wa=wa
@@ -17,10 +33,7 @@ class Gun:
         self.rof=rof
         self.mag=mag
         self.currentAmmo=mag
-        if ammo is not None:
-            self.ammo=ammo
-        else:
-            self.ammo=Ammo()
+        self.ammotype=ammotype
     
     def __str__(self) -> str:
         return f"{self.wa}wa, {self.d6}D6+{self.more}, {self.rof}|{self.mag}"
@@ -36,23 +49,6 @@ class Gun:
 
     def expend(self,bullets=1):
         self.currentAmmo-=bullets
-
-class Ammo:
-    def __init__(self):
-        self.pierceBar=0
-        self.pierceSP=0
-    
-    def bonusDamage(self,enemyUnit,loc:int):
-        return 0
-    
-    def preferred(self,enemyUnit,loc:int):
-        return False
-    
-    def onDamage(self,enemyUnit,loc:int):
-        pass
-
-    def postEffect(self,enemyUnit,loc:int):
-        pass
 
 class Armour:
     def __init__(self,name,cost:int,sp,mv:int,ev:int,type='soft'):
@@ -93,16 +89,17 @@ class ArmourSet:
             self.cost+=a.cost
 
     def __str__(self) -> str:
-        output=''
-        for a in self.armour:
-            output+=str(a)+"\n"
-        return output[:-1]
+        return f"[{self.sp[0]}] [{self.sp[1]}] [{self.sp[2]}|{self.sp[3]}] [{self.sp[4]}|{self.sp[5]}]"
     
     def reset(self):
         self.sp=list(self.spMax)
 
-    def apply(self,loc:int,damage:int):
-        output=max(damage-self.sp[loc],0)
+    def apply(self,loc:int,damage:int,preferred:bool,pierce:int):
+        if preferred:
+            output=max(0, damage-(self.sp[loc]//2-pierce))
+        else:
+            output=max(0, damage-(self.sp[loc]-pierce))
+
         if damage>=self.sp[loc]//2 and self.sp[loc]>0:
             self.sp[loc]-=1
             
@@ -141,16 +138,17 @@ class Unit:
         else:
             self.cool=cool
 
-        self.btm=self.bodyToBTM()
+        self.btm=bodyToBTM(body)
         self.wounds=0
-        self.stunned=False
         self.multiPenalty=0
+
+        self.stunned=False
         self.aim=False
+        self.uncon=False
 
     def __str__(self):
-        output=f"{self.gun.name}"
         i=0
-        output+="\n["
+        output=f"{self.gun.name}\n{self.armour}{'  -STUN-' if self.stunned else ''}{'  ##UNCON##' if self.uncon else ''}\n["
         for _ in range(self.wounds):
             i+=1
             output+="#"
@@ -172,11 +170,11 @@ class Unit:
     def reset(self):
         self.gun.reload()
         self.armour.reset()
-
         self.wounds=0
-        self.stunned=False
         self.multiPenalty=0
         self.aim=False
+        self.stunned=False
+        self.uncon=False
 
     
     def attack(self,enemy):
@@ -204,34 +202,52 @@ class Unit:
         else:
             return self.normalAttack(enemy)
         
-    def damage(self,dmg,loc=-1): # returns true if unit died or went uncon, false otherwise
+    def damage(self,attacker,loc=-1,dmg=-1): # returns true if unit died or went uncon, false otherwise
         if(loc==-1):
             loc=locationDie()
 
-        dmg=self.armour.apply(loc,dmg)
+        if(dmg==-1):
+            dmg=attacker.gun.getDamage()
 
-        if(dmg==0): # return early if no damage
+        dmg+=attacker.gun.ammotype.bonusDamage(self,loc)
+
+        dmg=self.armour.apply(loc,dmg, attacker.gun.ammotype.preferred(self,loc), attacker.gun.ammotype.pierceSP)
+
+        if(dmg<=0): # return early if no damage
             return False
 
         if(loc==0): # double if head
             dmg*=2
 
         dmg=max(1,floor(dmg)-self.btm) # apply btm
-
         self.wounds+=dmg
+        attacker.gun.ammotype.onDamage(self,loc)
+        
+        if (dmg>=8 and loc!=1) or dmg>=15 or self.wounds>=WOUND_CAP: # check if dies due to headshot or wound cap
+            self.uncon=True
+        
+        attacker.gun.ammotype.postEffect(self,loc)
 
-        if (dmg>=8 and loc!=1) or dmg>=15: # check if dies due to headshot
+        if self.uncon:
             return True
-        
-        if(self.wounds>=WOUND_CAP): # apply wounds and check if unit goes off the wound track
-            return True
-        
         return self.rollStun() # otherwise as a last effort apply stun and return wether or not they die from it
+    
+    def directToBody(self,dmg):
+        if dmg<=0: #return early if no damage
+            return False
+        
+        self.wounds+=dmg
+        if(self.wounds>=WOUND_CAP):
+            self.uncon=True
+
+        if self.uncon:
+            return True
+        return self.rollStun()
     
     def calledShotHead(self,enemy): # Called shot head, returns true if target dies, false otherwise
         self.gun.currentAmmo-=1
         if(self.attackRoll()-CALLED_HEAD_PENALTY>=CLOSE_RANGE):
-            if(enemy.damage(self.gun.getDamage(),0)):
+            if(enemy.damage(self,0)):
                 return True
         return False
 
@@ -239,7 +255,7 @@ class Unit:
         for _ in range(min(self.gun.rof,2)):
             self.gun.expend()
             if(self.attackRoll()>=CLOSE_RANGE):
-                if(enemy.damage(self.gun.getDamage())):
+                if(enemy.damage(self)):
                     return True
         return False
     
@@ -248,7 +264,7 @@ class Unit:
         if(self.attackRoll()+BURST_BONUS>=CLOSE_RANGE):
             loc=locationDie()
             for _ in range(3):
-                if(enemy.damage(self.gun.getDamage(),loc)):
+                if(enemy.damage(self,loc)):
                     return True
         return False
 
@@ -259,20 +275,9 @@ class Unit:
         
         bulletsHit=min(bulletsHit,rof)
         for _ in range(bulletsHit):
-            if(enemy.damage(self.gun.getDamage())):
+            if(enemy.damage(self)):
                 return True
         return False
-
-
-    def bodyToBTM(self):
-        if(self.body>14):
-            return 7
-        elif(self.body>10):
-            return 5
-        elif(self.body<6):
-            return ceil(self.body/2-1)
-        else:
-            return floor(self.body/2-1)
         
     def multiAction(self):
         self.multiPenalty += 2+self.armour.mv
@@ -302,6 +307,7 @@ class Unit:
 
         if(self.stunned and self.wounds>15):
             if(d10E()>self.body-self.allNegative()):
+                self.uncon=True
                 return True
 
         return False
@@ -316,4 +322,13 @@ class Unit:
     def cost(self):
         return self.gun.cost+self.armour.cost
 
-        
+
+def bodyToBTM(body):
+    if(body>14):
+        return 7
+    elif(body>10):
+        return 5
+    elif(body<6):
+        return ceil(body/2-1)
+    else:
+        return floor(body/2-1)

@@ -42,6 +42,10 @@ def d6():
     d6=[1,2,3,4,5,6]
     return choice(d6)
 
+def d3():
+    d6=[1,2,3]
+    return choice(d6)
+
 def locationDie():
     locations=[0,1,1,1,1,1,2,3,4,5]
     return choice(locations)

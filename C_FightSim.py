@@ -3,9 +3,10 @@ from copy import deepcopy
 
 from Modules.Base import Unit
 from Modules.Generator import findGun,findArmour
+from Modules.Ammo import *
 
 FIGHT_TURN_LIMIT=30
-FAVOUR_ITERATIONS=10000
+FAVOUR_ITERATIONS=30000
 
 class Team:
     units=[]
@@ -122,11 +123,15 @@ if __name__=='__main__':
     u10=Unit(findGun("chief"),findArmour([12,14,14,14,8,8]),14,7)
     u11=Unit(findGun("uzi"),findArmour([14,10,10,10,8,8]),13,6,8)
 
-    for _ in range(1):
-        unitsA.append(deepcopy(u2))
+
+    s1=Unit(findGun("police"),findArmour([10,10,10,10,8,8]),12,6)
+    s2=Unit(findGun("police"),findArmour([10,10,10,10,8,8]),12,6)
 
     for _ in range(1):
-        unitsB.append(deepcopy(u10))
+        unitsA.append(deepcopy(s1))
+
+    for _ in range(1):
+        unitsB.append(deepcopy(s2))
 
     teamA=Team(unitsA)
     teamB=Team(unitsB)
