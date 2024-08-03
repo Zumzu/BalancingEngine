@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from copy import deepcopy
 
 from Modules.Base import Ammo,Gun,Armour,ArmourSet
+from Modules.Ammo import *
 
 
 def processDamage(rawInput): #helper for scrape
@@ -29,15 +30,23 @@ def scrapeGuns():
 def generateGunList(name='D_Guns.csv'):
     guns=[]
     with open(name,'r') as f:
-        for line in f:
+        for line in f:     
             data=line.split(",")
-            guns.append(Gun(data[0],int(data[1]),int(data[2]),int(data[3]),int(data[4]),int(data[5]),int(data[6]),Ammo()))
+            ammotype=Ammo()
+            if "bow" in data[0].lower():
+                ammotype=Arrow()
+            elif "firecracker" in data[0].lower():
+                ammotype=Firecracker()
+            elif "five-seven" in data[0].lower() or "mp7" in data[0].lower():
+                ammotype=AP()
+                
+            guns.append(Gun(data[0],int(data[1]),int(data[2]),int(data[3]),int(data[4]),int(data[5]),int(data[6]),ammotype))
         
     guns.sort(key=lambda gun: gun.cost)
     return guns
 
 def findGun(name,ammotype=None):
-    prospectGun=None
+    prospectGun:Gun=None
     for gun in GUN_LIST:
         if name.lower() in gun.name.lower():
             if prospectGun is not None:
@@ -47,13 +56,11 @@ def findGun(name,ammotype=None):
 
     if prospectGun is None:
         raise Exception(f'Error: Gun not found by search "{name}"')
-    else:
-        if ammotype is None:
-            prospectGun.ammotype=Ammo()
-        else:
-            prospectGun.ammotype=ammotype
-        
-        return prospectGun
+    
+    if ammotype is not None:
+        prospectGun.ammotype=ammotype
+    
+    return prospectGun
     
 ################################
 

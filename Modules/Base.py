@@ -1,5 +1,6 @@
-from math import ceil, floor
+from math import ceil,floor,inf
 from copy import deepcopy
+
 from Modules.Dice import d10E,d10EDown,d6,locationDie
 
 CLOSE_RANGE=15
@@ -32,12 +33,16 @@ class Gun:
         self.d6=d6
         self.more=more
         self.rof=rof
-        self.mag=mag
+        if mag==-1:
+            self.mag=inf
+        else:
+            self.mag=mag
+
         self.currentAmmo=mag
         self.ammotype=ammotype
     
     def __str__(self) -> str:
-        return f"{self.wa}wa, {self.d6}D6+{self.more}, {self.rof}|{self.mag}"
+        return f"{self.wa}wa, {self.d6}D6+{self.more}, {self.rof}{('|'+str(self.mag)) if self.mag!=inf else ''}"
 
     def getDamage(self):
         total=self.more
@@ -171,7 +176,7 @@ class Unit:
 
     def __str__(self):
         i=0
-        output=f"{self.gun.name}\n{self.armour}{'  -STUN-' if self.stunned else ''}{'  ##UNCON##' if self.uncon else ''}\nCyber: ("
+        output=f"{self.gun.name}  -  {str(self.gun)}  ({self.multiPenalty})\n{self.armour}{'  -STUN-' if self.stunned else ''}{'  ##UNCON##' if self.uncon else ''}\nCyber: ("
         for c in self.cyber:
             output+=f"{'-' if c is None else str(c)},"
         output+="\b)\n["

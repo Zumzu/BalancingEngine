@@ -36,8 +36,8 @@ def clear():
     system('cls')
 
 if __name__=='__main__':
-    s1=Unit(findGun("chief",Incin()),findArmour([12,12,12,12,8,8]),14,7)
-    s2=Unit(findGun("chief"),findArmour([12,12,12,12,8,8]),14,7,cyber=[0,0,20,20,20,20])
+    s1=Unit(findGun("chief"),findArmour([12,18,18,18,15,15]),14,7)
+    s2=Unit(findGun("chief",HP()),findArmour([12,18,18,18,15,15]),14,7)
     while True:
         slowFight(s1,s2)
         s1.reset()

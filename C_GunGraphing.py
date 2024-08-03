@@ -97,9 +97,9 @@ ITERATIONS=3000
 BODY=7
 COOL=7
 WS=15
-ARMOUR=findArmour([14,14,14,14,10,10])
+ARMOUR=findArmour([14,16,16,16,10,10])
 
 if __name__=="__main__":
     guns=generateGunList()
-    plotTTKonCost(guns,"lmg")
+    plotTTKonCost(guns,"mp7")
     #plotInstakillOnCost(guns,"LMG")
