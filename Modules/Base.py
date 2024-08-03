@@ -75,16 +75,13 @@ class ArmourSet:
                     self.sp[i]=a.sp[i]
 
         self.spMax=list(self.sp)
-
         self.ev=0
+        self.mv=0
+        self.cost=0
         for a in self.armour:
             self.ev+=a.ev
-
-        self.mv=0
         for a in self.armour:
             self.mv+=a.mv
-
-        self.cost=0
         for a in self.armour:
             self.cost+=a.cost
 
@@ -314,7 +311,7 @@ class Unit:
 
     def unstun(self): # unit attempts unstun, if they succeed stunned is set to false and this function returns true if they went from stunned to unstunned
         if(self.stunned):
-            if(d10E()<=self.body-self.stunMod()):
+            if(d10E()<=max(self.body,self.cool)-self.stunMod()):
                 self.stunned=False
                 return True
         return False 
