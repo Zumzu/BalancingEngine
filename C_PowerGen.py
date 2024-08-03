@@ -4,7 +4,9 @@ from os import system
 
 from Modules.Base import Unit
 from Modules.Generator import findGun,findArmour
+from Modules.Ammo import *
 from C_FightSim import Team,teamFight
+
 
 class Player:
     def __init__(self,unit:Unit,elo=None,fixed=False):
@@ -92,6 +94,6 @@ if __name__=='__main__':
     #    print(p.unit.cost(),'|',p.elo,'|',p.unit.gun.name)
 
     
-    newbie=Player(Unit(findGun("scorpion"),findArmour([12,10,10,10,10,10]),16,5,5))
+    newbie=Player(Unit(findGun("scorpion",Explosive()),findArmour([12,10,10,10,10,10]),16,5,5))
     simlulateNew(newbie,players,10000)
     print(newbie.unit.cost(),'|',newbie.elo)

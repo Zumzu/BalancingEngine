@@ -244,6 +244,7 @@ class Unit:
         dmg=self.armour.apply(loc,dmg, attacker.gun.ammotype.preferred(self,loc), attacker.gun.ammotype.pierceSP)
 
         if(dmg<=0): # return early if no damage
+            attacker.gun.ammotype.postEffect(self,loc)
             return False
 
         if self.cyber[loc] is None: # if not a cyberlimb

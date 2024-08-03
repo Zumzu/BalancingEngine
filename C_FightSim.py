@@ -124,8 +124,8 @@ if __name__=='__main__':
     u11=Unit(findGun("uzi"),findArmour([14,10,10,10,8,8]),13,6,8)
 
 
-    s1=Unit(findGun("mp7"),findArmour([12,18,18,18,20,20]),14,7)
-    s2=Unit(findGun("viper"),findArmour([12,18,18,18,20,20]),14,7)
+    s1=Unit(findGun("darra"),findArmour([20,20,20,20,20,20]),16,10)
+    s2=Unit(findGun("viper",Explosive()),findArmour([12,12,12,12,8,8]),15,7,8)
 
     for _ in range(1):
         unitsA.append(deepcopy(s1))
