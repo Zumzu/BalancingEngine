@@ -110,20 +110,7 @@ def compareTeam(teamA,teamB):
 
 if __name__=='__main__':
     unitsA,unitsB=[],[]
-
-    u1=Unit(findGun("darra"),findArmour([20,20,20,20,20,20]),16,10)
-    u2=Unit(findGun("viper"),findArmour([12,12,12,12,8,8]),15,7,8)
-    u3=Unit(findGun("police"),findArmour([10,10,10,10,8,8]),12,6)
-    u4=Unit(findGun("l96"),findArmour([14,16,16,16,15,15]),15,8,10)
-    u5=Unit(findGun("scorpion"),findArmour([14,16,16,16,15,15]),15,9)
-    u6=Unit(findGun("sks"),findArmour([14,14,14,14,10,10]),15,7,9)
-    u7=Unit(findGun("pump"),findArmour([14,14,14,14,10,10]),15,9)
-    u8=Unit(findGun("vonya"),findArmour([12,14,14,14,10,10]),16,5,9)
-    u9=Unit(findGun("scout"),findArmour([12,12,12,12,10,10]),15,7)
-    u10=Unit(findGun("chief"),findArmour([12,14,14,14,8,8]),14,7)
-    u11=Unit(findGun("uzi"),findArmour([14,10,10,10,8,8]),13,6,8)
-
-
+    
     s1=Unit(findGun("darra"),findArmour([20,20,20,20,20,20]),16,10)
     s2=Unit(findGun("viper",Explosive()),findArmour([12,12,12,12,8,8]),15,7,8)
 

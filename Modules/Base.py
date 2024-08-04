@@ -53,8 +53,50 @@ class Gun:
     def reload(self):
         self.currentAmmo=self.mag
 
-    def expend(self,bullets=1):
-        self.currentAmmo-=bullets
+    def shoot(self,attacker,enemy):
+        if(self.rof==-1):
+            self.calledShotHead(attacker,enemy)
+        elif(self.rof>=10):
+            self.fullAuto(attacker,enemy)
+        elif(self.rof==3):
+            self.burstAttack(attacker,enemy)
+        else:
+            self.normalAttack(attacker,enemy)
+
+    def calledShotHead(self,attacker,target): # Called shot head, returns true if target dies, false otherwise
+        self.currentAmmo-=1
+        if(attacker.attackRoll()-CALLED_HEAD_PENALTY>=CLOSE_RANGE):
+            if(target.damage(attacker,0)):
+                return True
+        return False
+
+    def normalAttack(self,attacker,target): # Just single fires as many times as it can up to 2, returns true if target dies, false otherwise
+        for _ in range(min(self.rof,2)):
+            self.currentAmmo-=1
+            if(attacker.attackRoll()>=CLOSE_RANGE):
+                if(target.damage(attacker)):
+                    return True
+        return False
+    
+    def burstAttack(self,attacker,target): # Burst, returns true if target dies, false otherwise
+        self.currentAmmo-=3
+        if(attacker.attackRoll()+BURST_BONUS>=CLOSE_RANGE):
+            loc=locationDie()
+            for _ in range(3):
+                if(target.damage(attacker,loc)):
+                    return True
+        return False
+
+    def fullAuto(self,attacker,target): # Full auto, returns true if target dies, false otherwise
+        rof=min(self.currentAmmo,self.rof)
+        self.currentAmmo-=rof
+        bulletsHit=attacker.autoAttackRoll(rof)-(CLOSE_RANGE-1)
+        
+        bulletsHit=min(bulletsHit,rof)
+        for _ in range(bulletsHit):
+            if(target.damage(attacker)):
+                return True
+        return False
 
 class Armour:
     def __init__(self,name:str,cost:int,sp,mv:int,ev:int,type:str='soft'):
@@ -210,7 +252,6 @@ class Unit:
             if c is not None:
                 c.reset()
 
-    
     def attack(self,enemy):
         self.multiPenalty=0
 
@@ -224,27 +265,26 @@ class Unit:
             self.gun.reload()
             self.multiAction()
 
-        if(self.gun.rof==-1):
-            return self.calledShotHead(enemy)
-        elif(self.gun.rof>=10):
-            return self.fullAuto(enemy)
-        elif(self.gun.rof==3):
-            return self.burstAttack(enemy)
-        else:
-            return self.normalAttack(enemy)
+        self.gun.shoot(self,enemy)
+        return enemy.uncon
         
-    def damage(self,attacker,loc=None,dmg=None): # returns true if unit died or went uncon, false otherwise
-        if loc is None:
+    def damage(self,attacker=None,loc:int=-1,dmg:int=-1): # returns true if unit died or went uncon, false otherwise
+        if loc==-1:
             loc=locationDie()
 
-        if dmg is None:
+        if dmg==-1:
+            if attacker is None:
+                raise 'No source of damage, both dmg and attacker are null'
             dmg=attacker.gun.getDamage()
-
-        dmg+=attacker.gun.ammotype.bonusDamage(self,loc)
-        dmg=self.armour.apply(loc,dmg, attacker.gun.ammotype.preferred(self,loc), attacker.gun.ammotype.pierceSP)
+        if attacker is not None:
+            dmg+=attacker.gun.ammotype.bonusDamage(self,loc)
+            dmg=self.armour.apply(loc,dmg, attacker.gun.ammotype.preferred(self,loc), attacker.gun.ammotype.pierceSP)
+        else:
+            dmg=self.armour.apply(loc,dmg,False,0)
 
         if(dmg<=0): # return early if no damage
-            attacker.gun.ammotype.postEffect(self,loc)
+            if attacker is not None:
+                attacker.gun.ammotype.postEffect(self,loc)
             return False
 
         if self.cyber[loc] is None: # if not a cyberlimb
@@ -253,21 +293,24 @@ class Unit:
 
             dmg=max(1,floor(dmg)-self.btm) # apply btm
             self.wounds+=dmg # apply wounds
-            attacker.gun.ammotype.onDamage(self,loc)
+            if attacker is not None:
+                attacker.gun.ammotype.onDamage(self,loc)
 
             if (dmg>=8 and loc!=1) or dmg>=15 or self.wounds>=WOUND_CAP: # check if dies due to headshot or wound cap
                 self.uncon=True #current assumption is that loss of limb is death
             self.rollStun()
 
         else: #limb is cyberlimb
-            if attacker.gun.ammotype.cybercontrol:
-                dmg*=2
-                self.rollStun()
+            if attacker is not None:
+                if attacker.gun.ammotype.cybercontrol:
+                    dmg*=2
+                    self.rollStun()
             self.cyber[loc].damage(dmg)
             if self.cyber[loc].broken:
                 self.uncon=True #current assumption is that loss of limb is death
 
-        attacker.gun.ammotype.postEffect(self,loc)
+        if attacker is not None:
+            attacker.gun.ammotype.postEffect(self,loc)
         return self.uncon# otherwise as a last effort apply stun and return wether or not they die from it
     
     def directToBody(self,dmg:int):
@@ -281,41 +324,6 @@ class Unit:
         if self.uncon:
             return True
         return self.rollStun()
-    
-    def calledShotHead(self,enemy): # Called shot head, returns true if target dies, false otherwise
-        self.gun.currentAmmo-=1
-        if(self.attackRoll()-CALLED_HEAD_PENALTY>=CLOSE_RANGE):
-            if(enemy.damage(self,0)):
-                return True
-        return False
-
-    def normalAttack(self,enemy): # Just single fires as many times as it can up to 2, returns true if target dies, false otherwise
-        for _ in range(min(self.gun.rof,2)):
-            self.gun.expend()
-            if(self.attackRoll()>=CLOSE_RANGE):
-                if(enemy.damage(self)):
-                    return True
-        return False
-    
-    def burstAttack(self,enemy): # Burst, returns true if target dies, false otherwise
-        self.gun.expend(3)
-        if(self.attackRoll()+BURST_BONUS>=CLOSE_RANGE):
-            loc=locationDie()
-            for _ in range(3):
-                if(enemy.damage(self,loc)):
-                    return True
-        return False
-
-    def fullAuto(self,enemy): # Full auto, returns true if target dies, false otherwise
-        rof=min(self.gun.currentAmmo,self.gun.rof)
-        self.gun.expend(rof)
-        bulletsHit=self.autoAttackRoll(rof)-(CLOSE_RANGE-1)
-        
-        bulletsHit=min(bulletsHit,rof)
-        for _ in range(bulletsHit):
-            if(enemy.damage(self)):
-                return True
-        return False
         
     def multiAction(self):
         self.multiPenalty += 2+self.armour.mv
