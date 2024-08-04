@@ -61,8 +61,26 @@ def findGun(name,ammotype=None):
         prospectGun.ammotype=ammotype
     
     return prospectGun
-    
-################################
+
+################################  END GUN  ###  START MELEE
+
+def scrapeMelee():
+    html = requests.get('https://docs.google.com/spreadsheets/d/1Q5rBjDjx-MNGIl-JAVhtFT33W-T9RpQgg4bTRQuFYPA/gviz/tq?tqx=out:html&tq&gid=1296179088').text
+    soup = BeautifulSoup(html, 'lxml') # lxml and bs4 required
+    table = soup.find_all('table')[0]
+    rows = [[td.text for td in row.find_all("td")] for row in table.find_all('tr')] # html magic
+
+    melee=[]
+    for row in rows: # construct Melee
+        if row[16]!='\xa0' and row[16]!='': # data col is used to get ROF, if a line has anything in mag itll try to read it, care
+            d6,more=processDamage(row[4])
+            melee.append([row[0],row[1],row[3],d6,more,row[16],row[6],str(row[7]).lower()])
+
+    with open('D_Melee.csv','w') as f: # save to file, ternary is just to remove last '\n'
+        for m in melee:
+            f.write(','.join(m) + ('\n' if m!=melee[-1] else ''))
+
+################################  END MELEE  ###  START ARMOUR
 
 def processSP(rawInput:str): #helper for scrape
     if 'all' in rawInput.lower():

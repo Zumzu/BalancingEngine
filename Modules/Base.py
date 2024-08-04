@@ -1,5 +1,6 @@
 from math import ceil,floor,inf
 from copy import deepcopy
+from abc import ABC,abstractmethod
 
 from Modules.Dice import d10E,d10EDown,d6,locationDie
 
@@ -25,7 +26,62 @@ class Ammo:
     def postEffect(self,enemyUnit,loc:int):
         pass
 
-class Gun:
+class Weapon(ABC):
+    def __init__(self) -> None:
+        super().__init__()
+        self.name=None
+        self.cost=None
+        self.wa=None
+        self.d6=None
+        self.more=None
+        self.rof=None
+    
+    def getDamage(self):
+        total=self.more
+        for _ in range(self.d6):
+            total+=d6()
+        return total
+    
+    @abstractmethod
+    def attack(self,attacker,enemy):
+        pass
+
+class Melee(Weapon):
+    def __init__(self,name:str,cost:int,wa:int,d6:int,more:int,rof:int,sdp:int,preferred:str):
+        self.name=name
+        self.cost=cost
+        self.wa=wa
+        self.d6=d6
+        self.more=more
+        self.rof=rof
+        self.sdp=sdp
+        self.preferred=preferred
+
+    def __str__(self) -> str:
+        return f"{self.wa}wa, {self.d6}D6+{self.more}, {self.rof}, {self.preferred}"
+
+    def attack(self,attacker,enemy):
+        if self.rof==3:
+            self.burstAttack(attacker,enemy)
+        else:
+            self.normalAttack(attacker,enemy)
+    
+    def normalAttack(self,attacker,target): # Just single fires as many times as it can up to 2, returns true if target dies, false otherwise
+        #for _ in range(min(self.rof,2)):
+        #    if(attacker.attackRoll()>=CLOSE_RANGE): #DEFENDER?
+        #        if(target.damage(attacker)):
+        #            return True
+        return False
+
+    def burstAttack(self,attacker,target): # Burst, returns true if target dies, false otherwise
+        #if(attacker.attackRoll()+BURST_BONUS>=CLOSE_RANGE):
+        #    loc=locationDie()
+        #    for _ in range(3):
+        target.damage(attacker)
+
+
+
+class Gun(Weapon):
     def __init__(self,name:str,cost:int,wa:int,d6:int,more:int,rof:int,mag:int,ammotype:Ammo):
         self.name=name
         self.cost=cost
@@ -43,17 +99,11 @@ class Gun:
     
     def __str__(self) -> str:
         return f"{self.wa}wa, {self.d6}D6+{self.more}, {self.rof}{('|'+str(self.mag)) if self.mag!=inf else ''}"
-
-    def getDamage(self):
-        total=self.more
-        for _ in range(self.d6):
-            total+=d6()
-        return total
     
     def reload(self):
         self.currentAmmo=self.mag
 
-    def shoot(self,attacker,enemy):
+    def attack(self,attacker,enemy):
         if(self.rof==-1):
             self.calledShotHead(attacker,enemy)
         elif(self.rof>=10):
@@ -66,26 +116,20 @@ class Gun:
     def calledShotHead(self,attacker,target): # Called shot head, returns true if target dies, false otherwise
         self.currentAmmo-=1
         if(attacker.attackRoll()-CALLED_HEAD_PENALTY>=CLOSE_RANGE):
-            if(target.damage(attacker,0)):
-                return True
-        return False
+            target.damage(attacker,0)
 
     def normalAttack(self,attacker,target): # Just single fires as many times as it can up to 2, returns true if target dies, false otherwise
         for _ in range(min(self.rof,2)):
             self.currentAmmo-=1
             if(attacker.attackRoll()>=CLOSE_RANGE):
-                if(target.damage(attacker)):
-                    return True
-        return False
+                target.damage(attacker)
     
     def burstAttack(self,attacker,target): # Burst, returns true if target dies, false otherwise
         self.currentAmmo-=3
         if(attacker.attackRoll()+BURST_BONUS>=CLOSE_RANGE):
             loc=locationDie()
             for _ in range(3):
-                if(target.damage(attacker,loc)):
-                    return True
-        return False
+                target.damage(attacker,loc)
 
     def fullAuto(self,attacker,target): # Full auto, returns true if target dies, false otherwise
         rof=min(self.currentAmmo,self.rof)
@@ -94,9 +138,7 @@ class Gun:
         
         bulletsHit=min(bulletsHit,rof)
         for _ in range(bulletsHit):
-            if(target.damage(attacker)):
-                return True
-        return False
+            target.damage(attacker)
 
 class Armour:
     def __init__(self,name:str,cost:int,sp,mv:int,ev:int,type:str='soft'):
@@ -193,7 +235,7 @@ class Barrier:
         
 
 class Unit:
-    def __init__(self,gun:Gun,armour:ArmourSet,ws:int,body:int,cool:int=-1,cyber:list[int]=[0,0,0,0,0,0]):
+    def __init__(self,gun:Weapon,armour:ArmourSet,ws:int,body:int,cool:int=-1,cyber:list[int]=[0,0,0,0,0,0]):
         self.gun=deepcopy(gun)
         self.armour=deepcopy(armour)
         self.ws=ws
@@ -265,7 +307,7 @@ class Unit:
             self.gun.reload()
             self.multiAction()
 
-        self.gun.shoot(self,enemy)
+        self.gun.attack(self,enemy)
         return enemy.uncon
         
     def damage(self,attacker=None,loc:int=-1,dmg:int=-1): # returns true if unit died or went uncon, false otherwise
