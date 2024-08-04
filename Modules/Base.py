@@ -13,7 +13,7 @@ class Ammo:
     def __init__(self):
         self.pierceSP=0
         self.cybercontrol=False
-    
+
     def bonusDamage(self,enemyUnit,loc:int):
         return 0
     
@@ -36,6 +36,24 @@ class Weapon(ABC):
         self.more=None
         self.rof=None
     
+    def bonusDamage(self,enemyUnit,loc:int):
+        return 0
+    
+    def preferred(self,enemyUnit,loc:int):
+        return False
+    
+    def onDamage(self,enemyUnit,loc:int):
+        pass
+
+    def postEffect(self,enemyUnit,loc:int):
+        pass
+
+    def pierceSP(self):
+        return 0
+    
+    def cybercontrol(self):
+        return False
+
     def getDamage(self):
         total=self.more
         for _ in range(self.d6):
@@ -47,7 +65,7 @@ class Weapon(ABC):
         pass
 
 class Melee(Weapon):
-    def __init__(self,name:str,cost:int,wa:int,d6:int,more:int,rof:int,sdp:int,preferred:str):
+    def __init__(self,name:str,cost:int,wa:int,d6:int,more:int,rof:int,sdp:int,pref:str):
         self.name=name
         self.cost=cost
         self.wa=wa
@@ -55,10 +73,10 @@ class Melee(Weapon):
         self.more=more
         self.rof=rof
         self.sdp=sdp
-        self.preferred=preferred
+        self.pref=pref.lower()
 
     def __str__(self) -> str:
-        return f"{self.wa}wa, {self.d6}D6+{self.more}, {self.rof}, {self.preferred}"
+        return f"{self.wa}wa, {self.d6}D6+{self.more}, {self.rof}, {self.pref.capitalize()}"
 
     def attack(self,attacker,enemy):
         if self.rof==3:
@@ -78,6 +96,14 @@ class Melee(Weapon):
         #    loc=locationDie()
         #    for _ in range(3):
         target.damage(attacker)
+
+    def preferred(self,enemyUnit,loc:int):
+        if self.pref=='none':
+            return False
+        elif self.pref=='both' or self.pref=='mono': # temp
+            return True
+        
+        return enemyUnit.armour.typeAt(loc)==self.pref
 
 
 
@@ -139,6 +165,25 @@ class Gun(Weapon):
         bulletsHit=min(bulletsHit,rof)
         for _ in range(bulletsHit):
             target.damage(attacker)
+
+    def bonusDamage(self,enemyUnit,loc:int):
+        return self.ammotype.bonusDamage(enemyUnit,loc)
+    
+    def preferred(self,enemyUnit,loc:int):
+        return self.ammotype.preferred(enemyUnit,loc)
+    
+    def onDamage(self,enemyUnit,loc:int):
+        self.ammotype.onDamage(enemyUnit,loc)
+
+    def postEffect(self,enemyUnit,loc:int):
+        self.ammotype.postEffect(enemyUnit,loc)
+
+    def pierceSP(self):
+        return self.ammotype.pierceSP
+    
+    def cybercontrol(self):
+        return self.ammotype.cybercontrol
+
 
 class Armour:
     def __init__(self,name:str,cost:int,sp,mv:int,ev:int,type:str='soft'):
@@ -235,8 +280,8 @@ class Barrier:
         
 
 class Unit:
-    def __init__(self,gun:Weapon,armour:ArmourSet,ws:int,body:int,cool:int=-1,cyber:list[int]=[0,0,0,0,0,0]):
-        self.gun=deepcopy(gun)
+    def __init__(self,weapon:Weapon,armour:ArmourSet,ws:int,body:int,cool:int=-1,cyber:list[int]=[0,0,0,0,0,0]):
+        self.weapon=deepcopy(weapon)
         self.armour=deepcopy(armour)
         self.ws=ws
         self.body=body
@@ -260,7 +305,7 @@ class Unit:
 
     def __str__(self):
         i=0
-        output=f"{self.gun.name}  -  {str(self.gun)}  ({self.multiPenalty})\n{self.armour}{'  -STUN-' if self.stunned else ''}{'  ##UNCON##' if self.uncon else ''}\nCyber: ("
+        output=f"{self.weapon.name}  -  {str(self.weapon)}  ({self.multiPenalty})\n{self.armour}{'  -STUN-' if self.stunned else ''}{'  ##UNCON##' if self.uncon else ''}\nCyber: ("
         for c in self.cyber:
             output+=f"{'-' if c is None else str(c)},"
         output+="\b)\n["
@@ -283,7 +328,8 @@ class Unit:
         return output[:-1]
 
     def reset(self):
-        self.gun.reload()
+        if type(self.weapon) is Gun:
+            self.weapon.reload()
         self.armour.reset()
         self.wounds=0
         self.multiPenalty=0
@@ -297,17 +343,17 @@ class Unit:
     def attack(self,enemy):
         self.multiPenalty=0
 
-        if(self.unstun()):
+        if self.unstun():
             self.multiAction()
 
-        if(self.stunned):
+        if self.stunned:
             return False
+        if type(self.weapon) is Gun:
+            if self.weapon.currentAmmo<min(abs(self.weapon.rof),10): # if ammo is less than ROF, or 10 if ROF is greater than 10, then reload and apply multiaction
+                self.weapon.reload()
+                self.multiAction()
 
-        if(self.gun.currentAmmo<min(abs(self.gun.rof),10)): # if ammo is less than ROF, or 10 if ROF is greater than 10, then reload and apply multiaction
-            self.gun.reload()
-            self.multiAction()
-
-        self.gun.attack(self,enemy)
+        self.weapon.attack(self,enemy)
         return enemy.uncon
         
     def damage(self,attacker=None,loc:int=-1,dmg:int=-1): # returns true if unit died or went uncon, false otherwise
@@ -317,16 +363,16 @@ class Unit:
         if dmg==-1:
             if attacker is None:
                 raise 'No source of damage, both dmg and attacker are null'
-            dmg=attacker.gun.getDamage()
+            dmg=attacker.weapon.getDamage()
         if attacker is not None:
-            dmg+=attacker.gun.ammotype.bonusDamage(self,loc)
-            dmg=self.armour.apply(loc,dmg, attacker.gun.ammotype.preferred(self,loc), attacker.gun.ammotype.pierceSP)
+            dmg+=attacker.weapon.bonusDamage(self,loc)
+            dmg=self.armour.apply(loc,dmg, attacker.weapon.preferred(self,loc), attacker.weapon.pierceSP())
         else:
             dmg=self.armour.apply(loc,dmg,False,0)
 
         if(dmg<=0): # return early if no damage
             if attacker is not None:
-                attacker.gun.ammotype.postEffect(self,loc)
+                attacker.weapon.postEffect(self,loc)
             return False
 
         if self.cyber[loc] is None: # if not a cyberlimb
@@ -336,7 +382,7 @@ class Unit:
             dmg=max(1,floor(dmg)-self.btm) # apply btm
             self.wounds+=dmg # apply wounds
             if attacker is not None:
-                attacker.gun.ammotype.onDamage(self,loc)
+                attacker.weapon.onDamage(self,loc)
 
             if (dmg>=8 and loc!=1) or dmg>=15 or self.wounds>=WOUND_CAP: # check if dies due to headshot or wound cap
                 self.uncon=True #current assumption is that loss of limb is death
@@ -344,7 +390,7 @@ class Unit:
 
         else: #limb is cyberlimb
             if attacker is not None:
-                if attacker.gun.ammotype.cybercontrol:
+                if attacker.weapon.cybercontrol():
                     dmg*=2
                     self.rollStun()
             self.cyber[loc].damage(dmg)
@@ -352,7 +398,7 @@ class Unit:
                 self.uncon=True #current assumption is that loss of limb is death
 
         if attacker is not None:
-            attacker.gun.ammotype.postEffect(self,loc)
+            attacker.weapon.postEffect(self,loc)
         return self.uncon# otherwise as a last effort apply stun and return wether or not they die from it
     
     def directToBody(self,dmg:int):
@@ -372,13 +418,13 @@ class Unit:
 
     def attackRoll(self):
         output = d10E()
-        output+= self.ws + self.gun.wa
+        output+= self.ws + self.weapon.wa
         output-= self.armour.ev + self.multiPenalty + self.allNegative()
         return output
     
     def autoAttackRoll(self,rof):
         output = d10EDown()
-        output+= self.ws + self.gun.wa + rof//10
+        output+= self.ws + self.weapon.wa + rof//10
         output-= self.armour.ev + self.multiPenalty + self.allNegative()
         return output
 
@@ -408,7 +454,7 @@ class Unit:
         return False 
     
     def cost(self):
-        return self.gun.cost+self.armour.cost
+        return self.weapon.cost+self.armour.cost
 
 
 def bodyToBTM(body):
