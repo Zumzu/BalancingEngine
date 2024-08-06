@@ -341,6 +341,9 @@ class Unit:
                 c.reset()
 
     def attack(self,enemy):
+        if self.uncon:
+            return False
+        
         self.multiPenalty=0
 
         if self.unstun():

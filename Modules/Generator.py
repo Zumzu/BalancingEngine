@@ -46,13 +46,13 @@ def generateGunList(name='D_Guns.csv'):
     return guns
 
 def findGun(name,ammotype=None):
-    prospectGun:Gun=None
+    prospectGun=None
     for gun in GUN_LIST:
         if name.lower() in gun.name.lower():
             if prospectGun is not None:
                 print(f'Warning: Multiple guns found by search "{name}", likely incorrect')
                 break
-            prospectGun=gun
+            prospectGun=deepcopy(gun)
 
     if prospectGun is None:
         raise Exception(f'Error: Gun not found by search "{name}"')

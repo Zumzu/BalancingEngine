@@ -4,9 +4,9 @@ from copy import deepcopy
 from Modules.Base import Unit
 from Modules.Generator import findGun,findArmour
 from Modules.Ammo import *
+from Modules.Dice import d6
 
 FIGHT_TURN_LIMIT=30
-FAVOUR_ITERATIONS=30000
 
 class Team:
     units=[]
@@ -41,7 +41,7 @@ class Team:
             total+=unit.cost()
         return total
     
-def fight(unitA,unitB): # Fight until conclusion, True for unit A, False for unit B. Randomizes engaging unit
+def fight(unitA:Unit,unitB:Unit): # Fight until conclusion, True for unit A, False for unit B. Randomizes engaging unit
     unitA.reset()
     unitB.reset()
     if random() < .5:
@@ -64,10 +64,10 @@ def fight(unitA,unitB): # Fight until conclusion, True for unit A, False for uni
 
 def favour(unitA,unitB): # returns ([0-1 % win for A],[Avg combat length in turns])
     totalWins=0
-    for _ in range(10000):
+    for _ in range(FAVOUR_ITERATIONS):
         totalWins+=1 if fight(unitA,unitB) else 0
 
-    return totalWins/10000
+    return totalWins/FAVOUR_ITERATIONS
 
 def teamFight(teamA,teamB): # Fight until conclusion, True for team A, False for team B. Randomizes engaging team
     teamA=deepcopy(teamA)
@@ -108,17 +108,20 @@ def compareTeam(teamA,teamB):
     results=teamFavor(teamA,teamB)
     print(f'\n[Team A] will win {round(results[0]*100,1)}% of the time, in an average of {round(results[1],1)} turns')
 
+
+FAVOUR_ITERATIONS=10000
+
 if __name__=='__main__':
     unitsA,unitsB=[],[]
     
-    s1=Unit(findGun("darra"),findArmour([20,20,20,20,20,20]),16,10)
-    s2=Unit(findGun("viper",Explosive()),findArmour([12,12,12,12,8,8]),15,7,8)
+    s1=Unit(findGun('police',Incin()),findArmour([14,14,14,14,10,10]),15,8)
+    s2=Unit(findGun('viper'),findArmour([14,14,14,14,10,10]),15,8)
 
     for _ in range(1):
-        unitsA.append(deepcopy(s1))
+        unitsA.append(deepcopy(s2))
 
     for _ in range(1):
-        unitsB.append(deepcopy(s2))
+        unitsB.append(deepcopy(s1))
 
     teamA=Team(unitsA)
     teamB=Team(unitsB)
