@@ -37,10 +37,11 @@ def Instakill(gun,iterations,armour,ws,body,cool):
 
     return successes/iterations
 
-def plotTTKonCost(guns,mark=None):
+def plotTTKonCost(guns,mark:str):
     cost=[]
     ttk=[]
     for gun in guns:
+        m='o'
         if(gun.rof==1):
             color="tab:blue"
         elif(gun.rof==2):
@@ -50,12 +51,13 @@ def plotTTKonCost(guns,mark=None):
         else:#auto
             color="tab:red"
 
-        if(mark is not None and mark.lower() in gun.name.lower()):
-            color="black"
+        if(mark.lower() in gun.name.lower()):
+            color="magenta"
+            m='s'
         
         newCost=gun.cost
         newTTK=TTK(gun,ITERATIONS,ARMOUR,WS,BODY,COOL)
-        plt.scatter(newCost,newTTK,color=color,alpha=0.7,edgecolors='none')
+        plt.scatter(newCost,newTTK,color=color,alpha=0.7,edgecolors='none',marker=m)
         cost.append(newCost)
         ttk.append(newTTK)
 
@@ -72,8 +74,9 @@ def plotTTKonCost(guns,mark=None):
     #a,b=np.polyfit(np.log10(x),y,1)
     #plt.plot(x,a*np.log10(x)+b,color='steelblue',linestyle='--')
 
-def plotInstakillOnCost(guns,mark=None):
+def plotInstakillOnCost(guns,mark:str):
     for gun in guns:
+        m='o'
         if(gun.rof==1):
             color="tab:blue"
         elif(gun.rof==2):
@@ -83,10 +86,11 @@ def plotInstakillOnCost(guns,mark=None):
         else:#auto
             color="tab:red"
 
-        if(mark is not None and mark.lower() in gun.name.lower()):
-            color="black"
+        if(mark.lower() in gun.name.lower()):
+            color="magenta"
+            m='s'
         
-        plt.scatter(gun.cost,Instakill(gun,ITERATIONS,ARMOUR,WS,BODY,COOL),color=color,alpha=0.7,edgecolors='none')
+        plt.scatter(gun.cost,Instakill(gun,ITERATIONS,ARMOUR,WS,BODY,COOL),color=color,marker=m,alpha=0.5,edgecolors='none')
 
     plt.ylabel("Percentile chance to instantly kill")
     plt.xlabel("Cost of weapon")
@@ -97,9 +101,9 @@ ITERATIONS=3000
 BODY=7
 COOL=7
 WS=15
-ARMOUR=findArmour([14,16,16,16,10,10])
+ARMOUR=findArmour([12,12,12,12,8,8])
 
 if __name__=="__main__":
     guns=generateGunList()
-    plotTTKonCost(guns,"mp7")
+    plotTTKonCost(guns,"bow")
     #plotInstakillOnCost(guns,"LMG")

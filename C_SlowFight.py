@@ -7,8 +7,18 @@ from Modules.Ammo import *
 
 #Largely a debugging tool for engine itself to make sure all components are working as they should
 
+def explosive(unit:Unit,dice:int,multiple:int):
+    for _ in range(multiple):
+        dmg=0
+        for _ in range(dice):
+            dmg+=d6()
+        unit.damage(dmg=dmg)
+
+
 def slowFight(unitA,unitB):
     clear()
+    explosive(unitA,6,3) ##TEMP
+
     printState(unitA,unitB,0)
     for i in range(30):
         if(unitA.attack(unitB)):
@@ -36,9 +46,9 @@ def clear():
     system('cls')
 
 if __name__=='__main__':
-    s1=Unit(findGun("viper"),findArmour([12,12,12,12,8,8]),15,7,8)
-    s2=Unit(findGun("desert"),findArmour([20,20,20,20,20,20]),16,10)
-
+    s1=Unit(findGun('darra'),findArmour([14,14,14,14,10,10]),15,8)
+    s2=Unit(findGun('enforcer',HEI()),findArmour([10,10,10,10,8,8]),15,8)
+    
     while True:
         slowFight(s1,s2)
         s1.reset()

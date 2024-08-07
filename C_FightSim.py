@@ -114,8 +114,8 @@ FAVOUR_ITERATIONS=10000
 if __name__=='__main__':
     unitsA,unitsB=[],[]
     
-    s1=Unit(findGun('police',Incin()),findArmour([14,14,14,14,10,10]),15,8)
-    s2=Unit(findGun('viper'),findArmour([14,14,14,14,10,10]),15,8)
+    s1=Unit(findGun('enforcer'),findArmour([10,10,10,10,8,8]),15,8)
+    s2=Unit(findGun('darra'),findArmour([14,14,14,14,10,10]),15,8)
 
     for _ in range(1):
         unitsA.append(deepcopy(s2))

@@ -64,6 +64,17 @@ class Slug(Ammo):
     def preferred(self,enemyUnit:Unit,loc:int):
         return enemyUnit.armour.typeAt(loc)=='hard'
     
+class BuckshotInCQB(Ammo):
+    def bonusDamage(self,enemyUnit,loc: int):
+        return d6()+d6()
+    
+class FlechetteInCQB(Ammo):
+    def bonusDamage(self,enemyUnit,loc: int):
+        return d6()+d6()
+    
+    def preferred(self,enemyUnit:Unit,loc:int):
+        return True
+    
 class Arrow(Ammo):
     def preferred(self,enemyUnit:Unit,loc:int):
         return enemyUnit.armour.typeAt(loc)=='soft'

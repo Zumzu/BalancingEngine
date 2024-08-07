@@ -20,14 +20,32 @@ def difference(unit:Unit):
     output=[round(n,2) for n in output]
     print(output)
 
-GUN='mp5'
-
-a1=Unit(findGun(GUN),findArmour([14,14,14,14,10,10]),15,8)
+GUN1='pump'
+a1=Unit(findGun(GUN1),findArmour([14,14,14,14,10,10]),15,8)
 base=winrates(a1)
 print(base)
 
-a2=Unit(findGun(GUN,Incin()),findArmour([14,14,14,14,10,10]),15,8)
+a2=Unit(findGun(GUN1,BuckshotInCQB()),findArmour([14,14,14,14,10,10]),15,8)
 difference(a2)
 
-a3=Unit(findGun(GUN,HEI()),findArmour([14,14,14,14,10,10]),15,8)
+a3=Unit(findGun(GUN1,FragFlechette()),findArmour([14,14,14,14,10,10]),15,8)
 difference(a3)
+
+a4=Unit(findGun(GUN1,FlechetteInCQB()),findArmour([14,14,14,14,10,10]),15,8)
+difference(a4)
+
+print("\n####\n")
+
+GUN2='vonya'
+a1=Unit(findGun(GUN2),findArmour([14,14,14,14,10,10]),15,8)
+base=winrates(a1)
+print(base)
+
+a2=Unit(findGun(GUN2,BuckshotInCQB()),findArmour([14,14,14,14,10,10]),15,8)
+difference(a2)
+
+a3=Unit(findGun(GUN2,FragFlechette()),findArmour([14,14,14,14,10,10]),15,8)
+difference(a3)
+
+a4=Unit(findGun(GUN2,FlechetteInCQB()),findArmour([14,14,14,14,10,10]),15,8)
+difference(a4)
