@@ -74,33 +74,63 @@ class Melee(Weapon):
         self.rof=rof
         self.sdp=sdp
         self.pref=pref.lower()
+        self.broken=False
 
     def __str__(self) -> str:
         return f"{self.wa}wa, {self.d6}D6+{self.more}, {self.rof}, {self.pref.capitalize()}"
 
     def attack(self,attacker,enemy):
+        if self.broken:
+            return
+        
         if self.rof==3:
             self.burstAttack(attacker,enemy)
         else:
             self.normalAttack(attacker,enemy)
     
-    def normalAttack(self,attacker,target): # Just single fires as many times as it can up to 2, returns true if target dies, false otherwise
-        #for _ in range(min(self.rof,2)):
-        #    if(attacker.attackRoll()>=CLOSE_RANGE): #DEFENDER?
-        #        if(target.damage(attacker)):
-        #            return True
-        return False
+    def normalAttack(self,attacker,target): # Just single fires as many times as it can up to 2
+        for _ in range(min(self.rof,2)):
+            if target.dodge==-1:
+                disparity=attacker.attackRoll()-target.blockRoll()
+                if disparity>=5:
+                    target.damage(attacker) #roll full damage through
+                elif disparity>=0:
+                    target.damage(dmg=target.weapon.damage(self.getDamage())) #roll damage against their weapon and excess goes through
+            else:
+                if attacker.attackRoll()>target.dodgeRoll():
+                    target.damage(attacker) #roll full damage through
+                 
+    def burstAttack(self,attacker,target): # Burst
+        loc=locationDie()
+        if target.dodge==-1:
+            disparity=attacker.attackRoll()+BURST_BONUS-target.blockRoll()
+            if disparity>=5:
+                for _ in range(3):
+                    target.damage(attacker,loc)
+            elif disparity>=0:
+                for _ in range(3):
+                    target.damage(dmg=target.weapon.damage(self.getDamage()))
+        else:
+            if attacker.attackRoll()+BURST_BONUS>target.dodgeRoll():
+                for _ in range(3):
+                    target.damage(attacker,loc)
+            
 
-    def burstAttack(self,attacker,target): # Burst, returns true if target dies, false otherwise
-        #if(attacker.attackRoll()+BURST_BONUS>=CLOSE_RANGE):
-        #    loc=locationDie()
-        #    for _ in range(3):
-        target.damage(attacker)
+    def damage(self,dmg): # returns excess damage
+        if self.broken:
+            return dmg
+
+        output=max(dmg-self.sdp,0)
+        self.sdp=max(self.sdp-dmg,0)
+        if self.sdp<=0:
+            self.broken=True
+
+        return output
 
     def preferred(self,enemyUnit,loc:int):
         if self.pref=='none':
             return False
-        elif self.pref=='both' or self.pref=='mono': # temp
+        elif self.pref=='both' or self.pref=='mono': # temp mono
             return True
         
         return enemyUnit.armour.typeAt(loc)==self.pref
@@ -139,25 +169,25 @@ class Gun(Weapon):
         else:
             self.normalAttack(attacker,enemy)
 
-    def calledShotHead(self,attacker,target): # Called shot head, returns true if target dies, false otherwise
+    def calledShotHead(self,attacker,target): # Called shot head
         self.currentAmmo-=1
         if(attacker.attackRoll()-CALLED_HEAD_PENALTY>=CLOSE_RANGE):
             target.damage(attacker,0)
 
-    def normalAttack(self,attacker,target): # Just single fires as many times as it can up to 2, returns true if target dies, false otherwise
+    def normalAttack(self,attacker,target): # Just single fires as many times as it can up to 2
         for _ in range(min(self.rof,2)):
             self.currentAmmo-=1
             if(attacker.attackRoll()>=CLOSE_RANGE):
                 target.damage(attacker)
     
-    def burstAttack(self,attacker,target): # Burst, returns true if target dies, false otherwise
+    def burstAttack(self,attacker,target): # Burst
         self.currentAmmo-=3
         if(attacker.attackRoll()+BURST_BONUS>=CLOSE_RANGE):
             loc=locationDie()
             for _ in range(3):
                 target.damage(attacker,loc)
 
-    def fullAuto(self,attacker,target): # Full auto, returns true if target dies, false otherwise
+    def fullAuto(self,attacker,target): # Full auto
         rof=min(self.currentAmmo,self.rof)
         self.currentAmmo-=rof
         bulletsHit=attacker.autoAttackRoll(rof)-(CLOSE_RANGE-1)
@@ -280,7 +310,7 @@ class Barrier:
         
 
 class Unit:
-    def __init__(self,weapon:Weapon,armour:ArmourSet,ws:int,body:int,cool:int=-1,cyber:list[int]=[0,0,0,0,0,0]):
+    def __init__(self,weapon:Weapon,armour:ArmourSet,ws:int,body:int,cool:int=-1,dodge:int=-1,cyber:list[int]=[0,0,0,0,0,0]):
         self.weapon=deepcopy(weapon)
         self.armour=deepcopy(armour)
         self.ws=ws
@@ -289,6 +319,7 @@ class Unit:
             self.cool=body
         else:
             self.cool=cool
+        self.dodge=dodge
 
         self.cyber=[]
         for c in cyber:
@@ -429,6 +460,20 @@ class Unit:
         output = d10EDown()
         output+= self.ws + self.weapon.wa + rof//10
         output-= self.armour.ev + self.multiPenalty + self.allNegative()
+        return output
+    
+    def dodgeRoll(self):
+        if self.dodge==-1:
+            raise "Dodge not set"
+        output = d10E()
+        output+= self.dodge
+        output-= self.armour.ev + self.allNegative()
+        return output
+    
+    def blockRoll(self): ## NOTE: DOES NOT FACTOR WEAPON SKILL
+        output = d10E()
+        output+= self.ws
+        output-= self.armour.ev + self.allNegative()
         return output
 
     def stunMod(self):
