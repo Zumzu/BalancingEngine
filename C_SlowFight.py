@@ -17,7 +17,7 @@ def explosive(unit:Unit,dice:int,multiple:int):
 
 def slowFight(unitA,unitB):
     clear()
-    explosive(unitA,6,3) ##TEMP
+    #explosive(unitA,6,3) ##TEMP
 
     printState(unitA,unitB,0)
     for i in range(30):
