@@ -84,36 +84,36 @@ class Melee(Weapon):
             return
         
         if self.rof==3:
-            self.burstAttack(attacker,enemy)
+            self._burstAttack(attacker,enemy)
         else:
-            self.normalAttack(attacker,enemy)
+            self._normalAttack(attacker,enemy)
     
-    def normalAttack(self,attacker,target): # Just single fires as many times as it can up to 2
+    def _normalAttack(self,attacker,target): # Just single fires as many times as it can up to 2
         for _ in range(min(self.rof,2)):
             if target.dodge==-1:
                 disparity=attacker.attackRoll()-target.blockRoll()
                 if disparity>=5:
-                    target.damage(attacker) #roll full damage through
+                    target.damage(self) #roll full damage through
                 elif disparity>=0:
                     target.damage(dmg=target.weapon.damage(self.getDamage())) #roll damage against their weapon and excess goes through
             else:
                 if attacker.attackRoll()>target.dodgeRoll():
-                    target.damage(attacker) #roll full damage through
+                    target.damage(self) #roll full damage through
                  
-    def burstAttack(self,attacker,target): # Burst
+    def _burstAttack(self,attacker,target): # Burst
         loc=locationDie()
         if target.dodge==-1:
             disparity=attacker.attackRoll()+BURST_BONUS-target.blockRoll()
             if disparity>=5:
                 for _ in range(3):
-                    target.damage(attacker,loc)
+                    target.damage(self,loc)
             elif disparity>=0:
                 for _ in range(3):
                     target.damage(dmg=target.weapon.damage(self.getDamage()))
         else:
             if attacker.attackRoll()+BURST_BONUS>target.dodgeRoll():
                 for _ in range(3):
-                    target.damage(attacker,loc)
+                    target.damage(self,loc)
             
 
     def damage(self,dmg): # returns excess damage
@@ -161,40 +161,40 @@ class Gun(Weapon):
 
     def attack(self,attacker,enemy):
         if(self.rof==-1):
-            self.calledShotHead(attacker,enemy)
+            self._calledShotHead(attacker,enemy)
         elif(self.rof>=10):
-            self.fullAuto(attacker,enemy)
+            self._fullAuto(attacker,enemy)
         elif(self.rof==3):
-            self.burstAttack(attacker,enemy)
+            self._burstAttack(attacker,enemy)
         else:
-            self.normalAttack(attacker,enemy)
+            self._normalAttack(attacker,enemy)
 
-    def calledShotHead(self,attacker,target): # Called shot head
+    def _calledShotHead(self,attacker,target): # Called shot head
         self.currentAmmo-=1
         if(attacker.attackRoll()-CALLED_HEAD_PENALTY>=CLOSE_RANGE):
-            target.damage(attacker,0)
+            target.damage(self,0)
 
-    def normalAttack(self,attacker,target): # Just single fires as many times as it can up to 2
+    def _normalAttack(self,attacker,target): # Just single fires as many times as it can up to 2
         for _ in range(min(self.rof,2)):
             self.currentAmmo-=1
             if(attacker.attackRoll()>=CLOSE_RANGE):
-                target.damage(attacker)
+                target.damage(self)
     
-    def burstAttack(self,attacker,target): # Burst
+    def _burstAttack(self,attacker,target): # Burst
         self.currentAmmo-=3
         if(attacker.attackRoll()+BURST_BONUS>=CLOSE_RANGE):
             loc=locationDie()
             for _ in range(3):
-                target.damage(attacker,loc)
+                target.damage(self,loc)
 
-    def fullAuto(self,attacker,target): # Full auto
+    def _fullAuto(self,attacker,target): # Full auto
         rof=min(self.currentAmmo,self.rof)
         self.currentAmmo-=rof
         bulletsHit=attacker.autoAttackRoll(rof)-(CLOSE_RANGE-1)
         
         bulletsHit=min(bulletsHit,rof)
         for _ in range(bulletsHit):
-            target.damage(attacker)
+            target.damage(self)
 
     def bonusDamage(self,enemyUnit,loc:int):
         return self.ammotype.bonusDamage(enemyUnit,loc)
@@ -390,23 +390,23 @@ class Unit:
         self.weapon.attack(self,enemy)
         return enemy.uncon
         
-    def damage(self,attacker=None,loc:int=-1,dmg:int=-1): # returns true if unit died or went uncon, false otherwise
+    def damage(self,weapon=None,loc:int=-1,dmg:int=-1): # returns true if unit died or went uncon, false otherwise
         if loc==-1:
             loc=locationDie()
 
         if dmg==-1:
-            if attacker is None:
-                raise 'No source of damage, both dmg and attacker are null'
-            dmg=attacker.weapon.getDamage()
-        if attacker is not None:
-            dmg+=attacker.weapon.bonusDamage(self,loc)
-            dmg=self.armour.apply(loc,dmg, attacker.weapon.preferred(self,loc), attacker.weapon.pierceSP())
+            if weapon is None:
+                raise 'No source of damage, both dmg and weapon are null'
+            dmg=weapon.getDamage()
+        if weapon is not None:
+            dmg+=weapon.bonusDamage(self,loc)
+            dmg=self.armour.apply(loc,dmg, weapon.preferred(self,loc), weapon.pierceSP())
         else:
             dmg=self.armour.apply(loc,dmg,False,0)
 
         if(dmg<=0): # return early if no damage
-            if attacker is not None:
-                attacker.weapon.postEffect(self,loc)
+            if weapon is not None:
+                weapon.postEffect(self,loc)
             return False
 
         if self.cyber[loc] is None: # if not a cyberlimb
@@ -415,24 +415,24 @@ class Unit:
 
             dmg=max(1,floor(dmg)-self.btm) # apply btm
             self.wounds+=dmg # apply wounds
-            if attacker is not None:
-                attacker.weapon.onDamage(self,loc)
+            if weapon is not None:
+                weapon.onDamage(self,loc)
 
             if (dmg>=8 and loc!=1) or dmg>=15 or self.wounds>=WOUND_CAP: # check if dies due to headshot or wound cap
                 self.uncon=True #current assumption is that loss of limb is death
             self.rollStun()
 
         else: #limb is cyberlimb
-            if attacker is not None:
-                if attacker.weapon.cybercontrol():
+            if weapon is not None:
+                if weapon.cybercontrol():
                     dmg*=2
                     self.rollStun()
             self.cyber[loc].damage(dmg)
             if self.cyber[loc].broken:
                 self.uncon=True #current assumption is that loss of limb is death
 
-        if attacker is not None:
-            attacker.weapon.postEffect(self,loc)
+        if weapon is not None:
+            weapon.postEffect(self,loc)
         return self.uncon# otherwise as a last effort apply stun and return wether or not they die from it
     
     def directToBody(self,dmg:int):
