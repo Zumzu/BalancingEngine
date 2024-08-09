@@ -5,7 +5,7 @@ from sys import exit
 from Modules.Base import Unit
 from Modules.Generator import findGun,findArmour
 
-WIDTH=1429
+WIDTH=1429 #actively clean multiples of hexagons native resolution
 HEIGHT=789
 
 game.init() 
@@ -84,8 +84,8 @@ rarmImg=game.image.load('DT/Body/Rarm.png').convert_alpha()
 llegImg=game.image.load('DT/Body/Lleg.png').convert_alpha()
 rlegImg=game.image.load('DT/Body/Rleg.png').convert_alpha()
 
-tempX=WIDTH//4
-tempY=HEIGHT//4
+tempX=0
+tempY=0
 pressedArrows=[False,False,False,False]
 
 damageTrack1=monospaced.render("[#####][#####][###..][.....][.....]",True,(0,0,0))
@@ -97,6 +97,12 @@ loadInput.font_object=monospaced
 loadSelected=False
 loadHitbox=game.Rect(550,42,250,36)
 
+damageTextLabel=monospacedLarge.render("DAMAGE",True,(0,0,0))
+damageInput=pygame_textinput.TextInputVisualizer()
+damageInput.font_object=monospacedLarge
+damageSelected=False
+damageHitbox=game.Rect(506,320,100,46)
+
 while True: 
     events=game.event.get()
     for event in events: 
@@ -107,11 +113,22 @@ while True:
 
         if event.type == game.MOUSEBUTTONUP:
             loadSelected=loadHitbox.collidepoint(game.mouse.get_pos())
+            damageSelected=damageHitbox.collidepoint(game.mouse.get_pos())
+
+        if event.type == game.KEYDOWN and event.key == game.K_RETURN:
+            if damageSelected:
+                print(damageInput.value)
+
 
     if loadSelected:
         loadInput.update(events)
     else:
         loadInput.cursor_visible=False
+
+    if damageSelected:
+        damageInput.update(events)
+    else:
+        damageInput.cursor_visible=False
     
         
     updateArrows(events)
@@ -131,8 +148,13 @@ while True:
 
     screen.blit(damageTrack1,(38,575))
     screen.blit(damageTrack2,(38,600))
+
     screen.blit(loadTextLabel,(473,45))
     buttonFrame(550,42,250,36)
     screen.blit(loadInput.surface,(556,50))
+
+    screen.blit(damageTextLabel,(506,290))
+    buttonFrame(506,320,100,46)
+    screen.blit(damageInput.surface,(512,328))
 
     game.display.update() 
