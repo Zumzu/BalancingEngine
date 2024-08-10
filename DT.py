@@ -1,6 +1,7 @@
 import pygame_textinput
 import pygame as game
 from sys import exit
+from colour import Color
 
 from Modules.Base import Unit
 from Modules.Generator import findGun,findArmour
@@ -12,7 +13,7 @@ WOUNDCOLOR=(169,18,1)
 GREYWOUNDCOLOR=(200,150,150)
 
 DARKERGREY=(30,30,30)
-DARKGREY=(120,120,120)
+DARKGREY=(100,100,100)
 BASEGREY=(180,180,180)
 LIGHTGREY=(220,220,220)
 
@@ -27,6 +28,7 @@ screen = game.display.set_mode((WIDTH,HEIGHT))
 background=background.convert_alpha()
 game.display.set_caption("Damage Tracker Mk2")
 game.display.set_icon(game.image.load('DT/EngineIco.png'))
+monospacedHuge=game.font.SysFont('consolas',40)
 monospacedLarge=game.font.SysFont('consolas',30)
 monospaced=game.font.SysFont('consolas',20)
 monospacedSmall=game.font.SysFont('consolas',15)
@@ -238,10 +240,18 @@ tempDMG=0
 
 def drawSP(startX,startY,sp,maxSP):
     for i in range(6):
-        drawSPBox(startX+i*63,startY,None,None)
+        drawSPBox(startX+i*63,startY,sp[i],maxSP[i])
 
-def drawSPBox(x,y,sp,maxSP):
-    frame(x,y,63,63,LIGHTGREY)
+spGradient=[Color("white")]
+spGradient+=list(Color("#FBE795").range_to(Color("red"),6))
+
+def drawSPBox(x,y,spValue,maxSPValue):
+    frame(x,y,63,63,DARKGREY)
+    textColor=spGradient[max(min(maxSPValue-spValue,spGradient.__len__()-1),0)]
+    textColor=(textColor.get_red()*255,textColor.get_green()*255,textColor.get_blue()*255)
+    label=monospacedHuge.render(str(spValue),True,textColor)
+    rect=label.get_rect(center=(x+32,y+33))
+    screen.blit(label,rect)
 
 while True: 
     events=game.event.get()
@@ -304,7 +314,7 @@ while True:
     charFrame(30,30,400,600) # char frame
     frame(460,30,WIDTH-490,600,BASEGREY) # main frame
     drawDude(133,63)
-    drawSP(41,557,[],[])
+    drawSP(41,557,[14,13,12,11,6,5],[14,14,14,14,10,10])
 
     loadBlit()
     damageBlit()
