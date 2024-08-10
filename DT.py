@@ -10,7 +10,14 @@ HEIGHT=789
 
 WOUNDCOLOR=(169,18,1)
 GREYWOUNDCOLOR=(200,150,150)
-DARKGREY=(30,30,30)
+
+DARKERGREY=(30,30,30)
+DARKGREY=(120,120,120)
+BASEGREY=(180,180,180)
+LIGHTGREY=(220,220,220)
+
+
+
 
 game.init() 
 
@@ -23,6 +30,9 @@ game.display.set_icon(game.image.load('DT/EngineIco.png'))
 monospacedLarge=game.font.SysFont('consolas',30)
 monospaced=game.font.SysFont('consolas',20)
 monospacedSmall=game.font.SysFont('consolas',15)
+
+clock = game.time.Clock()
+
   
 def updateArrows(events):
     for event in events:
@@ -53,28 +63,31 @@ def fill(surface,rgb):
         for j in range(h):
             surface.set_at((i,j),game.Color(r,g,b,surface.get_at((i,j))[3]))
 
-def frame(x:int,y:int,dx:int,dy:int):
-    game.draw.rect(screen, DARKGREY, game.Rect(x,y,dx,dy), border_radius=5)
-    game.draw.rect(screen, (180,180,180), game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
+def charFrame(x:int,y:int,dx:int,dy:int):
+    game.draw.rect(screen, DARKERGREY, game.Rect(x,y,dx,dy), 4, border_radius=5)
 
-def inputFrame(x:int,y:int,dx:int,dy:int):
-    game.draw.rect(screen, DARKGREY, game.Rect(x,y,dx,dy), border_radius=5)
-    game.draw.rect(screen, (220,220,220), game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
+    s=game.Surface((dx-6,dy-6),game.SRCALPHA)
+    s.fill((180,180,180,230))
+    screen.blit(s,(x+3,y+3))
+
+def frame(x:int,y:int,dx:int,dy:int,rgb:tuple):
+    game.draw.rect(screen, DARKERGREY, game.Rect(x,y,dx,dy), border_radius=5)
+    game.draw.rect(screen, rgb, game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
 
 def buttonFrame(x:int,y:int,dx:int,dy:int,hover:bool):
-    game.draw.rect(screen, DARKGREY, game.Rect(x,y,dx,dy), border_radius=5)
+    game.draw.rect(screen, DARKERGREY, game.Rect(x,y,dx,dy), border_radius=5)
     if hover:
         game.draw.rect(screen, (150,150,150), game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
     else:
         game.draw.rect(screen, (80,80,80), game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
 
 def drawDude(x:int,y:int):
-    screen.blit(headImg,(x+76,y+1))
-    screen.blit(torsoImg,(x+51,y+60))
-    screen.blit(larmImg,(x-1,y+69))
-    screen.blit(rarmImg,(x+131,y+76))
-    screen.blit(llegImg,(x+23,y+215))
-    screen.blit(rlegImg,(x+94,y+213))
+    screen.blit(limbImgs[0],(x+76,y+1))
+    screen.blit(limbImgs[1],(x+51,y+60))
+    screen.blit(limbImgs[2],(x-1,y+69))
+    screen.blit(limbImgs[3],(x+131,y+76))
+    screen.blit(limbImgs[4],(x+23,y+215))
+    screen.blit(limbImgs[5],(x+93,y+213))
     
     drawPointer(x+170,y+150)
     drawPointer(x+135,y+327)
@@ -89,12 +102,13 @@ def drawPointer(x:int,y:int,flip:bool=False):
         game.draw.line(screen, (0,0,0), (x,y), (x+30,y-30), 2)
         game.draw.line(screen, (0,0,0), (x+30,y-30), (x+100,y-30), 2)
 
-headImg=game.image.load('DT/Body/Head.png').convert_alpha()
-torsoImg=game.image.load('DT/Body/Torso.png').convert_alpha()
-larmImg=game.image.load('DT/Body/Larm.png').convert_alpha()
-rarmImg=game.image.load('DT/Body/Rarm.png').convert_alpha()
-llegImg=game.image.load('DT/Body/Lleg.png').convert_alpha()
-rlegImg=game.image.load('DT/Body/Rleg.png').convert_alpha()
+limbImgs=[]
+limbImgs.append(game.image.load('DT/Body/Head.png').convert_alpha())
+limbImgs.append(game.image.load('DT/Body/Torso.png').convert_alpha())
+limbImgs.append(game.image.load('DT/Body/Larm.png').convert_alpha())
+limbImgs.append(game.image.load('DT/Body/Rarm.png').convert_alpha())
+limbImgs.append(game.image.load('DT/Body/Lleg.png').convert_alpha())
+limbImgs.append(game.image.load('DT/Body/Rleg.png').convert_alpha())
 
 tempX=0
 tempY=0
@@ -108,7 +122,7 @@ loadSelected=False
 loadHitbox=game.Rect(550,42,246,36)
 def loadBlit():
     screen.blit(loadTextLabel,(473,45))
-    inputFrame(550,42,246,36)
+    frame(550,42,246,36,LIGHTGREY)
     screen.blit(loadInput.surface,(556,50))
 
 damageTextLabel=monospacedLarge.render("DAMAGE",True,(0,0,0))
@@ -119,7 +133,7 @@ damageSelected=False
 damageHitbox=game.Rect(506,533,116,46)    
 def damageBlit():
     screen.blit(damageTextLabel,(508,503))
-    inputFrame(506,533,116,46)
+    frame(506,533,116,46,LIGHTGREY)
     screen.blit(damageInput.surface,(512,542))
 
 multiplierTextLabel=monospacedLarge.render("X",True,(50,50,50))
@@ -130,7 +144,7 @@ multiplierInput.manager.validator=(lambda x: len(x)<=2 and (str(x).isnumeric() o
 multiplierSelected=False
 multiplierHitbox=game.Rect(656,533,40,46)
 def multiplierBlit():
-    inputFrame(656,533,47,46)
+    frame(656,533,47,46,LIGHTGREY)
     screen.blit(multiplierTextLabel,(631,543))
     screen.blit(multiplierInput.surface,(663,542))
     if multiplierInput.value=='':
@@ -170,7 +184,7 @@ def drawWoundTrack(startX:int,startY:int,endX:int,buffer:int,wounds:int,greyWoun
             offsetX=-24.5*boxSize
             offsetY=50
             
-        rect=woundTrackLabels[i].get_rect(center=(startX+(i+0.5)*5*boxSize+offsetX,startY+offsetY-9))
+        rect=woundTrackLabels[i].get_rect(center=(startX+(i+0.5)*5*boxSize+offsetX,startY+offsetY-7))
         screen.blit(woundTrackLabels[i],rect)
         drawWoundSet(startX+i*5*boxSize+offsetX,startY+offsetY,boxSize,wounds,greyWounds)
         if wounds<5:
@@ -200,7 +214,7 @@ def drawWounds(wounds):
                 greyWounds=wounds-i
                 wounds-=greyWounds
             break
-    frame(30,645,WIDTH//2-15,HEIGHT-675)
+    frame(30,645,WIDTH//2-15,HEIGHT-675,BASEGREY)
     drawWoundTrack(60,670,WIDTH-150,4,wounds,greyWounds)
 
 def generateWoundHitboxes(startX:int,startY:int,endX:int,buffer:int):
@@ -220,8 +234,14 @@ def generateWoundHitboxes(startX:int,startY:int,endX:int,buffer:int):
     return output
 
 woundTrackHitBoxes=generateWoundHitboxes(60,670,WIDTH-150,4)
-
 tempDMG=0
+
+def drawSP(startX,startY,sp,maxSP):
+    for i in range(6):
+        drawSPBox(startX+i*63,startY,None,None)
+
+def drawSPBox(x,y,sp,maxSP):
+    frame(x,y,63,63,LIGHTGREY)
 
 while True: 
     events=game.event.get()
@@ -240,7 +260,6 @@ while True:
                     tempDMG=i
 
         if event.type == game.KEYDOWN and event.key == game.K_RETURN:
-            tempDMG+=1 #TEMMPPP _------------------------------------------------------------------------------
             if damageSelected or multiplierSelected:
                 print(damageInput.value,'x',multiplierInput.value)
 
@@ -273,18 +292,19 @@ while True:
         
     updateArrows(events)
     if pressedArrows[0]:
-        tempX-=0.2
+        tempX-=1.5
     if pressedArrows[1]:
-        tempX+=0.2
+        tempX+=1.5
     if pressedArrows[2]:
-        tempY-=0.2
+        tempY-=1.5
     if pressedArrows[3]:
-        tempY+=0.2
+        tempY+=1.5
     
     screen.blit(background,(0,0))
-    frame(30,30,400,600)
-    frame(460,30,WIDTH-490,600)
+    charFrame(30,30,400,600) # char frame
+    frame(460,30,WIDTH-490,600,BASEGREY) # main frame
     drawDude(133,63)
+    drawSP(41,557,[],[])
 
     loadBlit()
     damageBlit()
@@ -293,6 +313,7 @@ while True:
 
     drawWounds(tempDMG)
 
-    frame(WIDTH//2+30,645,WIDTH//2-60,HEIGHT-675)
+    frame(WIDTH//2+45,645,WIDTH//2-75,HEIGHT-675,BASEGREY)
 
     game.display.update() 
+    clock.tick(30)
