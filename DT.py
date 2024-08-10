@@ -5,6 +5,7 @@ from colour import Color
 
 from Modules.Base import Unit
 from Modules.Generator import findGun,findArmour
+from random import randint
 
 WIDTH=1429 #actively clean multiples of hexagons native resolution
 HEIGHT=789
@@ -236,14 +237,13 @@ def generateWoundHitboxes(startX:int,startY:int,endX:int,buffer:int):
     return output
 
 woundTrackHitBoxes=generateWoundHitboxes(60,670,WIDTH-150,4)
-tempDMG=0
+
+spGradient=[Color("white")]
+spGradient+=list(Color("#FBE795").range_to(Color("red"),8))
 
 def drawSP(startX,startY,sp,maxSP):
     for i in range(6):
         drawSPBox(startX+i*63,startY,sp[i],maxSP[i])
-
-spGradient=[Color("white")]
-spGradient+=list(Color("#FBE795").range_to(Color("red"),6))
 
 def drawSPBox(x,y,spValue,maxSPValue):
     frame(x,y,63,63,DARKGREY)
@@ -253,6 +253,63 @@ def drawSPBox(x,y,spValue,maxSPValue):
     rect=label.get_rect(center=(x+32,y+33))
     screen.blit(label,rect)
 
+def generateSPHitboxes(startX,startY):
+    output=[]
+    for i in range(6):
+        output.append(game.Rect(startX+i*63,startY,63,63))
+    return output
+
+spHitboxes=generateSPHitboxes(41,557)
+
+############### MECHANICAL BELOW
+
+def parseDamage():
+    multi=multiplierInput.value if multiplierInput.value.isnumeric() else 1
+    if 'D' in damageInput.value:
+        d6,temp=damageInput.value.split("D")
+        if '+' in temp:
+            dmg=int(temp.split('+')[-1])
+        elif '-' in temp:
+            dmg=-int(temp.split('-')[-1])
+    elif damageInput.value.isnumeric():
+        dmg=damageInput.value
+    else:
+        raise "Damage Eval Failed"
+    
+    return (int(dmg),int(multi))    
+
+def processDamage():
+    output=0
+    try:
+        input=damageInput.value
+        if '+' in input:
+            input=input.upper().strip().split("+")
+        elif '-' in input:
+            input=input.upper().strip().split("-")
+            input[-1]=str(-int(input[-1]))
+        
+        for item in input:
+            if(item.__contains__("D")):
+                multiple,dieType=item.split("D")
+                if(multiple==""):
+                    multiple=1
+                for _ in range(int(multiple)):
+                    output+=randint(1,int(dieType))
+            else:#its just a number
+                output+=int(item)
+    
+    except:
+        raise "@@FAILED DMG EVAL@@"
+
+    return output
+
+
+def pew():
+    print()
+
+weapon=findGun("streetmaster")
+unit=Unit(None,findArmour([14,16,16,16,10,10]),0,8,9,cyber=[0,0,0,0,0,0])
+
 while True: 
     events=game.event.get()
     for event in events: 
@@ -261,17 +318,22 @@ while True:
             game.quit()
             exit()
 
-        if event.type == game.MOUSEBUTTONUP:
+        if event.type == game.MOUSEBUTTONDOWN and game.mouse.get_pressed()[0]:
             loadSelected=loadHitbox.collidepoint(game.mouse.get_pos())
             damageSelected=damageHitbox.collidepoint(game.mouse.get_pos())
             multiplierSelected=multiplierHitbox.collidepoint(game.mouse.get_pos())
             for i in range(51):
                 if woundTrackHitBoxes[i].collidepoint(game.mouse.get_pos()):
-                    tempDMG=i
+                    unit.wounds=i
+
+        if event.type == game.MOUSEWHEEL:
+            for i in range(6):
+                if spHitboxes[i].collidepoint(game.mouse.get_pos()):
+                    unit.armour.sp[i]=max(min(unit.armour.spMax[i],unit.armour.sp[i]+event.y),0)
 
         if event.type == game.KEYDOWN and event.key == game.K_RETURN:
             if damageSelected or multiplierSelected:
-                print(damageInput.value,'x',multiplierInput.value)
+                pew()
 
         if event.type == game.KEYDOWN and event.key == game.K_TAB:
             if damageSelected:
@@ -314,14 +376,14 @@ while True:
     charFrame(30,30,400,600) # char frame
     frame(460,30,WIDTH-490,600,BASEGREY) # main frame
     drawDude(133,63)
-    drawSP(41,557,[14,13,12,11,6,5],[14,14,14,14,10,10])
+    drawSP(41,557,unit.armour.sp,unit.armour.spMax)
 
     loadBlit()
     damageBlit()
     multiplierBlit()
     pewBlit()
 
-    drawWounds(tempDMG)
+    drawWounds(unit.wounds)
 
     frame(WIDTH//2+45,645,WIDTH//2-75,HEIGHT-675,BASEGREY)
 
