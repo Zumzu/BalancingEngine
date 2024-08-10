@@ -9,6 +9,8 @@ WIDTH=1429 #actively clean multiples of hexagons native resolution
 HEIGHT=789
 
 WOUNDCOLOR=(169,18,1)
+GREYWOUNDCOLOR=(200,150,150)
+DARKGREY=(30,30,30)
 
 game.init() 
 
@@ -52,15 +54,15 @@ def fill(surface,rgb):
             surface.set_at((i,j),game.Color(r,g,b,surface.get_at((i,j))[3]))
 
 def frame(x:int,y:int,dx:int,dy:int):
-    game.draw.rect(screen, (30,30,30), game.Rect(x,y,dx,dy), border_radius=5)
+    game.draw.rect(screen, DARKGREY, game.Rect(x,y,dx,dy), border_radius=5)
     game.draw.rect(screen, (180,180,180), game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
 
 def inputFrame(x:int,y:int,dx:int,dy:int):
-    game.draw.rect(screen, (30,30,30), game.Rect(x,y,dx,dy), border_radius=5)
+    game.draw.rect(screen, DARKGREY, game.Rect(x,y,dx,dy), border_radius=5)
     game.draw.rect(screen, (220,220,220), game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
 
 def buttonFrame(x:int,y:int,dx:int,dy:int,hover:bool):
-    game.draw.rect(screen, (30,30,30), game.Rect(x,y,dx,dy), border_radius=5)
+    game.draw.rect(screen, DARKGREY, game.Rect(x,y,dx,dy), border_radius=5)
     if hover:
         game.draw.rect(screen, (150,150,150), game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
     else:
@@ -153,45 +155,73 @@ woundTrackLabels=[]
 for text in woundTrackText:
     woundTrackLabels.append(monospacedSmall.render(text,True,(0,0,0)))
 
-def drawWoundTrack(startX:int,startY:int,endX:int,buffer:int,wounds:int):
+zeroIconImage=game.image.load('DT/ZeroIco.png')
+zeroIconImage=game.transform.scale(zeroIconImage,(26,26)).convert_alpha()
+def drawWoundTrack(startX:int,startY:int,endX:int,buffer:int,wounds:int,greyWounds:int):
     wounds=max(0,min(50,wounds))
     boxSize=(endX-startX-buffer*10)/50
-    offset=0
+    screen.blit(zeroIconImage,(startX-boxSize+buffer//2,startY-3))
+    
+    offsetX=0
+    offsetY=0
     for i in range(10):
-        offset+=boxSize/2
+        offsetX+=boxSize/2
         if i==5:
-            offset+=boxSize/2
-        rect=woundTrackLabels[i].get_rect(center=(startX+(i+0.5)*5*boxSize+offset,startY-9))
+            offsetX=-24.5*boxSize
+            offsetY=50
+            
+        rect=woundTrackLabels[i].get_rect(center=(startX+(i+0.5)*5*boxSize+offsetX,startY+offsetY-9))
         screen.blit(woundTrackLabels[i],rect)
-        drawWoundSet(startX+i*5*boxSize+offset,startY,boxSize,wounds-5*i)
+        drawWoundSet(startX+i*5*boxSize+offsetX,startY+offsetY,boxSize,wounds,greyWounds)
+        if wounds<5:
+            greyWounds-=(5-wounds)
+        wounds=max(0,wounds-5)
 
-def drawWoundSet(startX:int,startY:int,boxSize:float,wounds:int):
+def drawWoundSet(startX:int,startY:int,boxSize:float,wounds:int,greyWounds:int):
     game.draw.line(screen,(0,0,0),(startX,startY),(startX+boxSize*5,startY),2)
     game.draw.line(screen,(0,0,0),(startX,startY+boxSize),(startX+boxSize*5,startY+boxSize),2)
     for i in range(6):
         game.draw.line(screen,(0,0,0),(startX+boxSize*i,startY),(startX+boxSize*i,startY+boxSize),2)
-    for i in range(max(0,min(wounds,5))):
-        game.draw.line(screen,WOUNDCOLOR,(startX+boxSize*i+6,startY+3),(startX+boxSize*i+int(boxSize)-5,startY+boxSize-2),8)
-        game.draw.line(screen,WOUNDCOLOR,(startX+boxSize*i+6,startY+int(boxSize)-2),(startX+boxSize*i+int(boxSize)-5,startY+3),8)
+    for i in range(5):
+        if i<wounds:
+            game.draw.line(screen,WOUNDCOLOR,(startX+boxSize*i+6,startY+3),(startX+boxSize*i+int(boxSize)-5,startY+boxSize-2),8)
+            game.draw.line(screen,WOUNDCOLOR,(startX+boxSize*i+6,startY+int(boxSize)-2),(startX+boxSize*i+int(boxSize)-5,startY+3),8)
+        elif i<wounds+greyWounds:
+            game.draw.line(screen,GREYWOUNDCOLOR,(startX+boxSize*i+6,startY+3),(startX+boxSize*i+int(boxSize)-5,startY+boxSize-2),8)
+            game.draw.line(screen,GREYWOUNDCOLOR,(startX+boxSize*i+6,startY+int(boxSize)-2),(startX+boxSize*i+int(boxSize)-5,startY+3),8)
 
 def drawWounds(wounds):
-    frame(30,645,WIDTH-60,HEIGHT-675)
-    drawWoundTrack(60,690,WIDTH-160,4,wounds)
+    greyWounds=0
+    for i in range(51):
+        if woundTrackHitBoxes[i].collidepoint(game.mouse.get_pos()):
+            if i>wounds:
+                greyWounds=i-wounds
+            elif i<wounds:
+                greyWounds=wounds-i
+                wounds-=greyWounds
+            break
+    frame(30,645,WIDTH//2-15,HEIGHT-675)
+    drawWoundTrack(60,670,WIDTH-150,4,wounds,greyWounds)
 
 def generateWoundHitboxes(startX:int,startY:int,endX:int,buffer:int):
     output=[]
     boxSize=(endX-startX-buffer*10)/50
-    offset=0
+    output.append(game.Rect((startX-boxSize+buffer//2),startY,boxSize+1,boxSize))
+    offsetX=0
+    offsetY=0
     for i in range(10):
-        offset+=boxSize/2
+        offsetX+=boxSize/2
         if i==5:
-            offset+=boxSize/2
+            offsetX=-24.5*boxSize
+            offsetY=50
         for j in range(5):
-            output.append(game.Rect((startX+i*5*boxSize+offset)+boxSize*j,startY,boxSize,boxSize))
+            output.append(game.Rect((startX+i*5*boxSize+offsetX)+boxSize*j,startY+offsetY,boxSize+1,boxSize))
 
     return output
 
-woundTrackHitBoxes=generateWoundHitboxes(60,690,WIDTH-160,4)
+woundTrackHitBoxes=generateWoundHitboxes(60,670,WIDTH-150,4)
+
+tempDMG=0
 
 while True: 
     events=game.event.get()
@@ -205,8 +235,12 @@ while True:
             loadSelected=loadHitbox.collidepoint(game.mouse.get_pos())
             damageSelected=damageHitbox.collidepoint(game.mouse.get_pos())
             multiplierSelected=multiplierHitbox.collidepoint(game.mouse.get_pos())
+            for i in range(51):
+                if woundTrackHitBoxes[i].collidepoint(game.mouse.get_pos()):
+                    tempDMG=i
 
         if event.type == game.KEYDOWN and event.key == game.K_RETURN:
+            tempDMG+=1 #TEMMPPP _------------------------------------------------------------------------------
             if damageSelected or multiplierSelected:
                 print(damageInput.value,'x',multiplierInput.value)
 
@@ -257,6 +291,8 @@ while True:
     multiplierBlit()
     pewBlit()
 
-    drawWounds(24)
+    drawWounds(tempDMG)
+
+    frame(WIDTH//2+30,645,WIDTH//2-60,HEIGHT-675)
 
     game.display.update() 
