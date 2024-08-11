@@ -29,11 +29,12 @@ screen = game.display.set_mode((WIDTH,HEIGHT))
 background=background.convert_alpha()
 game.display.set_caption("Damage Tracker Mk2")
 game.display.set_icon(game.image.load('DT/EngineIco.png'))
-impact=game.font.SysFont('impact',70)
+impactHuge=game.font.SysFont('impact',70)
 monospacedHuge=game.font.SysFont('consolas',40)
 monospacedLarge=game.font.SysFont('consolas',30)
 monospaced=game.font.SysFont('consolas',20)
 monospacedSmall=game.font.SysFont('consolas',15)
+impactTiny=game.font.SysFont('impact',13)
 
 clock = game.time.Clock()
 
@@ -100,6 +101,7 @@ deadImg=game.image.load('DT/HUD/dead.png').convert_alpha()
 zeroedImg=game.image.load('DT/HUD/zeroed.png').convert_alpha()
 
 shirtImg=game.image.load('DT/HUD/shirt.png').convert_alpha()
+shirt2Img=game.image.load('DT/HUD/shirt2.png').convert_alpha()
 
 def drawHudElements():
     if unit.wounds>=50:
@@ -114,9 +116,11 @@ def drawHudElements():
     elif unit.stunned:
         screen.blit(stunImg,(40,40))  
     
-    #screen.blit(shirtImg,(57,460))
+    #screen.blit(shirt2Img,(57,460))
 
 def drawDude(x:int,y:int):
+    for injury in unit.critInjuries:
+        fill(limbImgs[injury.loc],WOUNDCOLOR)
     screen.blit(limbImgs[0],(x+76,y+1))
     screen.blit(limbImgs[1],(x+51,y+60))
     screen.blit(limbImgs[2],(x-1,y+69))
@@ -127,25 +131,34 @@ def drawDude(x:int,y:int):
     drawPointer(1,x+105,y+85)
     drawPointer(2,x+31,y+151,True)
     drawPointer(3,x+170,y+150)
-    drawPointer(4,x+55,y+321,True)
+    drawPointer(4,x+53,y+327,True)
     drawPointer(5,x+135,y+327)    
 
 def drawPointer(loc:int,x:int,y:int,flip:bool=False):
+    verticalOffset=0
+    draw=False
+    for injury in unit.critInjuries:
+        if injury.loc==loc:
+            draw=True
+    if not draw:
+        return
+    
     if flip:
         game.draw.line(screen, (0,0,0), (x,y), (x-30,y-30), 2)
         game.draw.line(screen, (0,0,0), (x-30,y-30), (x-100,y-30), 2)
         for injury in unit.critInjuries:
             if injury.loc==loc:
-                label=monospacedHuge.render(injury.name,True,WOUNDCOLOR)
-                screen.blit(label,label.get_rect(center=(x-70,y-30)))
-                
+                label=impactTiny.render(injury.name,True,(0,0,0))
+                screen.blit(label,label.get_rect(center=(x-70,y-40+verticalOffset)))
+                verticalOffset-=14
     else:
         game.draw.line(screen, (0,0,0), (x,y), (x+30,y-30), 2)
         game.draw.line(screen, (0,0,0), (x+30,y-30), (x+100,y-30), 2)
         for injury in unit.critInjuries:
             if injury.loc==loc:
-                label=monospacedHuge.render(injury.name,True,WOUNDCOLOR)
-                screen.blit(label,label.get_rect(center=(x+70,y-30)))
+                label=impactTiny.render(injury.name,True,(0,0,0))
+                screen.blit(label,label.get_rect(center=(x+70,y-40+verticalOffset)))
+                verticalOffset-=14
 
 tempX=0
 tempY=0
@@ -259,7 +272,7 @@ def drawWounds(wounds):
         s.fill((30,30,30,200))
         screen.blit(s,(30,645))
 
-        zeroedText=impact.render("Z E R O E D",True,WOUNDCOLOR)
+        zeroedText=impactHuge.render("Z E R O E D",True,WOUNDCOLOR)
         screen.blit(zeroedText,zeroedText.get_rect(center=(394,699)))
 
 
@@ -341,10 +354,6 @@ def pew(loc:int=-1):
 weapon=findGun("streetmaster")
 unit=Unit(None,findArmour([14,16,16,16,10,10]),0,8,9,cyber=[0,0,0,0,0,0])
 
-##TEMP
-#unit.damage(dmg=30,loc=2)
-#unit.damage(dmg=30,loc=5)
-#unit.damage(dmg=30,loc=5)
 
 while True: 
     events=game.event.get()

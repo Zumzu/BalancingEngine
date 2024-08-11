@@ -40,16 +40,20 @@ torsoCritInjuries=[
     CritInjury(-1,"Collapsed Lung","Attack checks are 2 harder, after you attempt a strenuous action (such a sprinting, multiaction), make a stun check",attackPenalty=2)
 ]
 
+headCritInjury=CritInjury(-1,"Headshot","you fucking die lmao, skill issue headass fr fr shoulda bought a better helmet")
+
 
 def critInjuryRoll(loc:int):
-    if loc==1:
+    if loc==0:
+        output=deepcopy(headCritInjury)
+    elif loc==1:
         output=deepcopy(torsoCritInjuries[choice([0,1,1,2,2,3,3,4,4,5])])
     elif loc==2 or loc==3:
         output=deepcopy(armCritInjuries[choice([0,1,2,2,3,3,4,4,5,6])])
     elif loc==4 or loc==5:
         output=deepcopy(legCritInjuries[choice([0,1,2,2,3,3,4,4,5,5])])
     else:
-        raise "Bad location, doesnt support head"
+        raise "Bad location"
 
     output.loc=loc
     return output

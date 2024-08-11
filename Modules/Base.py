@@ -425,6 +425,7 @@ class Unit:
             if loc==0 and dmg>=8:
                 self.uncon=True
                 self.dead=True
+                self.critInjuries.append(critInjuryRoll(loc))
             elif loc!=1 and dmg>=8:
                 self.critInjuries.append(critInjuryRoll(loc))
             elif loc==1 and dmg>=15:
