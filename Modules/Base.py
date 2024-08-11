@@ -422,6 +422,10 @@ class Unit:
             dmg=max(1,floor(dmg)-self.btm) # apply btm
             self.wounds+=dmg # apply wounds
             
+            for injury in self.critInjuries:
+                if 'incomplete' in injury.name.lower() and injury.loc==loc:
+                    injury.breakIncomplete()
+
             if loc==0 and dmg>=8:
                 self.uncon=True
                 self.dead=True

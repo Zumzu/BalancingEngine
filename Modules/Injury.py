@@ -13,6 +13,25 @@ class CritInjury:
         self.attackPenalty=attackPenalty
         self.stunUnconPenalty=stunUnconPenalty
 
+    
+    def breakIncomplete(self):
+        if self.loc==2 or self.loc==3:
+            new=deepcopy(armCritInjuries[2])
+        elif self.loc==4 or self.loc==5:
+            new=deepcopy(legCritInjuries[1])
+        else:
+            raise "Bad location to break"
+        
+        self.name=new.name
+        self.text=new.text
+        self.severity=new.severity
+
+        self.bleedMultiplier=new.bleedMultiplier
+        self.allNegative=new.allNegative
+        self.attackPenalty=new.attackPenalty
+        self.stunUnconPenalty=new.stunUnconPenalty
+        
+
 legCritInjuries=[
     CritInjury(-1,2,"Dismembered Leg","Your leg is unrecoverable, treat as broken leg, and is not removed upon a successful surgery check"),
     CritInjury(-1,1,"Broken Leg","Your MA is limited to 2, DV:15 athletics or fall prone immediately, moving is incredibly painful"),
