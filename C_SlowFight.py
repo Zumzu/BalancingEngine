@@ -37,8 +37,12 @@ def slowFight(unitA,unitB):
 def printState(unitA,unitB,turn):
     print(f"---- Turn {turn} ----")
     print(unitA)
+    for injury in unitA.critInjuries:
+        print(injury.name)
     print('--')
     print(unitB)
+    for injury in unitB.critInjuries:
+        print(injury.name)
     input()
     clear()
         
@@ -46,8 +50,8 @@ def clear():
     system('cls')
 
 if __name__=='__main__':
-    s1=Unit(findGun('darra'),findArmour([14,14,14,14,10,10]),15,8)
-    s2=Unit(findGun('enforcer',HEI()),findArmour([10,10,10,10,8,8]),15,8)
+    s1=Unit(findGun('l96'),findArmour([14,14,14,14,10,10]),15,8)
+    s2=Unit(findGun('m1911'),findArmour([0,10,0,0,0,0]),15,8)
     
     while True:
         slowFight(s1,s2)

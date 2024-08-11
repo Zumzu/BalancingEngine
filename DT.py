@@ -92,18 +92,28 @@ def drawDude(x:int,y:int):
     screen.blit(limbImgs[4],(x+23,y+215))
     screen.blit(limbImgs[5],(x+93,y+213))
     
-    drawPointer(x+170,y+150)
-    drawPointer(x+135,y+327)
-    drawPointer(x+31,y+151,True)
-    drawPointer(x+55,y+321,True)
+    drawPointer(1,x+105,y+85)
+    drawPointer(2,x+31,y+151,True)
+    drawPointer(3,x+170,y+150)
+    drawPointer(4,x+55,y+321,True)
+    drawPointer(5,x+135,y+327)    
 
-def drawPointer(x:int,y:int,flip:bool=False):
+def drawPointer(loc:int,x:int,y:int,flip:bool=False):
     if flip:
         game.draw.line(screen, (0,0,0), (x,y), (x-30,y-30), 2)
         game.draw.line(screen, (0,0,0), (x-30,y-30), (x-100,y-30), 2)
+        for injury in unit.critInjuries:
+            if injury.loc==loc:
+                label=monospacedHuge.render(injury.name,True,WOUNDCOLOR)
+                screen.blit(label,label.get_rect(center=(x-70,y-30)))
+                
     else:
         game.draw.line(screen, (0,0,0), (x,y), (x+30,y-30), 2)
         game.draw.line(screen, (0,0,0), (x+30,y-30), (x+100,y-30), 2)
+        for injury in unit.critInjuries:
+            if injury.loc==loc:
+                label=monospacedHuge.render(injury.name,True,WOUNDCOLOR)
+                screen.blit(label,label.get_rect(center=(x+70,y-30)))
 
 limbImgs=[]
 limbImgs.append(game.image.load('DT/Body/Head.png').convert_alpha())
@@ -112,6 +122,8 @@ limbImgs.append(game.image.load('DT/Body/Larm.png').convert_alpha())
 limbImgs.append(game.image.load('DT/Body/Rarm.png').convert_alpha())
 limbImgs.append(game.image.load('DT/Body/Lleg.png').convert_alpha())
 limbImgs.append(game.image.load('DT/Body/Rleg.png').convert_alpha())
+
+stunImg=game.image.load('DT/HUD/stun.png').convert_alpha()
 
 tempX=0
 tempY=0
@@ -263,31 +275,17 @@ spHitboxes=generateSPHitboxes(41,557)
 
 ############### MECHANICAL BELOW
 
-def parseDamage():
-    multi=multiplierInput.value if multiplierInput.value.isnumeric() else 1
-    if 'D' in damageInput.value:
-        d6,temp=damageInput.value.split("D")
-        if '+' in temp:
-            dmg=int(temp.split('+')[-1])
-        elif '-' in temp:
-            dmg=-int(temp.split('-')[-1])
-    elif damageInput.value.isnumeric():
-        dmg=damageInput.value
-    else:
-        raise "Damage Eval Failed"
-    
-    return (int(dmg),int(multi))    
-
 def processDamage():
     output=0
     try:
         input=damageInput.value
-        if '+' in input:
-            input=input.upper().strip().split("+")
-        elif '-' in input:
+        
+        if '-' in input:
             input=input.upper().strip().split("-")
             input[-1]=str(-int(input[-1]))
-        
+        else:
+            input=input.upper().strip().split("+")
+
         for item in input:
             if(item.__contains__("D")):
                 multiple,dieType=item.split("D")
@@ -297,18 +295,25 @@ def processDamage():
                     output+=randint(1,int(dieType))
             else:#its just a number
                 output+=int(item)
-    
+      
     except:
         raise "@@FAILED DMG EVAL@@"
 
     return output
 
 
-def pew():
-    print()
+def pew(loc:int=-1):
+    multi=int(multiplierInput.value) if multiplierInput.value.isnumeric() else 1
+    for _ in range(multi):
+        unit.damage(dmg=processDamage(),loc=loc)
 
 weapon=findGun("streetmaster")
 unit=Unit(None,findArmour([14,16,16,16,10,10]),0,8,9,cyber=[0,0,0,0,0,0])
+
+##TEMP
+unit.damage(dmg=30,loc=2)
+unit.damage(dmg=30,loc=5)
+unit.damage(dmg=30,loc=5)
 
 while True: 
     events=game.event.get()
@@ -325,6 +330,8 @@ while True:
             for i in range(51):
                 if woundTrackHitBoxes[i].collidepoint(game.mouse.get_pos()):
                     unit.wounds=i
+            if pewHitbox.collidepoint(game.mouse.get_pos()):
+                pew()
 
         if event.type == game.MOUSEWHEEL:
             for i in range(6):
@@ -362,7 +369,7 @@ while True:
         multiplierInput.cursor_visible=False
     
         
-    updateArrows(events)
+    updateArrows(events) ##TEMPP
     if pressedArrows[0]:
         tempX-=1.5
     if pressedArrows[1]:

@@ -3,6 +3,7 @@ from copy import deepcopy
 from abc import ABC,abstractmethod
 
 from Modules.Dice import d10E,d10EDown,d6,locationDie
+from Modules.Injury import critInjuryRoll
 
 CLOSE_RANGE=15
 CALLED_HEAD_PENALTY=8
@@ -307,7 +308,7 @@ class Barrier:
         if self.sp>0:
             self.sp-=1
         return output
-        
+    
 
 class Unit:
     def __init__(self,weapon:Weapon,armour:ArmourSet,ws:int,body:int,cool:int=-1,dodge:int=-1,cyber:list[int]=[0,0,0,0,0,0]):
@@ -333,6 +334,9 @@ class Unit:
         self.stunned=False
         self.aim=False
         self.uncon=False
+        self.dead=False
+
+        self.critInjuries=[]
 
     def __str__(self):
         i=0
@@ -367,9 +371,11 @@ class Unit:
         self.aim=False
         self.stunned=False
         self.uncon=False
+        self.dead=False
         for c in self.cyber:
             if c is not None:
                 c.reset()
+        self.critInjuries=[]
 
     def attack(self,enemy):
         if self.uncon:
@@ -415,11 +421,22 @@ class Unit:
 
             dmg=max(1,floor(dmg)-self.btm) # apply btm
             self.wounds+=dmg # apply wounds
+            
+            if loc==0 and dmg>=8:
+                self.uncon=True
+                self.dead=True
+            elif loc!=1 and dmg>=8:
+                self.critInjuries.append(critInjuryRoll(loc))
+            elif loc==1 and dmg>=15:
+                self.critInjuries.append(critInjuryRoll(loc))
+            
+            if self.wounds>=WOUND_CAP:
+                self.uncon=True
+                self.dead=True
+
             if weapon is not None:
                 weapon.onDamage(self,loc)
 
-            if (dmg>=8 and loc!=1) or dmg>=15 or self.wounds>=WOUND_CAP: # check if dies due to headshot or wound cap
-                self.uncon=True #current assumption is that loss of limb is death
             self.rollStun()
 
         else: #limb is cyberlimb
@@ -433,7 +450,8 @@ class Unit:
 
         if weapon is not None:
             weapon.postEffect(self,loc)
-        return self.uncon# otherwise as a last effort apply stun and return wether or not they die from it
+
+        return self.uncon or self.critInjuries!=[]# otherwise as a last effort apply stun and return wether or not they die from it or gain a crit injury
     
     def directToBody(self,dmg:int):
         if dmg<=0: #return early if no damage
@@ -454,12 +472,16 @@ class Unit:
         output = d10E()
         output+= self.ws + self.weapon.wa
         output-= self.armour.ev + self.multiPenalty + self.allNegative()
+        for injury in self.critInjuries:
+            output-=injury.attackPenalty
         return output
     
     def autoAttackRoll(self,rof):
         output = d10EDown()
         output+= self.ws + self.weapon.wa + rof//10
         output-= self.armour.ev + self.multiPenalty + self.allNegative()
+        for injury in self.critInjuries:
+            output-=injury.attackPenalty
         return output
     
     def dodgeRoll(self):
@@ -477,10 +499,22 @@ class Unit:
         return output
 
     def stunMod(self):
-        return floor((self.wounds-1)/5)
+        output=floor((self.wounds-1)/5)
+        for injury in self.critInjuries:
+            output+=injury.allNegative+injury.stunUnconPenalty
+        return output
+    
+    def unconMod(self):
+        output=self.allNegative()
+        for injury in self.critInjuries:
+            output+=injury.stunUnconPenalty
+        return output
     
     def allNegative(self):
-        return max(floor((self.wounds-1)/5)-3,0)
+        output=max(floor((self.wounds-1)/5)-3,0)
+        for injury in self.critInjuries:
+            output+=injury.allNegative
+        return output
 
     def rollStun(self):
         if(not self.stunned):
@@ -488,7 +522,7 @@ class Unit:
                 self.stunned=True
 
         if(self.stunned and self.wounds>15):
-            if(d10E()>self.body-self.allNegative()):
+            if(d10E()>self.body-self.unconMod()):
                 self.uncon=True
                 return True
 
