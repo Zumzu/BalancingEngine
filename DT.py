@@ -29,6 +29,7 @@ screen = game.display.set_mode((WIDTH,HEIGHT))
 background=background.convert_alpha()
 game.display.set_caption("Damage Tracker Mk2")
 game.display.set_icon(game.image.load('DT/EngineIco.png'))
+impact=game.font.SysFont('impact',70)
 monospacedHuge=game.font.SysFont('consolas',40)
 monospacedLarge=game.font.SysFont('consolas',30)
 monospaced=game.font.SysFont('consolas',20)
@@ -84,6 +85,37 @@ def buttonFrame(x:int,y:int,dx:int,dy:int,hover:bool):
     else:
         game.draw.rect(screen, (80,80,80), game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
 
+limbImgs=[]
+limbImgs.append(game.image.load('DT/Body/Head.png').convert_alpha())
+limbImgs.append(game.image.load('DT/Body/Torso.png').convert_alpha())
+limbImgs.append(game.image.load('DT/Body/Larm.png').convert_alpha())
+limbImgs.append(game.image.load('DT/Body/Rarm.png').convert_alpha())
+limbImgs.append(game.image.load('DT/Body/Lleg.png').convert_alpha())
+limbImgs.append(game.image.load('DT/Body/Rleg.png').convert_alpha())
+
+
+stunImg=game.image.load('DT/HUD/stun.png').convert_alpha()
+unconImg=game.image.load('DT/HUD/uncon.png').convert_alpha()
+deadImg=game.image.load('DT/HUD/dead.png').convert_alpha()
+zeroedImg=game.image.load('DT/HUD/zeroed.png').convert_alpha()
+
+shirtImg=game.image.load('DT/HUD/shirt.png').convert_alpha()
+
+def drawHudElements():
+    if unit.wounds>=50:
+        screen.blit(deadImg,(40,40))
+        screen.blit(zeroedImg,(110,40))
+    elif unit.dead:
+        screen.blit(unconImg,(40,40))
+        screen.blit(deadImg,(110,40))
+    elif unit.uncon:
+        screen.blit(stunImg,(40,40))
+        screen.blit(unconImg,(110,40))
+    elif unit.stunned:
+        screen.blit(stunImg,(40,40))  
+    
+    #screen.blit(shirtImg,(57,460))
+
 def drawDude(x:int,y:int):
     screen.blit(limbImgs[0],(x+76,y+1))
     screen.blit(limbImgs[1],(x+51,y+60))
@@ -114,16 +146,6 @@ def drawPointer(loc:int,x:int,y:int,flip:bool=False):
             if injury.loc==loc:
                 label=monospacedHuge.render(injury.name,True,WOUNDCOLOR)
                 screen.blit(label,label.get_rect(center=(x+70,y-30)))
-
-limbImgs=[]
-limbImgs.append(game.image.load('DT/Body/Head.png').convert_alpha())
-limbImgs.append(game.image.load('DT/Body/Torso.png').convert_alpha())
-limbImgs.append(game.image.load('DT/Body/Larm.png').convert_alpha())
-limbImgs.append(game.image.load('DT/Body/Rarm.png').convert_alpha())
-limbImgs.append(game.image.load('DT/Body/Lleg.png').convert_alpha())
-limbImgs.append(game.image.load('DT/Body/Rleg.png').convert_alpha())
-
-stunImg=game.image.load('DT/HUD/stun.png').convert_alpha()
 
 tempX=0
 tempY=0
@@ -219,6 +241,7 @@ def drawWoundSet(startX:int,startY:int,boxSize:float,wounds:int,greyWounds:int):
             game.draw.line(screen,GREYWOUNDCOLOR,(startX+boxSize*i+6,startY+3),(startX+boxSize*i+int(boxSize)-5,startY+boxSize-2),8)
             game.draw.line(screen,GREYWOUNDCOLOR,(startX+boxSize*i+6,startY+int(boxSize)-2),(startX+boxSize*i+int(boxSize)-5,startY+3),8)
 
+woundsHitbox=game.Rect(30,645,WIDTH//2-15,HEIGHT-675)
 def drawWounds(wounds):
     greyWounds=0
     for i in range(51):
@@ -231,6 +254,14 @@ def drawWounds(wounds):
             break
     frame(30,645,WIDTH//2-15,HEIGHT-675,BASEGREY)
     drawWoundTrack(60,670,WIDTH-150,4,wounds,greyWounds)
+    if wounds>=50 and not woundsHitbox.collidepoint(game.mouse.get_pos()):
+        s=game.Surface((WIDTH//2-15,HEIGHT-675),game.SRCALPHA)
+        s.fill((30,30,30,200))
+        screen.blit(s,(30,645))
+
+        zeroedText=impact.render("Z E R O E D",True,WOUNDCOLOR)
+        screen.blit(zeroedText,zeroedText.get_rect(center=(394,699)))
+
 
 def generateWoundHitboxes(startX:int,startY:int,endX:int,buffer:int):
     output=[]
@@ -311,9 +342,9 @@ weapon=findGun("streetmaster")
 unit=Unit(None,findArmour([14,16,16,16,10,10]),0,8,9,cyber=[0,0,0,0,0,0])
 
 ##TEMP
-unit.damage(dmg=30,loc=2)
-unit.damage(dmg=30,loc=5)
-unit.damage(dmg=30,loc=5)
+#unit.damage(dmg=30,loc=2)
+#unit.damage(dmg=30,loc=5)
+#unit.damage(dmg=30,loc=5)
 
 while True: 
     events=game.event.get()
@@ -382,6 +413,7 @@ while True:
     screen.blit(background,(0,0))
     charFrame(30,30,400,600) # char frame
     frame(460,30,WIDTH-490,600,BASEGREY) # main frame
+    drawHudElements()
     drawDude(133,63)
     drawSP(41,557,unit.armour.sp,unit.armour.spMax)
 
