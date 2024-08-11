@@ -10,6 +10,9 @@ from random import randint
 WIDTH=1429 #actively clean multiples of hexagons native resolution
 HEIGHT=789
 
+BLACK=(0,0,0)
+DARKGREEN=(10,100,10)
+
 WOUNDCOLOR=(169,18,1)
 GREYWOUNDCOLOR=(200,150,150)
 
@@ -131,7 +134,7 @@ def drawDude(x:int,y:int):
     drawPointer(1,x+105,y+85)
     drawPointer(2,x+31,y+151,True)
     drawPointer(3,x+170,y+150)
-    drawPointer(4,x+53,y+327,True)
+    drawPointer(4,x+51,y+334,True)
     drawPointer(5,x+135,y+327)    
 
 def drawPointer(loc:int,x:int,y:int,flip:bool=False):
@@ -144,19 +147,31 @@ def drawPointer(loc:int,x:int,y:int,flip:bool=False):
         return
     
     if flip:
-        game.draw.line(screen, (0,0,0), (x,y), (x-30,y-30), 2)
-        game.draw.line(screen, (0,0,0), (x-30,y-30), (x-100,y-30), 2)
+        game.draw.line(screen, BLACK, (x,y), (x-30,y-30), 2)
+        game.draw.line(screen, BLACK, (x-30,y-30), (x-100,y-30), 2)
         for injury in unit.critInjuries:
             if injury.loc==loc:
-                label=impactTiny.render(injury.name,True,(0,0,0))
+                if injury.severity==0:
+                    textColor=DARKGREEN
+                elif injury.severity==2:
+                    textColor=WOUNDCOLOR
+                else:
+                    textColor=BLACK
+                label=impactTiny.render(injury.name,True,textColor) #innefficient to render at runtime
                 screen.blit(label,label.get_rect(center=(x-70,y-40+verticalOffset)))
                 verticalOffset-=14
     else:
-        game.draw.line(screen, (0,0,0), (x,y), (x+30,y-30), 2)
-        game.draw.line(screen, (0,0,0), (x+30,y-30), (x+100,y-30), 2)
+        game.draw.line(screen, BLACK, (x,y), (x+30,y-30), 2)
+        game.draw.line(screen, BLACK, (x+30,y-30), (x+100,y-30), 2)
         for injury in unit.critInjuries:
             if injury.loc==loc:
-                label=impactTiny.render(injury.name,True,(0,0,0))
+                if injury.severity==0:
+                    textColor=DARKGREEN
+                elif injury.severity==2:
+                    textColor=WOUNDCOLOR
+                else:
+                    textColor=BLACK
+                label=impactTiny.render(injury.name,True,textColor) #innefficient to render at runtime
                 screen.blit(label,label.get_rect(center=(x+70,y-40+verticalOffset)))
                 verticalOffset-=14
 
@@ -164,7 +179,7 @@ tempX=0
 tempY=0
 pressedArrows=[False,False,False,False]
 
-loadTextLabel=monospacedLarge.render("Load",True,(0,0,0))
+loadTextLabel=monospacedLarge.render("Load",True,BLACK)
 loadInput=pygame_textinput.TextInputVisualizer()
 loadInput.font_object=monospaced
 loadInput.manager.validator=(lambda x: len(x)<=21 and str(x).isprintable())
@@ -175,7 +190,7 @@ def loadBlit():
     frame(550,42,246,36,LIGHTGREY)
     screen.blit(loadInput.surface,(556,50))
 
-damageTextLabel=monospacedLarge.render("DAMAGE",True,(0,0,0))
+damageTextLabel=monospacedLarge.render("DAMAGE",True,BLACK)
 damageInput=pygame_textinput.TextInputVisualizer()
 damageInput.font_object=monospacedLarge
 damageInput.manager.validator=(lambda x: x=='' or (len(x)<=6 and (str(x[-1]).isnumeric() or str(x[-1]).lower()=='d') or x[-1]=='+' or x[-1]=='-'))
@@ -200,8 +215,8 @@ def multiplierBlit():
     if multiplierInput.value=='':
         screen.blit(multiplierEmptyFieldLabel,(663,542))
 
-pewTextLabel=monospaced.render("PEW!",True,(0,0,0))
-pewPewTextLabel=monospaced.render("PEW PEW!",True,(0,0,0))
+pewTextLabel=monospaced.render("PEW!",True,BLACK)
+pewPewTextLabel=monospaced.render("PEW PEW!",True,BLACK)
 pewHitbox=game.Rect(724,538,100,36)
 def pewBlit():
     buttonFrame(724,538,110,36,pewHitbox.collidepoint(game.mouse.get_pos()))
@@ -217,7 +232,7 @@ for i in range(7):
 
 woundTrackLabels=[]
 for text in woundTrackText:
-    woundTrackLabels.append(monospacedSmall.render(text,True,(0,0,0)))
+    woundTrackLabels.append(monospacedSmall.render(text,True,BLACK))
 
 zeroIconImage=game.image.load('DT/ZeroIco.png')
 zeroIconImage=game.transform.scale(zeroIconImage,(26,26)).convert_alpha()
@@ -242,10 +257,10 @@ def drawWoundTrack(startX:int,startY:int,endX:int,buffer:int,wounds:int,greyWoun
         wounds=max(0,wounds-5)
 
 def drawWoundSet(startX:int,startY:int,boxSize:float,wounds:int,greyWounds:int):
-    game.draw.line(screen,(0,0,0),(startX,startY),(startX+boxSize*5,startY),2)
-    game.draw.line(screen,(0,0,0),(startX,startY+boxSize),(startX+boxSize*5,startY+boxSize),2)
+    game.draw.line(screen,BLACK,(startX,startY),(startX+boxSize*5,startY),2)
+    game.draw.line(screen,BLACK,(startX,startY+boxSize),(startX+boxSize*5,startY+boxSize),2)
     for i in range(6):
-        game.draw.line(screen,(0,0,0),(startX+boxSize*i,startY),(startX+boxSize*i,startY+boxSize),2)
+        game.draw.line(screen,BLACK,(startX+boxSize*i,startY),(startX+boxSize*i,startY+boxSize),2)
     for i in range(5):
         if i<wounds:
             game.draw.line(screen,WOUNDCOLOR,(startX+boxSize*i+6,startY+3),(startX+boxSize*i+int(boxSize)-5,startY+boxSize-2),8)
@@ -305,7 +320,7 @@ def drawSPBox(x,y,spValue,maxSPValue):
     frame(x,y,63,63,DARKGREY)
     textColor=spGradient[max(min(maxSPValue-spValue,spGradient.__len__()-1),0)]
     textColor=(textColor.get_red()*255,textColor.get_green()*255,textColor.get_blue()*255)
-    label=monospacedHuge.render(str(spValue),True,textColor)
+    label=monospacedHuge.render(str(spValue),True,textColor) #innefficient to render at runtime
     rect=label.get_rect(center=(x+32,y+33))
     screen.blit(label,rect)
 
