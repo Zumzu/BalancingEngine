@@ -194,13 +194,17 @@ def loadBlit():
 
 
 bodyTextLabel=monospacedLarge.render("Body",True,BLACK)
+btmTextLabel=monospaced.render("BTM:",True,BLACK)
 bodyInput=pygame_textinput.TextInputVisualizer()
 bodyInput.font_object=monospacedHuge
 bodyInput.manager.validator=(lambda x: len(x)<=2 and ((str(x).isnumeric() and int(x)<=20 and int(x)>0)or x==''))
 bodySelected=False
 bodyHitbox=game.Rect(471,557,63,63)
 def bodyBlit():
-    screen.blit(bodyTextLabel,(541,574))
+    screen.blit(bodyTextLabel,(541,563))
+    screen.blit(btmTextLabel,(541,596))
+    btmValue=monospaced.render(f"-{str(unit.btm)}",True,BLACK)
+    screen.blit(btmValue,(591,596))
     frame(471,557,63,63,BASEGREY)
     screen.blit(bodyInput.surface,(479,570))
 
@@ -307,6 +311,7 @@ def drawWoundSet(startX:int,startY:int,boxSize:float,wounds:int,greyWounds:int):
             game.draw.line(screen,GREYWOUNDCOLOR,(startX+boxSize*i+6,startY+int(boxSize)-2),(startX+boxSize*i+int(boxSize)-5,startY+3),8)
 
 woundsHitbox=game.Rect(30,645,WIDTH//2-15,HEIGHT-675)
+zeroedText=impactHuge.render("Z E R O E D",True,WOUNDCOLOR)
 def drawWounds(wounds):
     greyWounds=0
     for i in range(51):
@@ -324,7 +329,6 @@ def drawWounds(wounds):
         s.fill((30,30,30,200))
         screen.blit(s,(30,645))
 
-        zeroedText=impactHuge.render("Z E R O E D",True,WOUNDCOLOR)
         screen.blit(zeroedText,zeroedText.get_rect(center=(394,699)))
 
 
@@ -459,6 +463,7 @@ while True:
 
             if bodyHitbox.collidepoint(game.mouse.get_pos()):
                 unit.body=max(min(10,unit.body+event.y),3)
+                unit.btm=bodyToBTM(unit.body)
 
             for i in range(6):
                 if spHitboxes[i].collidepoint(game.mouse.get_pos()):
