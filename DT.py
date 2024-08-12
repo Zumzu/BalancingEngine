@@ -2,9 +2,11 @@ import pygame_textinput
 import pygame as game
 from sys import exit
 from colour import Color
+from copy import deepcopy
 
 from Modules.Base import Unit
 from Modules.Generator import findGun,findArmour
+from Modules.Ammo import *
 from random import randint
 
 WIDTH=1429 #actively clean multiples of hexagons native resolution
@@ -119,7 +121,7 @@ def drawHudElements():
     elif unit.stunned:
         screen.blit(stunImg,(40,40))  
     
-    #screen.blit(shirt2Img,(57,460))
+    #screen.blit(shirtImg,(57,460))
 
 def drawDude(x:int,y:int):
     for injury in unit.critInjuries:
@@ -312,17 +314,30 @@ woundTrackHitBoxes=generateWoundHitboxes(60,670,WIDTH-150,4)
 spGradient=[Color("white")]
 spGradient+=list(Color("#FBE795").range_to(Color("red"),8))
 
+spInputsSelected=[False]*6
+spInputs=[]
+def populateSPInputs():
+    for i in range(6):
+        spInput=pygame_textinput.TextInputVisualizer()
+        spInput.font_object=monospacedHuge
+        spInput.manager.validator=deepcopy(lambda x: len(x)<=2 and (str(x).isnumeric() or x==''))
+        spInput.cursor_color=(255,255,255)
+        spInput.value=str(unit.armour.sp[i])
+        spInputs.append(spInput)
+
+
 def drawSP(startX,startY,sp,maxSP):
     for i in range(6):
-        drawSPBox(startX+i*63,startY,sp[i],maxSP[i])
+        x=startX+i*63
+        y=startY
 
-def drawSPBox(x,y,spValue,maxSPValue):
-    frame(x,y,63,63,DARKGREY)
-    textColor=spGradient[max(min(maxSPValue-spValue,spGradient.__len__()-1),0)]
-    textColor=(textColor.get_red()*255,textColor.get_green()*255,textColor.get_blue()*255)
-    label=monospacedHuge.render(str(spValue),True,textColor) #innefficient to render at runtime
-    rect=label.get_rect(center=(x+32,y+33))
-    screen.blit(label,rect)
+        frame(x,y,63,63,DARKGREY)
+        textColor=spGradient[max(min(maxSP[i]-sp[i],spGradient.__len__()-1),0)]
+        textColor=(textColor.get_red()*255,textColor.get_green()*255,textColor.get_blue()*255)
+        spInputs[i].font_color=textColor
+
+        screen.blit(spInputs[i].surface,(x+10,y+13))
+    
 
 def generateSPHitboxes(startX,startY):
     output=[]
@@ -369,6 +384,7 @@ def pew(loc:int=-1):
 weapon=findGun("streetmaster")
 unit=Unit(None,findArmour([14,16,16,16,10,10]),0,8,9,cyber=[0,0,0,0,0,0])
 
+populateSPInputs()
 
 while True: 
     events=game.event.get()
@@ -388,6 +404,10 @@ while True:
             if pewHitbox.collidepoint(game.mouse.get_pos()):
                 pew()
 
+            for i in range(6):
+                spInputsSelected[i]=spHitboxes[i].collidepoint(game.mouse.get_pos())
+
+
         if event.type == game.MOUSEWHEEL:
             for i in range(6):
                 if spHitboxes[i].collidepoint(game.mouse.get_pos()):
@@ -396,6 +416,8 @@ while True:
         if event.type == game.KEYDOWN and event.key == game.K_RETURN:
             if damageSelected or multiplierSelected:
                 pew()
+            for i in range(6):
+                spInputsSelected[i]=False
 
         if event.type == game.KEYDOWN and event.key == game.K_TAB:
             if damageSelected:
@@ -404,6 +426,11 @@ while True:
             elif multiplierSelected:
                 multiplierSelected=False
                 damageSelected=True
+            for i in range(6):
+                if spInputsSelected[i]:
+                    spInputsSelected[i]=False
+                    spInputsSelected[(i+1)%6]=True
+                    break
 
 
     if loadSelected:
@@ -422,6 +449,16 @@ while True:
         multiplierInput.update(events)
     else:
         multiplierInput.cursor_visible=False
+
+    for i in range(6):
+        if spInputsSelected[i]:
+            spInputs[i].manager.cursor_pos=2
+            spInputs[i].update(events)
+            unit.armour.sp[i]=int(spInputs[i].value if spInputs[i].value.isnumeric() else 1)
+            unit.armour.spMax[i]=int(spInputs[i].value if spInputs[i].value.isnumeric() else 1)
+        else:
+            spInputs[i].value=str(unit.armour.sp[i])
+            spInputs[i].cursor_visible=False
     
         
     updateArrows(events) ##TEMPP
