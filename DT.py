@@ -4,7 +4,7 @@ from sys import exit
 from colour import Color
 from copy import deepcopy
 
-from Modules.Base import Unit
+from Modules.Base import Unit,bodyToBTM
 from Modules.Generator import findGun,findArmour
 from Modules.Ammo import *
 from random import randint
@@ -179,29 +179,64 @@ def drawPointer(loc:int,x:int,y:int,flip:bool=False):
 
 tempX=0
 tempY=0
-pressedArrows=[False,False,False,False]
+pressedArrows=[False]*4
 
 loadTextLabel=monospacedLarge.render("Load",True,BLACK)
 loadInput=pygame_textinput.TextInputVisualizer()
 loadInput.font_object=monospaced
 loadInput.manager.validator=(lambda x: len(x)<=21 and str(x).isprintable())
 loadSelected=False
-loadHitbox=game.Rect(550,42,246,36)
+loadHitbox=game.Rect(50,42,246,36)
 def loadBlit():
     screen.blit(loadTextLabel,(473,45))
     frame(550,42,246,36,LIGHTGREY)
     screen.blit(loadInput.surface,(556,50))
+
+
+bodyTextLabel=monospacedLarge.render("Body",True,BLACK)
+bodyInput=pygame_textinput.TextInputVisualizer()
+bodyInput.font_object=monospacedHuge
+bodyInput.manager.validator=(lambda x: len(x)<=2 and ((str(x).isnumeric() and int(x)<=20 and int(x)>0)or x==''))
+bodySelected=False
+bodyHitbox=game.Rect(471,557,63,63)
+def bodyBlit():
+    screen.blit(bodyTextLabel,(541,574))
+    frame(471,557,63,63,BASEGREY)
+    screen.blit(bodyInput.surface,(479,570))
+
+
+coolTextLabel=monospacedLarge.render("Cool",True,BLACK)
+coolInput=pygame_textinput.TextInputVisualizer()
+coolInput.font_object=monospacedHuge
+coolInput.manager.validator=(lambda x: len(x)<=2 and ((str(x).isnumeric() and int(x)<=20 and int(x)>0)or x==''))
+coolSelected=False
+coolHitbox=game.Rect(471,488,63,63)
+def coolBlit():
+    screen.blit(coolTextLabel,(541,505))
+    frame(471,488,63,63,BASEGREY)
+    screen.blit(coolInput.surface,(479,501))
+
+def populateBody():
+    bodyInput.value=str(unit.body)
+    bodyInput.manager.cursor_pos=2
+
+    coolInput.value=str(unit.cool)
+    coolInput.manager.cursor_pos=2
+
+
+DAMAGEX=780
+DAMAGEY=660
 
 damageTextLabel=monospacedLarge.render("DAMAGE",True,BLACK)
 damageInput=pygame_textinput.TextInputVisualizer()
 damageInput.font_object=monospacedLarge
 damageInput.manager.validator=(lambda x: x=='' or (len(x)<=6 and (str(x[-1]).isnumeric() or str(x[-1]).lower()=='d') or x[-1]=='+' or x[-1]=='-'))
 damageSelected=False
-damageHitbox=game.Rect(506,533,116,46)    
+damageHitbox=game.Rect(DAMAGEX+6,DAMAGEY+33,116,46)    
 def damageBlit():
-    screen.blit(damageTextLabel,(508,503))
-    frame(506,533,116,46,LIGHTGREY)
-    screen.blit(damageInput.surface,(512,542))
+    screen.blit(damageTextLabel,(DAMAGEX+8,DAMAGEY+3))
+    frame(DAMAGEX+6,DAMAGEY+33,116,46,LIGHTGREY)
+    screen.blit(damageInput.surface,(DAMAGEX+12,DAMAGEY+42))
 
 multiplierTextLabel=monospacedLarge.render("X",True,(50,50,50))
 multiplierEmptyFieldLabel=monospacedLarge.render("1",True,(50,50,50))
@@ -209,23 +244,23 @@ multiplierInput=pygame_textinput.TextInputVisualizer()
 multiplierInput.font_object=monospacedLarge
 multiplierInput.manager.validator=(lambda x: len(x)<=2 and (str(x).isnumeric() or x==''))
 multiplierSelected=False
-multiplierHitbox=game.Rect(656,533,40,46)
+multiplierHitbox=game.Rect(DAMAGEX+156,DAMAGEY+33,40,46)
 def multiplierBlit():
-    frame(656,533,47,46,LIGHTGREY)
-    screen.blit(multiplierTextLabel,(631,543))
-    screen.blit(multiplierInput.surface,(663,542))
+    frame(DAMAGEX+156,DAMAGEY+33,47,46,LIGHTGREY)
+    screen.blit(multiplierTextLabel,(DAMAGEX+131,DAMAGEY+43))
+    screen.blit(multiplierInput.surface,(DAMAGEX+163,DAMAGEY+42))
     if multiplierInput.value=='':
-        screen.blit(multiplierEmptyFieldLabel,(663,542))
+        screen.blit(multiplierEmptyFieldLabel,(DAMAGEX+163,DAMAGEY+42))
 
 pewTextLabel=monospaced.render("PEW!",True,BLACK)
 pewPewTextLabel=monospaced.render("PEW PEW!",True,BLACK)
-pewHitbox=game.Rect(724,538,100,36)
+pewHitbox=game.Rect(DAMAGEX+224,DAMAGEY+38,100,36)
 def pewBlit():
-    buttonFrame(724,538,110,36,pewHitbox.collidepoint(game.mouse.get_pos()))
+    buttonFrame(DAMAGEX+224,DAMAGEY+38,110,36,pewHitbox.collidepoint(game.mouse.get_pos()))
     if multiplierInput.value=='' or multiplierInput.value=='1':
-        screen.blit(pewTextLabel,(759,547))
+        screen.blit(pewTextLabel,(DAMAGEX+259,DAMAGEY+47))
     else:
-        screen.blit(pewPewTextLabel,(735,547))
+        screen.blit(pewPewTextLabel,(DAMAGEX+235,DAMAGEY+47))
 
 
 woundTrackText=['LIGHT','SERIOUS','CRITICAL']
@@ -330,8 +365,13 @@ def drawSP(startX,startY,sp,maxSP):
     for i in range(6):
         x=startX+i*63
         y=startY
-
-        frame(x,y,63,63,DARKGREY)
+        frameColor=DARKGREY
+        if i==1:
+            frameColor=(60,60,60)
+        elif i==4 or i==5:
+            frameColor=(80,80,80)
+        
+        frame(x,y,63,63,frameColor)
         textColor=spGradient[max(min(maxSP[i]-sp[i],spGradient.__len__()-1),0)]
         textColor=(textColor.get_red()*255,textColor.get_green()*255,textColor.get_blue()*255)
         spInputs[i].font_color=textColor
@@ -377,6 +417,8 @@ def processDamage():
 
 
 def pew(loc:int=-1):
+    if damageInput.value=='':
+        return
     multi=int(multiplierInput.value) if multiplierInput.value.isnumeric() else 1
     for _ in range(multi):
         unit.damage(dmg=processDamage(),loc=loc)
@@ -384,6 +426,7 @@ def pew(loc:int=-1):
 weapon=findGun("streetmaster")
 unit=Unit(None,findArmour([14,16,16,16,10,10]),0,8,9,cyber=[0,0,0,0,0,0])
 
+populateBody()
 populateSPInputs()
 
 while True: 
@@ -398,6 +441,8 @@ while True:
             loadSelected=loadHitbox.collidepoint(game.mouse.get_pos())
             damageSelected=damageHitbox.collidepoint(game.mouse.get_pos())
             multiplierSelected=multiplierHitbox.collidepoint(game.mouse.get_pos())
+            bodySelected=bodyHitbox.collidepoint(game.mouse.get_pos())
+            coolSelected=coolHitbox.collidepoint(game.mouse.get_pos())
             for i in range(51):
                 if woundTrackHitBoxes[i].collidepoint(game.mouse.get_pos()):
                     unit.wounds=i
@@ -409,6 +454,12 @@ while True:
 
 
         if event.type == game.MOUSEWHEEL:
+            if coolHitbox.collidepoint(game.mouse.get_pos()):
+                unit.cool=max(min(10,unit.cool+event.y),3)
+
+            if bodyHitbox.collidepoint(game.mouse.get_pos()):
+                unit.body=max(min(10,unit.body+event.y),3)
+
             for i in range(6):
                 if spHitboxes[i].collidepoint(game.mouse.get_pos()):
                     unit.armour.sp[i]=max(min(unit.armour.spMax[i],unit.armour.sp[i]+event.y),0)
@@ -418,6 +469,8 @@ while True:
                 pew()
             for i in range(6):
                 spInputsSelected[i]=False
+            bodySelected=False
+            coolSelected=False
 
         if event.type == game.KEYDOWN and event.key == game.K_TAB:
             if damageSelected:
@@ -450,6 +503,23 @@ while True:
     else:
         multiplierInput.cursor_visible=False
 
+    if bodySelected:
+        bodyInput.manager.cursor_pos=2
+        bodyInput.update(events)
+        unit.body=int(bodyInput.value if bodyInput.value.isnumeric() else 1)
+        unit.btm=bodyToBTM(unit.body)
+    else:
+        bodyInput.cursor_visible=False
+        bodyInput.value=str(unit.body)
+
+    if coolSelected:
+        coolInput.manager.cursor_pos=2
+        coolInput.update(events)
+        unit.cool=int(coolInput.value if coolInput.value.isnumeric() else 1)
+    else:
+        coolInput.cursor_visible=False
+        coolInput.value=str(unit.cool)
+
     for i in range(6):
         if spInputsSelected[i]:
             spInputs[i].manager.cursor_pos=2
@@ -479,13 +549,16 @@ while True:
     drawSP(41,557,unit.armour.sp,unit.armour.spMax)
 
     loadBlit()
-    damageBlit()
-    multiplierBlit()
-    pewBlit()
+    bodyBlit()
+    coolBlit()
 
     drawWounds(unit.wounds)
 
     frame(WIDTH//2+45,645,WIDTH//2-75,HEIGHT-675,BASEGREY)
+    
+    damageBlit()
+    multiplierBlit()
+    pewBlit()
 
     game.display.update() 
     clock.tick(30)
