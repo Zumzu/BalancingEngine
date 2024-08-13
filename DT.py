@@ -24,8 +24,6 @@ BASEGREY=(180,180,180)
 LIGHTGREY=(220,220,220)
 
 
-
-
 game.init() 
 
 background=game.image.load('DT/Hexagons.png')
@@ -186,7 +184,7 @@ loadInput=pygame_textinput.TextInputVisualizer()
 loadInput.font_object=monospaced
 loadInput.manager.validator=(lambda x: len(x)<=21 and str(x).isprintable())
 loadSelected=False
-loadHitbox=game.Rect(50,42,246,36)
+loadHitbox=game.Rect(550,42,246,36)
 def loadBlit():
     screen.blit(loadTextLabel,(473,45))
     frame(550,42,246,36,LIGHTGREY)
@@ -201,8 +199,8 @@ bodyInput.manager.validator=(lambda x: len(x)<=2 and ((str(x).isnumeric() and in
 bodySelected=False
 bodyHitbox=game.Rect(471,557,63,63)
 def bodyBlit():
-    screen.blit(bodyTextLabel,(541,563))
-    screen.blit(btmTextLabel,(541,596))
+    screen.blit(bodyTextLabel,(539,563))
+    screen.blit(btmTextLabel,(540,596))
     btmValue=monospaced.render(f"-{str(unit.btm)}",True,BLACK)
     screen.blit(btmValue,(591,596))
     frame(471,557,63,63,BASEGREY)
@@ -216,16 +214,13 @@ coolInput.manager.validator=(lambda x: len(x)<=2 and ((str(x).isnumeric() and in
 coolSelected=False
 coolHitbox=game.Rect(471,488,63,63)
 def coolBlit():
-    screen.blit(coolTextLabel,(541,505))
+    screen.blit(coolTextLabel,(539,505))
     frame(471,488,63,63,BASEGREY)
     screen.blit(coolInput.surface,(479,501))
 
 def populateBody():
     bodyInput.value=str(unit.body)
-    bodyInput.manager.cursor_pos=2
-
     coolInput.value=str(unit.cool)
-    coolInput.manager.cursor_pos=2
 
 
 DAMAGEX=780
@@ -488,6 +483,7 @@ while True:
                 if spInputsSelected[i]:
                     spInputsSelected[i]=False
                     spInputsSelected[(i+1)%6]=True
+                    spInputs[(i+1)%6].value=''
                     break
 
 
