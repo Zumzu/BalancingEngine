@@ -23,7 +23,7 @@ DARKGREY=(100,100,100)
 BASEGREY=(180,180,180)
 LIGHTGREY=(220,220,220)
 
-#Ammotype
+#Called Shot
 #Cyberware
 #Barrier
 #Log
@@ -404,22 +404,27 @@ def drawSP(startX,startY,sp,maxSP):
             frameColor=(60,60,60)
         elif i==4 or i==5:
             frameColor=(80,80,80)
-        
+
         frame(x,y,63,63,frameColor)
         textColor=spGradient[max(min(maxSP[i]-sp[i],spGradient.__len__()-1),0)]
         textColor=(textColor.get_red()*255,textColor.get_green()*255,textColor.get_blue()*255)
         spInputs[i].font_color=textColor
-
+        
         if len(spInputs[i].value)==2:
             screen.blit(spInputs[i].surface,(x+10,y+13))
         else:
             screen.blit(spInputs[i].surface,(x+21,y+13))
 
+        if unit.armour.typeAt(i)=='soft':
+            game.draw.polygon(screen,(255,182,0),((x+3,y+3),(x+12,y+3),(x+3,y+12)))
+        else:
+            game.draw.polygon(screen,(230,60,13),((x+3,y+3),(x+12,y+3),(x+3,y+12)))
+
 def generateSPHitboxes(startX,startY):
-    output=[]
+    spHitboxes=[]
     for i in range(6):
-        output.append(game.Rect(startX+i*63,startY,63,63))
-    return output
+        spHitboxes.append(game.Rect(startX+i*63,startY,63,63))
+    return spHitboxes
 
 spHitboxes=generateSPHitboxes(41,557)
 
@@ -506,6 +511,11 @@ while True:
 
             if stunHudHitbox.collidepoint(game.mouse.get_pos()):
                 unit.stunned=False
+
+        if event.type == game.MOUSEBUTTONDOWN and game.mouse.get_pressed()[2]:
+            for i in range(6):
+                if spHitboxes[i].collidepoint(game.mouse.get_pos()):
+                    unit.armour.type[i]='hard' if unit.armour.typeAt(i)=='soft' else 'soft'
 
         if event.type == game.MOUSEWHEEL:
             if coolHitbox.collidepoint(game.mouse.get_pos()):
