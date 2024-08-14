@@ -23,6 +23,10 @@ DARKGREY=(100,100,100)
 BASEGREY=(180,180,180)
 LIGHTGREY=(220,220,220)
 
+#Ammotype
+#Cyberware
+#Barrier
+#Log
 
 game.init() 
 
