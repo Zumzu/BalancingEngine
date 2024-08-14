@@ -90,14 +90,14 @@ class FragFlechette(Ammo):
 class Cybercontrol(Ammo):
     def __init__(self):
         super().__init__()
-        self.name="Cybercontrol Rounds"
+        self.name="Cybercontrol Round"
         self.desc="Deals 2x SDP damage on cyber limbs, robotics, or other electronics. When dealing damage to a cyberlimb, its owner to makes a stun check."
         self.cybercontrol=True
 
 class CybercontrolSlug(Ammo):
     def __init__(self):
         super().__init__()
-        self.name="Cybercontrol Slugs"
+        self.name="Cybercontrol Slug"
         self.desc="Slug, additionally deals 2x SDP damage on cyber limbs, robotics, or other electronics. When dealing damage to a cyberlimb, its owner to makes a stun check"
         self.cybercontrol=True
     

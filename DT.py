@@ -39,7 +39,8 @@ game.display.set_icon(game.image.load('DT/EngineIco.png'))
 impactHuge=game.font.SysFont('impact',70)
 monospacedHuge=game.font.SysFont('consolas',40)
 monospacedLarge=game.font.SysFont('consolas',30)
-monospaced=game.font.SysFont('consolas',20)
+monospacedMediumLarge=game.font.SysFont('consolas',23)
+monospacedMedium=game.font.SysFont('consolas',20)
 monospacedSmall=game.font.SysFont('consolas',15)
 impactTiny=game.font.SysFont('impact',13)
 
@@ -195,7 +196,7 @@ pressedArrows=[False]*4
 
 loadTextLabel=monospacedLarge.render("Load",True,BLACK)
 loadInput=pygame_textinput.TextInputVisualizer()
-loadInput.font_object=monospaced
+loadInput.font_object=monospacedMedium
 loadInput.manager.validator=(lambda x: len(x)<=21 and str(x).isprintable())
 loadSelected=False
 loadHitbox=game.Rect(550,42,246,36)
@@ -206,7 +207,7 @@ def loadBlit():
 
 
 bodyTextLabel=monospacedLarge.render("Body",True,BLACK)
-btmTextLabel=monospaced.render("BTM:",True,BLACK)
+btmTextLabel=monospacedMedium.render("BTM:",True,BLACK)
 bodyInput=pygame_textinput.TextInputVisualizer()
 bodyInput.font_object=monospacedHuge
 bodyInput.manager.validator=(lambda x: len(x)<=2 and ((str(x).isnumeric() and int(x)<=20 and int(x)>0)or x==''))
@@ -215,7 +216,7 @@ bodyHitbox=game.Rect(471,557,63,63)
 def bodyBlit():
     screen.blit(bodyTextLabel,(539,563))
     screen.blit(btmTextLabel,(540,596))
-    btmValue=monospaced.render(f"-{str(unit.btm)}",True,BLACK)
+    btmValue=monospacedMedium.render(f"-{str(unit.btm)}",True,BLACK)
     screen.blit(btmValue,(591,596))
     frame(471,557,63,63,BASEGREY)
     if len(bodyInput.value)==2:
@@ -264,24 +265,37 @@ multiplierInput=pygame_textinput.TextInputVisualizer()
 multiplierInput.font_object=monospacedLarge
 multiplierInput.manager.validator=(lambda x: len(x)<=2 and (str(x).isnumeric() or x==''))
 multiplierSelected=False
-multiplierHitbox=game.Rect(DAMAGEX+156,DAMAGEY+33,40,46)
+multiplierHitbox=game.Rect(DAMAGEX+150,DAMAGEY+33,40,46)
 def multiplierBlit():
-    frame(DAMAGEX+156,DAMAGEY+33,47,46,LIGHTGREY)
-    screen.blit(multiplierTextLabel,(DAMAGEX+131,DAMAGEY+43))
-    screen.blit(multiplierInput.surface,(DAMAGEX+163,DAMAGEY+42))
+    screen.blit(multiplierTextLabel,(DAMAGEX+128,DAMAGEY+43))
+    frame(DAMAGEX+150,DAMAGEY+33,47,46,LIGHTGREY)
+    screen.blit(multiplierInput.surface,(DAMAGEX+157,DAMAGEY+42))
     if multiplierInput.value=='':
-        screen.blit(multiplierEmptyFieldLabel,(DAMAGEX+163,DAMAGEY+42))
+        screen.blit(multiplierEmptyFieldLabel,(DAMAGEX+157,DAMAGEY+42))
 
-pewTextLabel=monospaced.render("PEW!",True,BLACK)
-pewPewTextLabel=monospaced.render("PEW PEW!",True,BLACK)
-pewHitbox=game.Rect(DAMAGEX+224,DAMAGEY+38,100,36)
+pewTextLabel=monospacedMedium.render("PEW!",True,BLACK)
+pewPewTextLabel=monospacedMedium.render("PEW PEW!",True,BLACK)
+pewHitbox=game.Rect(DAMAGEX+214,DAMAGEY+38,100,36)
 def pewBlit():
-    buttonFrame(DAMAGEX+224,DAMAGEY+38,110,36,pewHitbox.collidepoint(game.mouse.get_pos()))
+    buttonFrame(DAMAGEX+214,DAMAGEY+38,110,36,pewHitbox.collidepoint(game.mouse.get_pos()))
     if multiplierInput.value=='' or multiplierInput.value=='1':
-        screen.blit(pewTextLabel,(DAMAGEX+259,DAMAGEY+47))
+        screen.blit(pewTextLabel,(DAMAGEX+249,DAMAGEY+47))
     else:
-        screen.blit(pewPewTextLabel,(DAMAGEX+235,DAMAGEY+47))
+        screen.blit(pewPewTextLabel,(DAMAGEX+225,DAMAGEY+47))
 
+ammoHitbox=game.Rect(1135,647,252,100)
+def ammoSpinner():
+    frame(1135,683,252,40,LIGHTGREY)
+    if ammoIndex>0:
+        ammoSpinnerLabel=monospacedMedium.render(ammoTypes[ammoIndex-1].name,True,DARKGREY)
+        screen.blit(ammoSpinnerLabel,(1143,659))
+
+    ammoSpinnerLabel=monospacedMediumLarge.render(ammoTypes[ammoIndex].name,True,BLACK)
+    screen.blit(ammoSpinnerLabel,(1143,691))
+
+    if ammoIndex<len(ammoTypes)-1:
+        ammoSpinnerLabel=monospacedMedium.render(ammoTypes[ammoIndex+1].name,True,DARKGREY)
+        screen.blit(ammoSpinnerLabel,(1143,729))
 
 woundTrackText=['LIGHT','SERIOUS','CRITICAL']
 for i in range(7):
@@ -439,11 +453,27 @@ def processDamage():
 
 
 def pew(loc:int=-1):
+    weapon.ammotype=ammoTypes[ammoIndex]
     if damageInput.value=='':
         return
     multi=int(multiplierInput.value) if multiplierInput.value.isnumeric() else 1
     for _ in range(multi):
-        unit.damage(dmg=processDamage(),loc=loc)
+        unit.damage(weapon=weapon,dmg=processDamage(),loc=loc)
+
+ammoIndex=0
+ammoTypes=[Ammo(),
+           HP(),
+           AP(),
+           Explosive(),
+           Incin(),
+           API(),
+           HEI(),
+           FragFlechette(),
+           Firecracker(),
+           Cybercontrol(),
+           CybercontrolSlug(),
+           Slug(),
+           Arrow()]
 
 weapon=findGun("streetmaster")
 unit=Unit(None,findArmour([14,16,16,16,10,10]),0,8,9,cyber=[0,0,0,0,0,0])
@@ -488,6 +518,9 @@ while True:
             for i in range(6):
                 if spHitboxes[i].collidepoint(game.mouse.get_pos()):
                     unit.armour.sp[i]=max(min(unit.armour.spMax[i],unit.armour.sp[i]+event.y),0)
+
+            if ammoHitbox.collidepoint(game.mouse.get_pos()):
+                ammoIndex=max(min(len(ammoTypes)-1,ammoIndex-event.y),0)
 
         if event.type == game.KEYDOWN and event.key == game.K_RETURN:
             if damageSelected or multiplierSelected:
@@ -581,10 +614,10 @@ while True:
     drawWounds(unit.wounds)
 
     frame(WIDTH//2+45,645,WIDTH//2-75,HEIGHT-675,BASEGREY)
-    
     damageBlit()
     multiplierBlit()
     pewBlit()
+    ammoSpinner()
 
     game.display.update() 
     clock.tick(30)

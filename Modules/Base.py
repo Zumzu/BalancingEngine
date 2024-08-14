@@ -13,7 +13,7 @@ WOUND_CAP=50
 class Ammo:
     def __init__(self):
         self.name='Normal'
-        self.name='~'
+        self.desc='~'
         self.pierceSP=0
         self.cybercontrol=False
 
