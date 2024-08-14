@@ -106,6 +106,7 @@ zeroedImg=game.image.load('DT/HUD/zeroed.png').convert_alpha()
 shirtImg=game.image.load('DT/HUD/shirt.png').convert_alpha()
 shirt2Img=game.image.load('DT/HUD/shirt2.png').convert_alpha()
 
+stunHudHitbox=game.Rect(40,40,64,64)
 def drawHudElements():
     if unit.wounds>=50:
         screen.blit(deadImg,(40,40))
@@ -119,7 +120,16 @@ def drawHudElements():
     elif unit.stunned:
         screen.blit(stunImg,(40,40))  
     
-    #screen.blit(shirtImg,(57,460))
+    totalSp=0
+    totalSpMax=0
+    for i in range(6):
+        totalSp+=unit.armour.sp[i]
+        totalSpMax+=unit.armour.spMax[i]
+
+    if totalSp/totalSpMax<0.75:
+        screen.blit(shirt2Img,(57,460))
+    elif totalSp/totalSpMax<0.9:
+        screen.blit(shirtImg,(57,460))
 
 def drawDude(x:int,y:int):
     for injury in unit.critInjuries:
@@ -204,7 +214,11 @@ def bodyBlit():
     btmValue=monospaced.render(f"-{str(unit.btm)}",True,BLACK)
     screen.blit(btmValue,(591,596))
     frame(471,557,63,63,BASEGREY)
-    screen.blit(bodyInput.surface,(479,570))
+    if len(bodyInput.value)==2:
+        screen.blit(bodyInput.surface,(479,570))
+    else:
+        screen.blit(bodyInput.surface,(492,570))
+    
 
 
 coolTextLabel=monospacedLarge.render("Cool",True,BLACK)
@@ -216,7 +230,10 @@ coolHitbox=game.Rect(471,488,63,63)
 def coolBlit():
     screen.blit(coolTextLabel,(539,505))
     frame(471,488,63,63,BASEGREY)
-    screen.blit(coolInput.surface,(479,501))
+    if len(coolInput.value)==2:
+        screen.blit(coolInput.surface,(479,501))
+    else:
+        screen.blit(coolInput.surface,(492,501))
 
 def populateBody():
     bodyInput.value=str(unit.body)
@@ -375,8 +392,10 @@ def drawSP(startX,startY,sp,maxSP):
         textColor=(textColor.get_red()*255,textColor.get_green()*255,textColor.get_blue()*255)
         spInputs[i].font_color=textColor
 
-        screen.blit(spInputs[i].surface,(x+10,y+13))
-    
+        if len(spInputs[i].value)==2:
+            screen.blit(spInputs[i].surface,(x+10,y+13))
+        else:
+            screen.blit(spInputs[i].surface,(x+21,y+13))
 
 def generateSPHitboxes(startX,startY):
     output=[]
@@ -451,6 +470,8 @@ while True:
             for i in range(6):
                 spInputsSelected[i]=spHitboxes[i].collidepoint(game.mouse.get_pos())
 
+            if stunHudHitbox.collidepoint(game.mouse.get_pos()):
+                unit.stunned=False
 
         if event.type == game.MOUSEWHEEL:
             if coolHitbox.collidepoint(game.mouse.get_pos()):
