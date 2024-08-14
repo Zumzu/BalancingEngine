@@ -137,8 +137,15 @@ def drawHudElements():
         screen.blit(shirtImg,(57,460))
 
 def drawDude(x:int,y:int):
+    for i in range(6):
+        fill(limbImgs[i],BLACK)
+
+    if calledShotLoc!=-1:
+        fill(limbImgs[calledShotLoc],(0,0,255))
+
     for injury in unit.critInjuries:
         fill(limbImgs[injury.loc],WOUNDCOLOR)
+
     screen.blit(limbImgs[0],(x+76,y+1))
     screen.blit(limbImgs[1],(x+51,y+60))
     screen.blit(limbImgs[2],(x-1,y+69))
@@ -457,13 +464,15 @@ def processDamage():
     return output
 
 
-def pew(loc:int=-1):
+def pew():
     weapon.ammotype=ammoTypes[ammoIndex]
     if damageInput.value=='':
         return
     multi=int(multiplierInput.value) if multiplierInput.value.isnumeric() else 1
     for _ in range(multi):
-        unit.damage(weapon=weapon,dmg=processDamage(),loc=loc)
+        unit.damage(weapon=weapon,dmg=processDamage(),loc=calledShotLoc)
+
+calledShotLoc=-1
 
 ammoIndex=0
 ammoTypes=[Ammo(),
