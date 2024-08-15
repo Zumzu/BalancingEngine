@@ -24,7 +24,6 @@ DARKGREY=(100,100,100)
 BASEGREY=(180,180,180)
 LIGHTGREY=(220,220,220)
 
-#OPTIMIZATION
 #Cyberware
 #Barrier
 #Log
@@ -102,13 +101,26 @@ def buttonFrame(x:int,y:int,dx:int,dy:int,hover:bool):
     else:
         game.draw.rect(screen, (80,80,80), game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
 
-limbImgs=[]
-limbImgs.append(game.image.load('DT/Body/Head.png').convert_alpha())
-limbImgs.append(game.image.load('DT/Body/Torso.png').convert_alpha())
-limbImgs.append(game.image.load('DT/Body/Larm.png').convert_alpha())
-limbImgs.append(game.image.load('DT/Body/Rarm.png').convert_alpha())
-limbImgs.append(game.image.load('DT/Body/Lleg.png').convert_alpha())
-limbImgs.append(game.image.load('DT/Body/Rleg.png').convert_alpha())
+def dudeImgs():
+    output=[]
+    output.append(game.image.load('DT/Body/Head.png').convert_alpha())
+    output.append(game.image.load('DT/Body/Torso.png').convert_alpha())
+    output.append(game.image.load('DT/Body/Larm.png').convert_alpha())
+    output.append(game.image.load('DT/Body/Rarm.png').convert_alpha())
+    output.append(game.image.load('DT/Body/Lleg.png').convert_alpha())
+    output.append(game.image.load('DT/Body/Rleg.png').convert_alpha())
+    return output
+
+limbImgs=dudeImgs()
+
+#Cached versions of the limbs with the appropriate coloring
+limbImgsWounded=dudeImgs()
+limbImgsCalled=dudeImgs()
+limbImgsHighlight=dudeImgs()
+for i in range(6):
+    fill(limbImgsWounded[i],WOUNDCOLOR)
+    fill(limbImgsCalled[i],(10,50,200))
+    fill(limbImgsHighlight[i],(200,200,200))
 
 limbOffsets=[]
 limbOffsets.append((76,1))
@@ -165,19 +177,21 @@ def limbCollision(i:int):
 def drawDude():
     x=133
     y=63
-    for i in range(6):
-        fill(limbImgs[i],BLACK)
 
+    injured=[False]*6
     for injury in unit.critInjuries:
-        fill(limbImgs[injury.loc],WOUNDCOLOR)
-
-    if calledShotLoc!=-1:
-        fill(limbImgs[calledShotLoc],(10,50,200))
+        injured[injury.loc]=True
 
     for i in range(6):
+        if calledShotLoc==i:
+            screen.blit(limbImgsCalled[i],(x+limbOffsets[i][0],y+limbOffsets[i][1]))
+        elif injured[i]:
+            screen.blit(limbImgsWounded[i],(x+limbOffsets[i][0],y+limbOffsets[i][1]))
+        else:
+            screen.blit(limbImgs[i],(x+limbOffsets[i][0],y+limbOffsets[i][1]))
+        
         if limbCollision(i):
-            tint(limbImgs[i],(0,50,80))
-        screen.blit(limbImgs[i],(x+limbOffsets[i][0],y+limbOffsets[i][1]))
+            screen.blit(limbImgsHighlight[i],(x+limbOffsets[i][0],y+limbOffsets[i][1]))
 
     drawPointer(1,x+105,y+85)
     drawPointer(2,x+31,y+151,True)
@@ -682,7 +696,7 @@ while True:
     ammoSpinner()
 
     game.display.update() 
-    clock.tick()
+    clock.tick(30)
 
     system('cls')
     print(round(clock.get_fps(),1))
