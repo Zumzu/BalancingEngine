@@ -184,6 +184,7 @@ def drawDude():
     drawPointer(4,x+51,y+334,True)
     drawPointer(5,x+135,y+327)    
 
+injuryTextCache={}
 def drawPointer(loc:int,x:int,y:int,flip:bool=False):
     verticalOffset=0
     draw=False
@@ -198,29 +199,33 @@ def drawPointer(loc:int,x:int,y:int,flip:bool=False):
         game.draw.line(screen, BLACK, (x-30,y-30), (x-100,y-30), 2)
         for injury in unit.critInjuries:
             if injury.loc==loc:
-                if injury.severity==0:
-                    textColor=DARKGREEN
-                elif injury.severity==2:
-                    textColor=WOUNDCOLOR
-                else:
-                    textColor=BLACK
-                label=impactTiny.render(injury.name,True,textColor) #innefficient to render at runtime
-                screen.blit(label,label.get_rect(center=(x-70,y-40+verticalOffset)))
+                if injury.name not in injuryTextCache:
+                    if injury.severity==0:
+                        textColor=DARKGREEN
+                    elif injury.severity==2:
+                        textColor=WOUNDCOLOR
+                    else:
+                        textColor=BLACK
+                    injuryTextCache[injury.name]=impactTiny.render(injury.name,True,textColor)
+                screen.blit(injuryTextCache[injury.name],injuryTextCache[injury.name].get_rect(center=(x-70,y-40+verticalOffset)))
                 verticalOffset-=14
     else:
         game.draw.line(screen, BLACK, (x,y), (x+30,y-30), 2)
         game.draw.line(screen, BLACK, (x+30,y-30), (x+100,y-30), 2)
         for injury in unit.critInjuries:
             if injury.loc==loc:
-                if injury.severity==0:
-                    textColor=DARKGREEN
-                elif injury.severity==2:
-                    textColor=WOUNDCOLOR
-                else:
-                    textColor=BLACK
-                label=impactTiny.render(injury.name,True,textColor) #innefficient to render at runtime
-                screen.blit(label,label.get_rect(center=(x+70,y-40+verticalOffset)))
+                if injury.name not in injuryTextCache:
+                    if injury.severity==0:
+                        textColor=DARKGREEN
+                    elif injury.severity==2:
+                        textColor=WOUNDCOLOR
+                    else:
+                        textColor=BLACK
+                    injuryTextCache[injury.name]=impactTiny.render(injury.name,True,textColor)
+                screen.blit(injuryTextCache[injury.name],injuryTextCache[injury.name].get_rect(center=(x+70,y-40+verticalOffset)))
                 verticalOffset-=14
+
+
 
 tempX=0
 tempY=0
