@@ -3,6 +3,7 @@ import pygame as game
 from sys import exit
 from colour import Color
 from copy import deepcopy
+from os import system
 
 from Modules.Base import Unit,bodyToBTM
 from Modules.Generator import findGun,findArmour
@@ -320,19 +321,25 @@ def pewBlit():
     else:
         screen.blit(pewPewTextLabel,(DAMAGEX+225,DAMAGEY+47))
 
+ammoBoldTextCache={}
+ammoFaintTextCache={}
+
 ammoHitbox=game.Rect(1135,647,252,100)
 def ammoSpinner():
     frame(1135,683,252,40,LIGHTGREY)
     if ammoIndex>0:
-        ammoSpinnerLabel=monospacedMedium.render(ammoTypes[ammoIndex-1].name,True,DARKGREY)
-        screen.blit(ammoSpinnerLabel,(1143,659))
+        if str(ammoIndex-1) not in ammoFaintTextCache:
+            ammoFaintTextCache[ammoIndex]=monospacedMedium.render(ammoTypes[ammoIndex-1].name,True,DARKGREY)
+        screen.blit(ammoFaintTextCache[ammoIndex],(1143,659))
 
-    ammoSpinnerLabel=monospacedMediumLarge.render(ammoTypes[ammoIndex].name,True,BLACK)
-    screen.blit(ammoSpinnerLabel,(1143,691))
+    if str(ammoIndex) not in ammoBoldTextCache:
+        ammoBoldTextCache[ammoIndex]=monospacedMediumLarge.render(ammoTypes[ammoIndex].name,True,BLACK)
+    screen.blit(ammoBoldTextCache[ammoIndex],(1143,691))
 
     if ammoIndex<len(ammoTypes)-1:
-        ammoSpinnerLabel=monospacedMedium.render(ammoTypes[ammoIndex+1].name,True,DARKGREY)
-        screen.blit(ammoSpinnerLabel,(1143,729))
+        if str(ammoIndex+1) not in ammoFaintTextCache:
+            ammoFaintTextCache[ammoIndex]=monospacedMedium.render(ammoTypes[ammoIndex+1].name,True,DARKGREY)
+        screen.blit(ammoFaintTextCache[ammoIndex],(1143,729))
 
 woundTrackText=['LIGHT','SERIOUS','CRITICAL']
 for i in range(7):
@@ -675,4 +682,7 @@ while True:
     ammoSpinner()
 
     game.display.update() 
-    clock.tick(30)
+    clock.tick()
+
+    system('cls')
+    print(round(clock.get_fps(),1))
