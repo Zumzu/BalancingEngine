@@ -76,6 +76,13 @@ def fill(surface,rgb):
         for j in range(h):
             surface.set_at((i,j),game.Color(r,g,b,surface.get_at((i,j))[3]))
 
+def tint(surface,rgb):
+    w,h = surface.get_size()
+    for i in range(w):
+        for j in range(h):
+            rgba=surface.get_at((i,j))
+            surface.set_at((i,j),game.Color(min(255,rgba[0]+rgb[0]),min(255,rgba[1]+rgb[1]),min(255,rgba[2]+rgb[2]),rgba[3]))
+
 def charFrame(x:int,y:int,dx:int,dy:int):
     game.draw.rect(screen, DARKERGREY, game.Rect(x,y,dx,dy), 4, border_radius=5)
 
@@ -153,13 +160,15 @@ def drawDude():
     for i in range(6):
         fill(limbImgs[i][0],BLACK)
 
-    if calledShotLoc!=-1:
-        fill(limbImgs[calledShotLoc][0],(0,0,255))
-
     for injury in unit.critInjuries:
         fill(limbImgs[injury.loc][0],WOUNDCOLOR)
 
+    if calledShotLoc!=-1:
+        fill(limbImgs[calledShotLoc][0],(0,0,255))
+
     for i in range(6):
+        if limbCollision(i):
+            tint(limbImgs[i][0],(0,50,80))
         screen.blit(limbImgs[i][0],(x+limbImgs[i][1],y+limbImgs[i][2]))
 
     drawPointer(1,x+105,y+85)
