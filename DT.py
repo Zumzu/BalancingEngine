@@ -23,7 +23,7 @@ DARKGREY=(100,100,100)
 BASEGREY=(180,180,180)
 LIGHTGREY=(220,220,220)
 
-#Called Shot
+#OPTIMIZATION
 #Cyberware
 #Barrier
 #Log
@@ -102,13 +102,20 @@ def buttonFrame(x:int,y:int,dx:int,dy:int,hover:bool):
         game.draw.rect(screen, (80,80,80), game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
 
 limbImgs=[]
-limbImgs.append((game.image.load('DT/Body/Head.png').convert_alpha(),76,1))
-limbImgs.append((game.image.load('DT/Body/Torso.png').convert_alpha(),51,60))
-limbImgs.append((game.image.load('DT/Body/Larm.png').convert_alpha(),-1,69))
-limbImgs.append((game.image.load('DT/Body/Rarm.png').convert_alpha(),131,76))
-limbImgs.append((game.image.load('DT/Body/Lleg.png').convert_alpha(),23,215))
-limbImgs.append((game.image.load('DT/Body/Rleg.png').convert_alpha(),93,213))
+limbImgs.append(game.image.load('DT/Body/Head.png').convert_alpha())
+limbImgs.append(game.image.load('DT/Body/Torso.png').convert_alpha())
+limbImgs.append(game.image.load('DT/Body/Larm.png').convert_alpha())
+limbImgs.append(game.image.load('DT/Body/Rarm.png').convert_alpha())
+limbImgs.append(game.image.load('DT/Body/Lleg.png').convert_alpha())
+limbImgs.append(game.image.load('DT/Body/Rleg.png').convert_alpha())
 
+limbOffsets=[]
+limbOffsets.append((76,1))
+limbOffsets.append((51,60))
+limbOffsets.append((-1,69))
+limbOffsets.append((131,76))
+limbOffsets.append((23,215))
+limbOffsets.append((93,213))
 
 stunImg=game.image.load('DT/HUD/stun.png').convert_alpha()
 unconImg=game.image.load('DT/HUD/uncon.png').convert_alpha()
@@ -146,30 +153,30 @@ def drawHudElements():
 def limbCollision(i:int):
     x=133
     y=63
-    width,height=limbImgs[i][0].get_size()
+    width,height=limbImgs[i].get_size()
     mouseX,mouseY=game.mouse.get_pos()
-    pixel=(mouseX-limbImgs[i][1]-x, mouseY-limbImgs[i][2]-y)
+    pixel=(mouseX-limbOffsets[i][0]-x, mouseY-limbOffsets[i][1]-y)
     if pixel[0]<0 or pixel[0]>=width or pixel[1]<0 or pixel[1]>=height:
         return False
 
-    return not limbImgs[i][0].get_at(pixel)[3]==0
+    return not limbImgs[i].get_at(pixel)[3]==0
 
 def drawDude():
     x=133
     y=63
     for i in range(6):
-        fill(limbImgs[i][0],BLACK)
+        fill(limbImgs[i],BLACK)
 
     for injury in unit.critInjuries:
-        fill(limbImgs[injury.loc][0],WOUNDCOLOR)
+        fill(limbImgs[injury.loc],WOUNDCOLOR)
 
     if calledShotLoc!=-1:
-        fill(limbImgs[calledShotLoc][0],(0,0,255))
+        fill(limbImgs[calledShotLoc],(10,50,200))
 
     for i in range(6):
         if limbCollision(i):
-            tint(limbImgs[i][0],(0,50,80))
-        screen.blit(limbImgs[i][0],(x+limbImgs[i][1],y+limbImgs[i][2]))
+            tint(limbImgs[i],(0,50,80))
+        screen.blit(limbImgs[i],(x+limbOffsets[i][0],y+limbOffsets[i][1]))
 
     drawPointer(1,x+105,y+85)
     drawPointer(2,x+31,y+151,True)
