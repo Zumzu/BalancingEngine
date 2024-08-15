@@ -95,12 +95,12 @@ def buttonFrame(x:int,y:int,dx:int,dy:int,hover:bool):
         game.draw.rect(screen, (80,80,80), game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
 
 limbImgs=[]
-limbImgs.append(game.image.load('DT/Body/Head.png').convert_alpha())
-limbImgs.append(game.image.load('DT/Body/Torso.png').convert_alpha())
-limbImgs.append(game.image.load('DT/Body/Larm.png').convert_alpha())
-limbImgs.append(game.image.load('DT/Body/Rarm.png').convert_alpha())
-limbImgs.append(game.image.load('DT/Body/Lleg.png').convert_alpha())
-limbImgs.append(game.image.load('DT/Body/Rleg.png').convert_alpha())
+limbImgs.append((game.image.load('DT/Body/Head.png').convert_alpha(),76,1))
+limbImgs.append((game.image.load('DT/Body/Torso.png').convert_alpha(),51,60))
+limbImgs.append((game.image.load('DT/Body/Larm.png').convert_alpha(),-1,69))
+limbImgs.append((game.image.load('DT/Body/Rarm.png').convert_alpha(),131,76))
+limbImgs.append((game.image.load('DT/Body/Lleg.png').convert_alpha(),23,215))
+limbImgs.append((game.image.load('DT/Body/Rleg.png').convert_alpha(),93,213))
 
 
 stunImg=game.image.load('DT/HUD/stun.png').convert_alpha()
@@ -136,23 +136,32 @@ def drawHudElements():
     elif totalSp/totalSpMax<0.9:
         screen.blit(shirtImg,(57,460))
 
-def drawDude(x:int,y:int):
+def limbCollision(i:int):
+    x=133
+    y=63
+    width,height=limbImgs[i][0].get_size()
+    mouseX,mouseY=game.mouse.get_pos()
+    pixel=(mouseX-limbImgs[i][1]-x, mouseY-limbImgs[i][2]-y)
+    if pixel[0]<0 or pixel[0]>=width or pixel[1]<0 or pixel[1]>=height:
+        return False
+
+    return not limbImgs[i][0].get_at(pixel)[3]==0
+
+def drawDude():
+    x=133
+    y=63
     for i in range(6):
-        fill(limbImgs[i],BLACK)
+        fill(limbImgs[i][0],BLACK)
 
     if calledShotLoc!=-1:
-        fill(limbImgs[calledShotLoc],(0,0,255))
+        fill(limbImgs[calledShotLoc][0],(0,0,255))
 
     for injury in unit.critInjuries:
-        fill(limbImgs[injury.loc],WOUNDCOLOR)
+        fill(limbImgs[injury.loc][0],WOUNDCOLOR)
 
-    screen.blit(limbImgs[0],(x+76,y+1))
-    screen.blit(limbImgs[1],(x+51,y+60))
-    screen.blit(limbImgs[2],(x-1,y+69))
-    screen.blit(limbImgs[3],(x+131,y+76))
-    screen.blit(limbImgs[4],(x+23,y+215))
-    screen.blit(limbImgs[5],(x+93,y+213))
-    
+    for i in range(6):
+        screen.blit(limbImgs[i][0],(x+limbImgs[i][1],y+limbImgs[i][2]))
+
     drawPointer(1,x+105,y+85)
     drawPointer(2,x+31,y+151,True)
     drawPointer(3,x+170,y+150)
@@ -521,6 +530,13 @@ while True:
             if stunHudHitbox.collidepoint(game.mouse.get_pos()):
                 unit.stunned=False
 
+            for i in range(6):
+                if limbCollision(i):
+                    if calledShotLoc==i:
+                        calledShotLoc=-1
+                    else:
+                        calledShotLoc=i
+
         if event.type == game.MOUSEBUTTONDOWN and game.mouse.get_pressed()[2]:
             for i in range(6):
                 if spHitboxes[i].collidepoint(game.mouse.get_pos()):
@@ -562,7 +578,6 @@ while True:
                     spInputsSelected[(i+1)%6]=True
                     spInputs[(i+1)%6].value=''
                     break
-
 
     if loadSelected:
         loadInput.update(events)
@@ -623,7 +638,7 @@ while True:
     charFrame(30,30,400,600) # char frame
     frame(460,30,WIDTH-490,600,BASEGREY) # main frame
     drawHudElements()
-    drawDude(133,63)
+    drawDude()
     drawSP(41,557,unit.armour.sp,unit.armour.spMax)
 
     loadBlit()
