@@ -243,8 +243,8 @@ def drawPointer(loc:int,x:int,y:int,flip:bool=False):
 
 
 
-tempX=WIDTH//2
-tempY=HEIGHT//2
+tempX=0
+tempY=0
 pressedArrows=[False]*4
 
 loadTextLabel=monospacedLarge.render("Load",True,BLACK)
@@ -503,44 +503,63 @@ class Log:
         self.degraded=not oldUnit.armour.sp==newUnit.armour.sp
         self.stunned=not oldUnit.stunned==newUnit.stunned
         self.unconned=not oldUnit.uncon==newUnit.uncon
-
         self.killed=not oldUnit.dead==newUnit.dead
         
         self.unit=deepcopy(newUnit)
 
-        self.lines=[]
-        diceString=""
-        for dice in dmgRolled:
-            diceString+=f"{dice} "
-        if diceString=="":
-            self.lines.append(monospacedMedium.render(f"{self.dmgTotal} to {locationTextNames[self.loc]}",True,BLACK))
-        else:
-            self.lines.append(monospacedMedium.render(f"{diceString}+{self.more} = {self.dmgTotal} to {locationTextNames[self.loc]}",True,BLACK))
-        
-        if not self.degraded:
-            self.lines.append(monospacedMedium.render(f"Did not degrade",True,DARKGREY))
-        elif self.through==0:
-            self.lines.append(monospacedMedium.render(f"Dealt 0 wounds, degraded",True,DARKGREY))
-        else:
-            self.lines.append(monospacedMedium.render(f"Dealt {self.through} wounds",True,BLACK))
-
-        self.lines.append(monospacedMedium.render(f"-",True,DARKGREY))
-
     def draw(self,x:int,y:int):
-        lineSpace=0
-        for line in self.lines:
-            screen.blit(line,(x,y+lineSpace))
-            lineSpace+=18
+        offset=0
+        if self.dmgRolled!=[]:
+            for roll in self.dmgRolled:
+                if roll>5:
+                    rollColor=WOUNDCOLOR
+                else:
+                    rollColor=BLACK
+                screen.blit(monospacedMedium.render(str(roll),True,rollColor),(x+5+offset,y+2))
+                game.draw.rect(screen,BLACK,game.Rect(x+offset,y,20,20),1)
+                offset+=24
+            
+            if self.more!=0:
+                line=monospacedMediumLarge.render(f"+{self.more} = {self.dmgTotal} to {locationTextNames[self.loc]}",True,BLACK)
+            else:
+                line=monospacedMediumLarge.render(f"= {self.dmgTotal} to {locationTextNames[self.loc]}",True,BLACK)
+        else:
+            line=monospacedMediumLarge.render(f"{self.dmgTotal} to {locationTextNames[self.loc]}",True,BLACK)
+
+        screen.blit(line,(x+offset,y))
+        offset=0
+
+        if not self.degraded:
+            screen.blit(monospacedMedium.render(f"Did not degrade",True,DARKGREY),(x,y+22))
+        elif self.through==0:
+            screen.blit(monospacedMedium.render(f"Degraded",True,DARKGREY),(x,y+22))
+        else:
+            screen.blit(monospacedMedium.render("Dealt",True,BLACK),(x,y+22))
+            offset+=60
+            screen.blit(monospacedMediumLarge.render(f"{self.through}",True,WOUNDCOLOR),(x+offset,y+20))
+            offset+=len(str(self.through))*14+4
+            screen.blit(monospacedMedium.render(f"wounds",True,BLACK),(x+offset,y+22))
+
+
+        if self.critInjuries!=[]:
+            text=""
+            for injury in self.critInjuries:
+                text+=f"+{injury.name}  "
+            screen.blit(monospacedMedium.render(text,True,WOUNDCOLOR),(x,y+44))
+
 
 logs:list[Log]=[]
+
 
 logTextLabel=monospacedHuge.render("History",True,BLACK)
 def drawLog():
     screen.blit(logTextLabel,logTextLabel.get_rect(center=(930+450//2,80)))
     frame(930,100,450,510,LIGHTGREY)
+    offset=0
     for i in range(len(logs)):
-        game.draw.line(screen,DARKGREY,(940,540-i*65),(1360,540-i*65),2)
-        logs[i].draw(950,545-i*65)
+        game.draw.line(screen,DARKGREY,(940,530-offset),(1360,530-offset),2)
+        logs[i].draw(950,540-offset)
+        offset+=68
 
 ############### MECHANICAL BELOW
 
@@ -582,10 +601,7 @@ def pew():
         return
     multi=int(multiplierInput.value) if multiplierInput.value.isnumeric() else 1
     for _ in range(multi):
-        if logs==[]:
-            oldUnit=deepcopy(unit)
-        else:
-            oldUnit=logs[-1].unit
+        oldUnit=deepcopy(unit)
 
         if calledShotLoc==-1:
             loc=locationDie()
@@ -595,7 +611,7 @@ def pew():
         dmg,rolls,more=processDamage()
 
         unit.damage(weapon=weapon,dmg=dmg,loc=loc)
-        logs.append(Log(loc,dmg,rolls,more,oldUnit,unit))
+        logs.insert(0,Log(loc,dmg,rolls,more,oldUnit,unit))
 
 calledShotLoc=-1
 
