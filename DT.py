@@ -8,6 +8,7 @@ from os import system
 from Modules.Base import Unit,bodyToBTM
 from Modules.Generator import findGun,findArmour
 from Modules.Ammo import *
+from Modules.Dice import locationDie
 from random import randint
 
 WIDTH=1429 #actively clean multiples of hexagons native resolution
@@ -242,8 +243,8 @@ def drawPointer(loc:int,x:int,y:int,flip:bool=False):
 
 
 
-tempX=0
-tempY=0
+tempX=WIDTH//2
+tempY=HEIGHT//2
 pressedArrows=[False]*4
 
 loadTextLabel=monospacedLarge.render("Load",True,BLACK)
@@ -486,18 +487,67 @@ def generateSPHitboxes(startX,startY):
 
 spHitboxes=generateSPHitboxes(41,557)
 
+locationTextNames=["Head","Torso","L.Arm","R.Arm","L.Leg","R.Leg"]
+class Log:
+    def __init__(self,loc:int,dmgTotal:int,dmgRolled:list[int],more:int,oldUnit:Unit,newUnit:Unit) -> None:
+        self.loc=loc
+        self.dmgTotal=dmgTotal
+        self.dmgRolled=dmgRolled
+        self.more=more
+
+        self.through=newUnit.wounds-oldUnit.wounds
+        for i in range(6):
+            if newUnit.cyber[i] is not None:
+                self.through+=newUnit.cyber[i].sdp-oldUnit.cyber[i].sdp
+        self.critInjuries=newUnit.critInjuries[len(oldUnit.critInjuries):]
+        self.degraded=not oldUnit.armour.sp==newUnit.armour.sp
+        self.stunned=not oldUnit.stunned==newUnit.stunned
+        self.unconned=not oldUnit.uncon==newUnit.uncon
+
+        self.killed=not oldUnit.dead==newUnit.dead
+        
+        self.unit=deepcopy(newUnit)
+
+        self.lines=[]
+        diceString=""
+        for dice in dmgRolled:
+            diceString+=f"{dice} "
+        if diceString=="":
+            self.lines.append(monospacedMedium.render(f"{self.dmgTotal} to {locationTextNames[self.loc]}",True,BLACK))
+        else:
+            self.lines.append(monospacedMedium.render(f"{diceString}+{self.more} = {self.dmgTotal} to {locationTextNames[self.loc]}",True,BLACK))
+        
+        if not self.degraded:
+            self.lines.append(monospacedMedium.render(f"Did not degrade",True,DARKGREY))
+        elif self.through==0:
+            self.lines.append(monospacedMedium.render(f"Dealt 0 wounds, degraded",True,DARKGREY))
+        else:
+            self.lines.append(monospacedMedium.render(f"Dealt {self.through} wounds",True,BLACK))
+
+        self.lines.append(monospacedMedium.render(f"-",True,DARKGREY))
+
+    def draw(self,x:int,y:int):
+        lineSpace=0
+        for line in self.lines:
+            screen.blit(line,(x,y+lineSpace))
+            lineSpace+=18
+
+logs:list[Log]=[]
+
 logTextLabel=monospacedHuge.render("History",True,BLACK)
 def drawLog():
     screen.blit(logTextLabel,logTextLabel.get_rect(center=(930+450//2,80)))
     frame(930,100,450,510,LIGHTGREY)
-
-def drawLogLine():
-    pass
+    for i in range(len(logs)):
+        game.draw.line(screen,DARKGREY,(940,540-i*65),(1360,540-i*65),2)
+        logs[i].draw(950,545-i*65)
 
 ############### MECHANICAL BELOW
 
 def processDamage():
-    output=0
+    dmg=0
+    rolled=[]
+    more=0
     try:
         input=damageInput.value
         
@@ -513,14 +563,17 @@ def processDamage():
                 if(multiple==""):
                     multiple=1
                 for _ in range(int(multiple)):
-                    output+=randint(1,int(dieType))
+                    result=randint(1,int(dieType))
+                    rolled.append(result)
+                    dmg+=result
             else:#its just a number
-                output+=int(item)
+                more+=int(item)
+                dmg+=int(item)
       
     except:
         raise "@@FAILED DMG EVAL@@"
 
-    return output
+    return (dmg,rolled,more)
 
 
 def pew():
@@ -529,7 +582,20 @@ def pew():
         return
     multi=int(multiplierInput.value) if multiplierInput.value.isnumeric() else 1
     for _ in range(multi):
-        unit.damage(weapon=weapon,dmg=processDamage(),loc=calledShotLoc)
+        if logs==[]:
+            oldUnit=deepcopy(unit)
+        else:
+            oldUnit=logs[-1].unit
+
+        if calledShotLoc==-1:
+            loc=locationDie()
+        else:
+            loc=calledShotLoc
+
+        dmg,rolls,more=processDamage()
+
+        unit.damage(weapon=weapon,dmg=dmg,loc=loc)
+        logs.append(Log(loc,dmg,rolls,more,oldUnit,unit))
 
 calledShotLoc=-1
 
