@@ -486,6 +486,14 @@ def generateSPHitboxes(startX,startY):
 
 spHitboxes=generateSPHitboxes(41,557)
 
+logTextLabel=monospacedHuge.render("History",True,BLACK)
+def drawLog():
+    screen.blit(logTextLabel,logTextLabel.get_rect(center=(930+450//2,80)))
+    frame(930,100,450,510,LIGHTGREY)
+
+def drawLogLine():
+    pass
+
 ############### MECHANICAL BELOW
 
 def processDamage():
@@ -686,6 +694,7 @@ while True:
     loadBlit()
     bodyBlit()
     coolBlit()
+    drawLog()
 
     drawWounds(unit.wounds)
 
