@@ -60,7 +60,7 @@ torsoCritInjuries=[
     CritInjury(-1,1,"Collapsed Lung","Attack checks are 2 harder, after you attempt a strenuous action (such a sprinting, multiaction), make a stun check",attackPenalty=2)
 ]
 
-headCritInjury=CritInjury(-1,"Headshot","you fucking die lmao, skill issue headass fr fr shoulda bought a better helmet")
+headCritInjury=CritInjury(-1,2,"Headshot","you fucking die lmao, skill issue headass fr fr shoulda bought a better helmet")
 
 
 def critInjuryRoll(loc:int):

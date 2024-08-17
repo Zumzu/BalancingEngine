@@ -132,9 +132,13 @@ limbOffsets.append((23,215))
 limbOffsets.append((93,213))
 
 stunImg=game.image.load('DT/HUD/stun.png').convert_alpha()
+stunSmolImg=game.image.load('DT/HUD/stunSmol.png').convert_alpha()
 unconImg=game.image.load('DT/HUD/uncon.png').convert_alpha()
+unconSmolImg=game.image.load('DT/HUD/unconSmol.png').convert_alpha()
 deadImg=game.image.load('DT/HUD/dead.png').convert_alpha()
+deadSmolImg=game.image.load('DT/HUD/deadSmol.png').convert_alpha()
 zeroedImg=game.image.load('DT/HUD/zeroed.png').convert_alpha()
+undoImg=game.image.load('DT/HUD/undo.png').convert_alpha()
 
 shirtImg=game.image.load('DT/HUD/shirt.png').convert_alpha()
 shirt2Img=game.image.load('DT/HUD/shirt2.png').convert_alpha()
@@ -504,52 +508,82 @@ class Log:
         self.stunned=not oldUnit.stunned==newUnit.stunned
         self.unconned=not oldUnit.uncon==newUnit.uncon
         self.killed=not oldUnit.dead==newUnit.dead
+        self.greyed=oldUnit.uncon or oldUnit.dead
         
+        self.height=60 if self.critInjuries!=[] else 40
+        self.hitbox=None
+
         self.unit=deepcopy(newUnit)
 
     def draw(self,x:int,y:int):
+        black=BLACK
+        woundColor=WOUNDCOLOR
+        if self.greyed:
+            black=DARKGREY
+            woundColor=DARKGREY
+
         offset=0
         if self.dmgRolled!=[]:
             for roll in self.dmgRolled:
                 if roll>5:
-                    rollColor=WOUNDCOLOR
+                    rollColor=woundColor
                 else:
-                    rollColor=BLACK
+                    rollColor=black
                 screen.blit(monospacedMedium.render(str(roll),True,rollColor),(x+5+offset,y+2))
                 game.draw.rect(screen,BLACK,game.Rect(x+offset,y,20,20),1)
                 offset+=24
             
             if self.more!=0:
-                line=monospacedMediumLarge.render(f"+{self.more} = {self.dmgTotal} to {locationTextNames[self.loc]}",True,BLACK)
+                line=monospacedMediumLarge.render(f"+{self.more} = {self.dmgTotal} to {locationTextNames[self.loc]}",True,black)
             else:
-                line=monospacedMediumLarge.render(f"= {self.dmgTotal} to {locationTextNames[self.loc]}",True,BLACK)
+                line=monospacedMediumLarge.render(f"= {self.dmgTotal} to {locationTextNames[self.loc]}",True,black)
         else:
-            line=monospacedMediumLarge.render(f"{self.dmgTotal} to {locationTextNames[self.loc]}",True,BLACK)
+            line=monospacedMediumLarge.render(f"{self.dmgTotal} to {locationTextNames[self.loc]}",True,black)
 
         screen.blit(line,(x+offset,y))
         offset=0
 
-        if not self.degraded:
-            screen.blit(monospacedMedium.render(f"Did not degrade",True,DARKGREY),(x,y+22))
+        if not self.degraded and self.through==0:
+            screen.blit(monospacedMedium.render(f"Did not degrade",True,DARKGREY),(x,y+23))
         elif self.through==0:
-            screen.blit(monospacedMedium.render(f"Degraded",True,DARKGREY),(x,y+22))
+            screen.blit(monospacedMedium.render(f"Degraded",True,DARKGREY),(x,y+23))
         else:
-            screen.blit(monospacedMedium.render("Dealt",True,BLACK),(x,y+22))
+            screen.blit(monospacedMedium.render("Dealt",True,black),(x,y+23))
             offset+=60
-            screen.blit(monospacedMediumLarge.render(f"{self.through}",True,WOUNDCOLOR),(x+offset,y+20))
+            screen.blit(monospacedMediumLarge.render(f"{self.through}",True,woundColor),(x+offset,y+21))
             offset+=len(str(self.through))*14+4
-            screen.blit(monospacedMedium.render(f"wounds",True,BLACK),(x+offset,y+22))
-
+            screen.blit(monospacedMedium.render(f"wound{'s' if self.through>1 else ''}",True,black),(x+offset,y+23))
+            offset+=72
+            if self.stunned:
+                screen.blit(stunSmolImg,(x+offset,y+20))
+                offset+=72
+            if self.unconned:
+                screen.blit(unconSmolImg,(x+offset,y+20))
+                offset+=72
+            if self.killed:
+                screen.blit(deadSmolImg,(x+offset,y+20))
+                offset+=72
 
         if self.critInjuries!=[]:
             text=""
             for injury in self.critInjuries:
                 text+=f"+{injury.name}  "
-            screen.blit(monospacedMedium.render(text,True,WOUNDCOLOR),(x,y+44))
+            screen.blit(monospacedMedium.render(text,True,woundColor),(x,y+43))
+
+        self.hitbox=undoImg.get_rect(center=(x+400,y+self.height//2))
+        screen.blit(undoImg,self.hitbox)
+
+class LoadLog:
+    def __init__(self,unit:Unit) -> None:
+        self.hitbox=None
+        self.unit=deepcopy(unit)
+
+    def draw(self,x:int,y:int):
+        line=monospacedMediumLarge.render(f"+{self.more} = {self.dmgTotal} to {locationTextNames[self.loc]}",True,BLACK)
+        screen.blit(line,(x,y))
 
 
 logs:list[Log]=[]
-
 
 logTextLabel=monospacedHuge.render("History",True,BLACK)
 def drawLog():
@@ -557,9 +591,15 @@ def drawLog():
     frame(930,100,450,510,LIGHTGREY)
     offset=0
     for i in range(len(logs)):
-        game.draw.line(screen,DARKGREY,(940,530-offset),(1360,530-offset),2)
-        logs[i].draw(950,540-offset)
-        offset+=68
+        offset+=logs[i].height+15
+        if offset<=490:
+            game.draw.line(screen,DARKGREY,(940,595-offset),(1360,595-offset),2)
+            logs[i].draw(950,605-offset)
+        else:
+            logs[i].hitbox=None
+    
+    frame(930,100,450,56,LIGHTGREY)
+
 
 ############### MECHANICAL BELOW
 
@@ -668,6 +708,13 @@ while True:
                         calledShotLoc=-1
                     else:
                         calledShotLoc=i
+
+            for i in range(len(logs)):
+                if logs[i].hitbox is not None and logs[i].hitbox.collidepoint(game.mouse.get_pos()):
+                    unit=deepcopy(logs[i].unit)
+                    logs=logs[i:]
+                    break
+
 
         if event.type == game.MOUSEBUTTONDOWN and game.mouse.get_pressed()[2]:
             for i in range(6):
