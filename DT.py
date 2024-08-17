@@ -574,14 +574,15 @@ class Log:
         screen.blit(undoImg,self.hitbox)
 
 class LoadLog:
-    def __init__(self,unit:Unit) -> None:
-        self.hitbox=None
+    def __init__(self,unit:Unit,desc:str) -> None:
+        self.hitbox=undoImg.get_rect(center=(1350,127))
         self.unit=deepcopy(unit)
+        self.desc=desc
 
-    def draw(self,x:int,y:int):
-        line=monospacedMediumLarge.render(f"+{self.more} = {self.dmgTotal} to {locationTextNames[self.loc]}",True,BLACK)
-        screen.blit(line,(x,y))
-
+    def draw(self):
+        screen.blit(monospacedMediumLarge.render(f"Loaded \'{self.desc}\'",True,BLACK),(950,107))
+        screen.blit(monospacedSmall.render(f"[{self.unit.armour.sp[0]}] [{self.unit.armour.sp[1]}] [{self.unit.armour.sp[2]}|{self.unit.armour.sp[3]}] [{self.unit.armour.sp[4]}|{self.unit.armour.sp[5]}], BODY-{self.unit.body}, COOL-{self.unit.cool}",True,BLACK),(950,134))
+        screen.blit(undoImg,self.hitbox)
 
 logs:list[Log]=[]
 
@@ -599,6 +600,7 @@ def drawLog():
             logs[i].hitbox=None
     
     frame(930,100,450,56,LIGHTGREY)
+    loadLog.draw()
 
 
 ############### MECHANICAL BELOW
@@ -671,7 +673,8 @@ ammoTypes=[Ammo(),
            Arrow()]
 
 weapon=findGun("streetmaster")
-unit=Unit(None,findArmour([14,16,16,16,10,10]),0,8,9,cyber=[0,0,0,0,0,0])
+unit=Unit(None,findArmour([14,16,16,16,10,10]),0,8,9,cyber=[0,0,0,0,0,0]) # manual load
+loadLog:Log=LoadLog(unit,"Low Level Recruit")
 
 populateBody()
 populateSPInputs()
@@ -714,6 +717,10 @@ while True:
                     unit=deepcopy(logs[i].unit)
                     logs=logs[i:]
                     break
+            
+            if loadLog.hitbox.collidepoint(game.mouse.get_pos()):
+                unit=deepcopy(loadLog.unit)
+                logs=[]
 
 
         if event.type == game.MOUSEBUTTONDOWN and game.mouse.get_pressed()[2]:
