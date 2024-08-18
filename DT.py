@@ -143,10 +143,12 @@ unconSmolImg=game.image.load('DT/HUD/unconSmol.png').convert_alpha()
 deadImg=game.image.load('DT/HUD/dead.png').convert_alpha()
 deadSmolImg=game.image.load('DT/HUD/deadSmol.png').convert_alpha()
 zeroedImg=game.image.load('DT/HUD/zeroed.png').convert_alpha()
-undoImg=game.image.load('DT/HUD/undo.png').convert_alpha()
 
 shirtImg=game.image.load('DT/HUD/shirt.png').convert_alpha()
 shirt2Img=game.image.load('DT/HUD/shirt2.png').convert_alpha()
+
+undoImg=game.image.load('DT/HUD/undo.png').convert_alpha()
+bulletImg=game.image.load('DT/HUD/bullet.png').convert_alpha()
 
 stunHudHitbox=game.Rect(40,40,64,64)
 def drawHudElements():
@@ -317,9 +319,14 @@ damageInput.manager.validator=(lambda x: x=='' or (len(x)<=6 and (str(x[-1]).isn
 damageSelected=False
 damageHitbox=game.Rect(DAMAGEX+6,DAMAGEY+33,116,46)    
 def damageBlit():
+    drawBullets(DAMAGEX+117,DAMAGEY+3)
     screen.blit(damageTextLabel,(DAMAGEX+8,DAMAGEY+3))
     frame(DAMAGEX+6,DAMAGEY+33,116,46,LIGHTGREY)
     screen.blit(damageInput.surface,(DAMAGEX+12,DAMAGEY+42))
+
+def drawBullets(x,y):
+    for i in range(len(shotQueue)):
+        screen.blit(bulletImg,(x+i*8,y))
 
 multiplierTextLabel=monospacedLarge.render("X",True,(50,50,50))
 multiplierEmptyFieldLabel=monospacedLarge.render("1",True,(50,50,50))
