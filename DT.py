@@ -25,6 +25,8 @@ DARKGREY=(100,100,100)
 BASEGREY=(180,180,180)
 LIGHTGREY=(220,220,220)
 
+PEWDELAY=0.4 #measured in seconds
+
 #Barrier - exposed
 #Cyberware
 #Black Lace / temp heal?
@@ -644,16 +646,15 @@ def processDamage():
 
 logIndex=0
 
+shotQueue=[]
+
 def pew():
-    global logIndex
-    logIndex=0
-    weapon.ammotype=ammoTypes[ammoIndex]
+    global shotTimer
+    shotTimer=0
     if damageInput.value=='':
         return
     multi=int(multiplierInput.value) if multiplierInput.value.isnumeric() else 1
     for _ in range(multi):
-        oldUnit=deepcopy(unit)
-
         if calledShotLoc==-1:
             loc=locationDie()
         else:
@@ -661,11 +662,23 @@ def pew():
 
         dmg,rolls,more=processDamage()
 
-        unit.damage(weapon=weapon,dmg=dmg,loc=loc)
-        logs.insert(0,Log(loc,dmg,rolls,more,oldUnit,unit))
+        shotQueue.insert(0,(loc,dmg,rolls,more,ammoIndex))
+
+def runShot():
+    global shotQueue
+    shotLoc,shotDmg,shotRolls,shotMore,shotAmmoIndex=shotQueue[-1]
+    shotQueue=shotQueue[:-1]
+    
+    weapon.ammotype=ammoTypes[shotAmmoIndex]
+    oldUnit=deepcopy(unit)
+    unit.damage(weapon=weapon,dmg=shotDmg,loc=shotLoc)
+    logs.insert(0,Log(shotLoc,shotDmg,shotRolls,shotMore,oldUnit,unit))
+    global logIndex
+    logIndex=0
 
 calledShotLoc=-1
 
+shotTimer=0
 ammoIndex=0
 ammoTypes=[Ammo(),
            HP(),
@@ -688,7 +701,14 @@ loadLog:Log=LoadLog(unit,"Low Level Recruit")
 populateBody()
 populateSPInputs()
 
+
 while True: 
+    if shotTimer==0 and shotQueue!=[]:
+        runShot()
+        shotTimer=int(PEWDELAY*30)
+    elif shotTimer>0:
+        shotTimer-=1
+
     events=game.event.get()
     for event in events: 
         if event.type == game.QUIT: 
