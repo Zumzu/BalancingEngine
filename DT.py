@@ -25,9 +25,12 @@ DARKGREY=(100,100,100)
 BASEGREY=(180,180,180)
 LIGHTGREY=(220,220,220)
 
+#Barrier - exposed
 #Cyberware
-#Barrier
-#Log
+#Black Lace / temp heal?
+#Button for stun
+#Load System
+#More Hud Symbols
 
 game.init() 
 
@@ -585,13 +588,13 @@ class LoadLog:
         screen.blit(undoImg,self.hitbox)
 
 logs:list[Log]=[]
-
+logHitbox=game.Rect(930,100,450,510)
 logTextLabel=monospacedHuge.render("History",True,BLACK)
 def drawLog():
     screen.blit(logTextLabel,logTextLabel.get_rect(center=(930+450//2,80)))
     frame(930,100,450,510,LIGHTGREY)
     offset=0
-    for i in range(len(logs)):
+    for i in range(logIndex,len(logs)):
         offset+=logs[i].height+15
         if offset<=490:
             game.draw.line(screen,DARKGREY,(940,595-offset),(1360,595-offset),2)
@@ -601,6 +604,9 @@ def drawLog():
     
     frame(930,100,450,56,LIGHTGREY)
     loadLog.draw()
+
+    if logIndex>0:
+        game.draw.polygon(screen,BLACK,((1100,580),(1155,600),(1210,580)))
 
 
 ############### MECHANICAL BELOW
@@ -636,8 +642,11 @@ def processDamage():
 
     return (dmg,rolled,more)
 
+logIndex=0
 
 def pew():
+    global logIndex
+    logIndex=0
     weapon.ammotype=ammoTypes[ammoIndex]
     if damageInput.value=='':
         return
@@ -742,6 +751,9 @@ while True:
 
             if ammoHitbox.collidepoint(game.mouse.get_pos()):
                 ammoIndex=max(min(len(ammoTypes)-1,ammoIndex-event.y),0)
+
+            if logHitbox.collidepoint(game.mouse.get_pos()):
+                logIndex=max(logIndex+event.y,0)
 
         if event.type == game.KEYDOWN and event.key == game.K_RETURN:
             if damageSelected or multiplierSelected:
