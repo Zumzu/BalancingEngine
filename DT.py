@@ -807,11 +807,13 @@ while True:
                 if logs[i].hitbox is not None and logs[i].hitbox.collidepoint(game.mouse.get_pos()):
                     unit=deepcopy(logs[i].unit)
                     logs=logs[i:]
+                    logIndex=0
                     break
             
             if loadLog.hitbox.collidepoint(game.mouse.get_pos()):
                 unit=deepcopy(loadLog.unit)
                 logs=[]
+                logIndex=0
 
 
         if event.type == game.MOUSEBUTTONDOWN and game.mouse.get_pressed()[2]:
