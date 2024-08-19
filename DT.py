@@ -9,7 +9,7 @@ from Modules.Base import Unit,bodyToBTM
 from Modules.Generator import findGun,findArmour
 from Modules.Ammo import *
 from Modules.Dice import locationDie
-from random import randint
+from random import randint,uniform
 
 WIDTH=1429 #actively clean multiples of hexagons native resolution
 HEIGHT=789
@@ -128,6 +128,8 @@ for i in range(6):
     fill(limbImgsCalled[i],(10,50,200))
     fill(limbImgsHighlight[i],(200,200,200))
 
+limbWiggle=[0]*6
+
 limbOffsets=[]
 limbOffsets.append((76,1))
 limbOffsets.append((51,60))
@@ -135,6 +137,14 @@ limbOffsets.append((-1,69))
 limbOffsets.append((131,76))
 limbOffsets.append((23,215))
 limbOffsets.append((93,213))
+
+woundPoints=[]
+woundPoints.append((99,32))
+woundPoints.append((105,130))
+woundPoints.append((31,151))
+woundPoints.append((170,150))
+woundPoints.append((51,334))
+woundPoints.append((135,327))
 
 stunImg=game.image.load('DT/HUD/stun.png').convert_alpha()
 stunSmolImg=game.image.load('DT/HUD/stunSmol.png').convert_alpha()
@@ -147,8 +157,8 @@ zeroedImg=game.image.load('DT/HUD/zeroed.png').convert_alpha()
 shirtImg=game.image.load('DT/HUD/shirt.png').convert_alpha()
 shirt2Img=game.image.load('DT/HUD/shirt2.png').convert_alpha()
 
-undoImg=game.image.load('DT/HUD/undo.png').convert_alpha()
-bulletImg=game.image.load('DT/HUD/bullet.png').convert_alpha()
+undoImg=game.image.load('DT/undo.png').convert_alpha()
+bulletImg=game.image.load('DT/bullet.png').convert_alpha()
 
 stunHudHitbox=game.Rect(40,40,64,64)
 def drawHudElements():
@@ -187,14 +197,18 @@ def limbCollision(i:int):
     return not limbImgs[i].get_at(pixel)[3]==0
 
 def drawDude():
-    x=133
-    y=63
-
     injured=[False]*6
     for injury in unit.critInjuries:
         injured[injury.loc]=True
 
     for i in range(6):
+        x=133
+        y=63
+        if limbWiggle[i]!=0:
+            x+=randint(-limbWiggle[i]//4,limbWiggle[i]//4)
+            y+=randint(-limbWiggle[i]//4,limbWiggle[i]//4)
+            limbWiggle[i]-=1
+
         if calledShotLoc==i:
             screen.blit(limbImgsCalled[i],(x+limbOffsets[i][0],y+limbOffsets[i][1]))
         elif injured[i]:
@@ -204,6 +218,9 @@ def drawDude():
         
         if limbCollision(i):
             screen.blit(limbImgsHighlight[i],(x+limbOffsets[i][0],y+limbOffsets[i][1]))
+
+    x=133
+    y=63
 
     drawPointer(1,x+105,y+85)
     drawPointer(2,x+31,y+151,True)
@@ -618,6 +635,41 @@ def drawLog():
         game.draw.polygon(screen,BLACK,((1100,580),(1155,600),(1210,580)))
 
 
+particleImg=game.image.load('DT/particle.png').convert_alpha()
+bloodImg=game.image.load('DT/particle.png').convert_alpha()
+bloodImg.fill(WOUNDCOLOR)
+
+particles=[]
+class Particle:
+    def __init__(self,loc:tuple[int],type:str):
+        self.x,self.y=loc
+        self.type=type.lower()
+        if self.type=='blood':
+            self.surface=bloodImg
+            self.lifetime=int(0.4*30)
+            self.dx=uniform(-6,6)
+            self.dy=uniform(-10,2)
+        else:
+            self.surface=particleImg
+            self.lifetime=int(3*30)
+            self.dx=0
+            self.dy=0
+    
+    def update(self):
+        if self.lifetime<=0:
+            particles.remove(self)
+        self.lifetime-=1
+
+        self.rect=self.surface.get_rect(center=(self.x,self.y))
+        self.surface.set_alpha(int(min(255,self.lifetime*40)))
+        screen.blit(self.surface,self.rect)
+        self.x+=self.dx
+        self.y+=self.dy
+
+        if self.type=='blood':
+            self.dy+=1
+
+
 ############### MECHANICAL BELOW
 
 def processDamage():
@@ -655,7 +707,7 @@ logIndex=0
 
 shotQueue=[]
 
-def pew():
+def shoot():
     global shotTimer
     shotTimer=0
     if damageInput.value=='':
@@ -680,6 +732,9 @@ def runShot():
     oldUnit=deepcopy(unit)
     unit.damage(weapon=weapon,dmg=shotDmg,loc=shotLoc)
     logs.insert(0,Log(shotLoc,shotDmg,shotRolls,shotMore,oldUnit,unit))
+    limbWiggle[shotLoc]=10
+    for _ in range(10):
+        particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'blood'))
     global logIndex
     logIndex=0
 
@@ -733,7 +788,7 @@ while True:
                 if woundTrackHitBoxes[i].collidepoint(game.mouse.get_pos()):
                     unit.wounds=i
             if pewHitbox.collidepoint(game.mouse.get_pos()):
-                pew()
+                shoot()
 
             for i in range(6):
                 spInputsSelected[i]=spHitboxes[i].collidepoint(game.mouse.get_pos())
@@ -784,7 +839,7 @@ while True:
 
         if event.type == game.KEYDOWN and event.key == game.K_RETURN:
             if damageSelected or multiplierSelected:
-                pew()
+                shoot()
             for i in range(6):
                 spInputsSelected[i]=False
             bodySelected=False
@@ -878,6 +933,9 @@ while True:
     multiplierBlit()
     pewBlit()
     ammoSpinner()
+
+    for particle in particles:
+        particle.update()
 
     game.display.update() 
     clock.tick(30)
