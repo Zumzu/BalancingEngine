@@ -205,8 +205,13 @@ def drawDude():
         x=133
         y=63
         if limbWiggle[i]!=0:
-            x+=randint(-limbWiggle[i]//4,limbWiggle[i]//4)
-            y+=randint(-limbWiggle[i]//4,limbWiggle[i]//4)
+            if i==1:
+                wiggleMod=8
+            else:
+                wiggleMod=4
+
+            x+=randint(-limbWiggle[i]//wiggleMod,limbWiggle[i]//wiggleMod)
+            y+=randint(-limbWiggle[i]//wiggleMod,limbWiggle[i]//wiggleMod)
             limbWiggle[i]-=1
 
         if calledShotLoc==i:
@@ -634,6 +639,8 @@ def drawLog():
     if logIndex>0:
         game.draw.polygon(screen,BLACK,((1100,580),(1155,600),(1210,580)))
 
+crossImg=game.image.load('DT/cross.png').convert_alpha()
+fill(crossImg,(255,0,0))
 
 particleImg=game.image.load('DT/smolParticle.png').convert_alpha()
 bloodImg=game.image.load('DT/smolParticle.png').convert_alpha()
@@ -643,32 +650,54 @@ particles=[]
 class Particle:
     def __init__(self,loc:tuple[int],type:str):
         self.x,self.y=loc
+        self.r=0
         self.type=type.lower()
+        self.dx=0
+        self.dy=0
+        self.ry=0
         if self.type=='blood':
             self.surface=bloodImg
             self.lifetime=int(0.5*30)
             self.dx=uniform(-6,6)
             self.dy=uniform(-10,2)
-        else:
+
+        elif self.type=='tink':
             self.surface=particleImg
             self.lifetime=int(0.25*30)
             self.dx=uniform(-10,10)
             self.dy=uniform(-10,10)
-    
+
+        elif self.type=='cross':
+            self.surface=crossImg
+            self.lifetime=int(1.2*30)
+            self.ry=20
+
     def update(self):
         if self.lifetime<=0:
             particles.remove(self)
         self.lifetime-=1
 
         self.rect=self.surface.get_rect(center=(self.x,self.y))
-        self.surface.set_alpha(int(min(255,self.lifetime*40)))
-        screen.blit(self.surface,self.rect)
+        self.surface.set_alpha(int(min(255,self.lifetime*52)))
+        if self.type=='cross':
+            blitSurface,self.rect=rot_center(self.surface,self.r,self.rect[0],self.rect[1])
+        else:
+            blitSurface=self.surface
+        screen.blit(blitSurface,self.rect)
         self.x+=self.dx
         self.y+=self.dy
+        self.r+=self.ry
 
         if self.type=='blood':
             self.dy+=1
+        elif self.type=='cross':
+            self.ry/=1.09
 
+def rot_center(image, angle, x, y):
+    rotated_image = game.transform.rotate(image, angle)
+    new_rect = rotated_image.get_rect(center = image.get_rect(center = (x, y)).center)
+
+    return rotated_image, new_rect
 
 ############### MECHANICAL BELOW
 
@@ -716,6 +745,8 @@ def shoot():
     for _ in range(multi):
         if calledShotLoc==-1:
             loc=locationDie()
+            if loc==0:
+                loc=-2
         else:
             loc=calledShotLoc
 
@@ -724,23 +755,29 @@ def shoot():
         shotQueue.insert(0,(loc,dmg,rolls,more,ammoIndex))
 
 def runShot():
-    global shotQueue
+    global shotQueue,logIndex,shotTimer
     shotLoc,shotDmg,shotRolls,shotMore,shotAmmoIndex=shotQueue[-1]
     shotQueue=shotQueue[:-1]
-    
-    weapon.ammotype=ammoTypes[shotAmmoIndex]
-    oldUnit=deepcopy(unit)
-    unit.damage(weapon=weapon,dmg=shotDmg,loc=shotLoc)
-    logs.insert(0,Log(shotLoc,shotDmg,shotRolls,shotMore,oldUnit,unit))
-    limbWiggle[shotLoc]=10
-    if logs[0].through!=0:
-        for _ in range(logs[0].through*2):
-            particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'blood'))
+
+    if shotLoc==-2:
+        particles.append(Particle((133+148,63+76),'cross'))
+        shotQueue.append((0,shotDmg,shotRolls,shotMore,shotAmmoIndex))
+        shotTimer=int(1.15*30)
     else:
-        for _ in range(10):
-            particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'tink'))
-    global logIndex
-    logIndex=0
+        weapon.ammotype=ammoTypes[shotAmmoIndex]
+        oldUnit=deepcopy(unit)
+        unit.damage(weapon=weapon,dmg=shotDmg,loc=shotLoc)
+        logs.insert(0,Log(shotLoc,shotDmg,shotRolls,shotMore,oldUnit,unit))
+        limbWiggle[shotLoc]=10
+
+        if logs[0].through!=0:
+            for _ in range(logs[0].through*2):
+                particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'blood'))
+        else:
+            for _ in range(10):
+                particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'tink'))
+        logIndex=0
+        shotTimer=int(PEWDELAY*30)
 
 calledShotLoc=-1
 
@@ -771,7 +808,6 @@ populateSPInputs()
 while True: 
     if shotTimer==0 and shotQueue!=[]:
         runShot()
-        shotTimer=int(PEWDELAY*30)
     elif shotTimer>0:
         shotTimer-=1
 
