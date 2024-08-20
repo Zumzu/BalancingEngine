@@ -25,7 +25,7 @@ DARKGREY=(100,100,100)
 BASEGREY=(180,180,180)
 LIGHTGREY=(220,220,220)
 
-PEWDELAY=0.4 #measured in seconds
+PEWDELAY=0.6 #measured in seconds
 
 #Barrier - exposed
 #Cyberware
@@ -635,8 +635,8 @@ def drawLog():
         game.draw.polygon(screen,BLACK,((1100,580),(1155,600),(1210,580)))
 
 
-particleImg=game.image.load('DT/particle.png').convert_alpha()
-bloodImg=game.image.load('DT/particle.png').convert_alpha()
+particleImg=game.image.load('DT/smolParticle.png').convert_alpha()
+bloodImg=game.image.load('DT/smolParticle.png').convert_alpha()
 bloodImg.fill(WOUNDCOLOR)
 
 particles=[]
@@ -646,14 +646,14 @@ class Particle:
         self.type=type.lower()
         if self.type=='blood':
             self.surface=bloodImg
-            self.lifetime=int(0.4*30)
+            self.lifetime=int(0.5*30)
             self.dx=uniform(-6,6)
             self.dy=uniform(-10,2)
         else:
             self.surface=particleImg
-            self.lifetime=int(3*30)
-            self.dx=0
-            self.dy=0
+            self.lifetime=int(0.25*30)
+            self.dx=uniform(-10,10)
+            self.dy=uniform(-10,10)
     
     def update(self):
         if self.lifetime<=0:
@@ -733,8 +733,12 @@ def runShot():
     unit.damage(weapon=weapon,dmg=shotDmg,loc=shotLoc)
     logs.insert(0,Log(shotLoc,shotDmg,shotRolls,shotMore,oldUnit,unit))
     limbWiggle[shotLoc]=10
-    for _ in range(10):
-        particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'blood'))
+    if logs[0].through!=0:
+        for _ in range(logs[0].through*2):
+            particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'blood'))
+    else:
+        for _ in range(10):
+            particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'tink'))
     global logIndex
     logIndex=0
 
@@ -757,8 +761,8 @@ ammoTypes=[Ammo(),
            Arrow()]
 
 weapon=findGun("streetmaster")
-unit=Unit(None,findArmour([14,16,16,16,10,10]),0,8,9,cyber=[0,0,0,0,0,0]) # manual load
-loadLog:Log=LoadLog(unit,"Low Level Recruit")
+unit=Unit(None,findArmour([14,14,14,14,10,10]),0,7,7,cyber=[0,0,0,0,0,0]) # manual load
+loadLog:Log=LoadLog(unit,"Default")
 
 populateBody()
 populateSPInputs()
@@ -941,6 +945,9 @@ while True:
 
     game.display.update() 
     clock.tick(30)
+
+    if logs==[]:
+        loadLog=LoadLog(unit,loadLog.desc)
 
     system('cls')
     print(round(clock.get_fps(),1))
