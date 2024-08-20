@@ -364,8 +364,8 @@ def multiplierBlit():
     if multiplierInput.value=='':
         screen.blit(multiplierEmptyFieldLabel,(DAMAGEX+157,DAMAGEY+42))
 
-pewTextLabel=monospacedMedium.render("PEW!",True,BLACK)
-pewPewTextLabel=monospacedMedium.render("PEW PEW!",True,BLACK)
+pewTextLabel=monospacedMedium.render("PEW!",True,(255,255,255))
+pewPewTextLabel=monospacedMedium.render("PEW PEW!",True,(255,255,255))
 pewHitbox=game.Rect(DAMAGEX+214,DAMAGEY+38,100,36)
 def pewBlit():
     buttonFrame(DAMAGEX+214,DAMAGEY+38,110,36,pewHitbox.collidepoint(game.mouse.get_pos()))
