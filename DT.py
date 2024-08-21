@@ -5,17 +5,21 @@ from colour import Color
 from copy import deepcopy
 from os import system
 
-from Modules.Base import Unit,bodyToBTM
+from Modules.Base import Unit,bodyToBTM,CyberLimb
 from Modules.Generator import findGun,findArmour
 from Modules.Ammo import *
 from Modules.Dice import locationDie
-from random import randint,uniform
+from random import randint,uniform,random
 
 WIDTH=1429 #actively clean multiples of hexagons native resolution
 HEIGHT=789
 
 BLACK=(0,0,0)
 DARKGREEN=(10,100,10)
+TRACEBLUE=(0,200,255)
+TRACEYELLOW=(244,249,51)
+TRACERED=(255,0,0)
+CYBERCOLOR=(144,176,185)
 
 WOUNDCOLOR=(169,18,1)
 GREYWOUNDCOLOR=(200,150,150)
@@ -25,7 +29,8 @@ DARKGREY=(100,100,100)
 BASEGREY=(180,180,180)
 LIGHTGREY=(220,220,220)
 
-PEWDELAY=0.6 #measured in seconds
+SHOTDELAY=0.6 #measured in seconds
+TRACEDELAY=0.2 #measured in seconds
 
 #Barrier - exposed
 #Cyberware
@@ -33,6 +38,7 @@ PEWDELAY=0.6 #measured in seconds
 #Button for stun
 #Load System
 #More Hud Symbols
+#Skull Cusioning
 
 game.init() 
 
@@ -82,6 +88,17 @@ def fill(surface,rgb):
         for j in range(h):
             surface.set_at((i,j),game.Color(r,g,b,surface.get_at((i,j))[3]))
 
+def fillInner(surface,rgb): #alpha from 0-1
+    w,h = surface.get_size()
+    r,g,b = rgb
+    for i in range(w):
+        for j in range(h):
+            a=surface.get_at((i,j))[3]
+            if a==100:
+                surface.set_at((i,j),game.Color(r,g,b,a))
+            else:
+                surface.set_at((i,j),game.Color(r,g,b,0))
+
 def tint(surface,rgb):
     w,h = surface.get_size()
     for i in range(w):
@@ -123,10 +140,12 @@ limbImgs=dudeImgs()
 limbImgsWounded=dudeImgs()
 limbImgsCalled=dudeImgs()
 limbImgsHighlight=dudeImgs()
+limbImgCyber=dudeImgs()
 for i in range(6):
     fill(limbImgsWounded[i],WOUNDCOLOR)
     fill(limbImgsCalled[i],(10,50,200))
     fill(limbImgsHighlight[i],(200,200,200))
+    fillInner(limbImgCyber[i],CYBERCOLOR)
 
 limbWiggle=[0]*6
 
@@ -185,16 +204,27 @@ def drawHudElements():
     elif totalSp/totalSpMax<0.9:
         screen.blit(shirtImg,(57,460))
 
-def limbCollision(i:int):
+def limbCollision(i:int,pos):
     x=133
     y=63
     width,height=limbImgs[i].get_size()
-    mouseX,mouseY=game.mouse.get_pos()
-    pixel=(mouseX-limbOffsets[i][0]-x, mouseY-limbOffsets[i][1]-y)
+    posX,posY=pos
+    pixel=(posX-limbOffsets[i][0]-x, posY-limbOffsets[i][1]-y)
     if pixel[0]<0 or pixel[0]>=width or pixel[1]<0 or pixel[1]>=height:
         return False
 
     return not limbImgs[i].get_at(pixel)[3]==0
+
+def limbInnerCollision(i:int,pos):
+    x=133
+    y=63
+    width,height=limbImgs[i].get_size()
+    posX,posY=pos
+    pixel=(posX-limbOffsets[i][0]-x, posY-limbOffsets[i][1]-y)
+    if pixel[0]<0 or pixel[0]>=width or pixel[1]<0 or pixel[1]>=height:
+        return False
+    
+    return limbImgs[i].get_at(pixel)[3]==100
 
 def drawDude():
     injured=[False]*6
@@ -214,6 +244,7 @@ def drawDude():
             y+=randint(-limbWiggle[i]//wiggleMod,limbWiggle[i]//wiggleMod)
             limbWiggle[i]-=1
 
+        
         if calledShotLoc==i:
             screen.blit(limbImgsCalled[i],(x+limbOffsets[i][0],y+limbOffsets[i][1]))
         elif injured[i]:
@@ -221,7 +252,9 @@ def drawDude():
         else:
             screen.blit(limbImgs[i],(x+limbOffsets[i][0],y+limbOffsets[i][1]))
         
-        if limbCollision(i):
+        if unit.cyber[i] is not None:
+            screen.blit(limbImgCyber[i],(x+limbOffsets[i][0],y+limbOffsets[i][1]))
+        if limbCollision(i,game.mouse.get_pos()):
             screen.blit(limbImgsHighlight[i],(x+limbOffsets[i][0],y+limbOffsets[i][1]))
 
     x=133
@@ -231,7 +264,14 @@ def drawDude():
     drawPointer(2,x+31,y+151,True)
     drawPointer(3,x+170,y+150)
     drawPointer(4,x+51,y+334,True)
-    drawPointer(5,x+135,y+327)    
+    drawPointer(5,x+135,y+327)
+    
+    drawSDP(0,x+110,y+30)
+    drawSDP(1,x+105,y+85)
+    drawSDP(2,x+31,y+151,True)
+    drawSDP(3,x+170,y+150)
+    drawSDP(4,x+51,y+334,True)
+    drawSDP(5,x+135,y+327)
 
 injuryTextCache={}
 def drawPointer(loc:int,x:int,y:int,flip:bool=False):
@@ -275,6 +315,19 @@ def drawPointer(loc:int,x:int,y:int,flip:bool=False):
                 verticalOffset-=14
 
 
+def drawSDP(loc:int,x:int,y:int,flip:bool=False):
+    if unit.cyber[loc] is None:
+        return
+    
+    sdpText=monospacedMediumLarge.render(str(unit.cyber[loc].sdp),True,BLACK)
+    if flip:
+        game.draw.line(screen, BLACK, (x,y), (x-28,y-28), 2)
+        game.draw.line(screen, BLACK, (x-28,y-28), (x-40,y-28), 2)
+        screen.blit(sdpText,sdpText.get_rect(center=(x-34,y-38)))
+    else:
+        game.draw.line(screen, BLACK, (x,y), (x+28,y-28), 2)
+        game.draw.line(screen, BLACK, (x+28,y-28), (x+40,y-28), 2)
+        screen.blit(sdpText,sdpText.get_rect(center=(x+34,y-38)))
 
 tempX=0
 tempY=0
@@ -618,7 +671,6 @@ class LoadLog:
         screen.blit(monospacedSmall.render(f"[{self.unit.armour.sp[0]}] [{self.unit.armour.sp[1]}] [{self.unit.armour.sp[2]}|{self.unit.armour.sp[3]}] [{self.unit.armour.sp[4]}|{self.unit.armour.sp[5]}], BODY-{self.unit.body}, COOL-{self.unit.cool}",True,BLACK),(950,134))
         screen.blit(undoImg,self.hitbox)
 
-logs:list[Log]=[]
 logHitbox=game.Rect(930,100,450,510)
 logTextLabel=monospacedHuge.render("History",True,BLACK)
 def drawLog():
@@ -639,14 +691,23 @@ def drawLog():
     if logIndex>0:
         game.draw.polygon(screen,BLACK,((1100,580),(1155,600),(1210,580)))
 
+debugImg=game.image.load('DT/smolParticle.png').convert_alpha()
+fill(debugImg,(255,0,255))
+
 crossImg=game.image.load('DT/cross.png').convert_alpha()
 fill(crossImg,(255,0,0))
+
+traceBlueImg=game.image.load('DT/tinyParticle.png').convert_alpha()
+traceYellowImg=game.image.load('DT/tinyParticle.png').convert_alpha()
+traceRedImg=game.image.load('DT/tinyParticle.png').convert_alpha()
+fill(traceBlueImg,TRACEBLUE)
+fill(traceYellowImg,TRACEYELLOW)
+fill(traceRedImg,TRACERED)
 
 particleImg=game.image.load('DT/smolParticle.png').convert_alpha()
 bloodImg=game.image.load('DT/smolParticle.png').convert_alpha()
 bloodImg.fill(WOUNDCOLOR)
 
-particles=[]
 class Particle:
     def __init__(self,loc:tuple[int],type:str):
         self.x,self.y=loc
@@ -671,6 +732,15 @@ class Particle:
             self.surface=crossImg
             self.lifetime=int(1.2*30)
             self.ry=20
+        
+        elif 'trace' in self.type:
+            if 'yellow' in self.type:
+                self.surface=traceYellowImg
+            elif 'red' in self.type:
+                self.surface=traceRedImg
+            else:
+                self.surface=traceBlueImg
+            self.lifetime=int(2.5*30)
 
     def update(self):
         if self.lifetime<=0:
@@ -678,7 +748,10 @@ class Particle:
         self.lifetime-=1
 
         self.rect=self.surface.get_rect(center=(self.x,self.y))
-        self.surface.set_alpha(int(min(255,self.lifetime*52)))
+        if 'trace' in self.type:
+            self.surface.set_alpha(int(min(200,self.lifetime*15)))
+        else:
+            self.surface.set_alpha(int(min(255,self.lifetime*52)))
         if self.type=='cross':
             blitSurface,self.rect=rot_center(self.surface,self.r,self.rect[0],self.rect[1])
         else:
@@ -693,11 +766,60 @@ class Particle:
         elif self.type=='cross':
             self.ry/=1.09
 
+
+
+class Trace:
+    def __init__(self,loc:tuple[int],minY):
+        self.minY=minY
+        self.x,self.y=loc
+        self.dx=0
+        self.dy=-3
+        self.decisionTimer=0
+
+    def update(self):
+        if self.y<self.minY:
+            traces.remove(self)
+
+        if self.decisionTimer<=0:
+            if self.dy==0:
+                self.dy=-2
+                self.dx=0
+            elif random()<.2:
+                self.dy=0
+                self.dx=-2 if random()<.5 else 2
+
+            self.decisionTimer=randint(3,25)
+        else:
+            self.decisionTimer-=1
+
+
+        for i in range(6):
+            if unit.cyber[i] is not None and limbInnerCollision(i,(self.x,self.y)):
+                if unit.cyber[i].broken:
+                    particles.append(Particle((self.x,self.y),'tracered'))
+                elif unit.cyber[i].damaged:
+                    particles.append(Particle((self.x,self.y),'traceyellow'))
+                else:
+                    particles.append(Particle((self.x,self.y),'traceblue'))
+        self.x+=self.dx
+        self.y+=self.dy
+
 def rot_center(image, angle, x, y):
     rotated_image = game.transform.rotate(image, angle)
     new_rect = rotated_image.get_rect(center = image.get_rect(center = (x, y)).center)
 
     return rotated_image, new_rect
+
+def drawTraces(x,y,dx,dy):
+    global traceTimer
+    for trace in traces:
+        trace.update()
+
+    if traceTimer<=0:
+        traceTimer=int(TRACEDELAY*30)
+        traces.append(Trace((randint(x,x+dx),y+dy),y))
+    else:
+        traceTimer-=1
 
 ############### MECHANICAL BELOW
 
@@ -731,10 +853,6 @@ def processDamage():
         raise "@@FAILED DMG EVAL@@"
 
     return (dmg,rolled,more)
-
-logIndex=0
-
-shotQueue=[]
 
 def shoot():
     global shotTimer
@@ -777,11 +895,10 @@ def runShot():
             for _ in range(10):
                 particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'tink'))
         logIndex=0
-        shotTimer=int(PEWDELAY*30)
-
-calledShotLoc=-1
+        shotTimer=int(SHOTDELAY*30)
 
 shotTimer=0
+traceTimer=0
 ammoIndex=0
 ammoTypes=[Ammo(),
            HP(),
@@ -797,8 +914,16 @@ ammoTypes=[Ammo(),
            Slug(),
            Arrow()]
 
+logIndex=0
+calledShotLoc=-1
+
+shotQueue:list[tuple]=[]
+particles:list[Particle]=[]
+traces:list[Trace]=[]
+logs:list[Log]=[]
+
 weapon=findGun("streetmaster")
-unit=Unit(None,findArmour([14,14,14,14,10,10]),0,7,7,cyber=[0,0,0,0,0,0]) # manual load
+unit=Unit(None,findArmour([14,14,14,14,10,10]),0,7,7,cyber=[0,0,20,0,20,0]) # manual load
 loadLog:Log=LoadLog(unit,"Default")
 
 populateBody()
@@ -837,7 +962,7 @@ while True:
                 unit.stunned=False
 
             for i in range(6):
-                if limbCollision(i):
+                if limbCollision(i,game.mouse.get_pos()):
                     if calledShotLoc==i:
                         calledShotLoc=-1
                     else:
@@ -860,6 +985,13 @@ while True:
             for i in range(6):
                 if spHitboxes[i].collidepoint(game.mouse.get_pos()):
                     unit.armour.type[i]='hard' if unit.armour.typeAt(i)=='soft' else 'soft'
+
+            for i in range(6):
+                if limbCollision(i,game.mouse.get_pos()):
+                    if unit.cyber[i] is not None:
+                        unit.cyber[i]=None
+                    else:
+                        unit.cyber[i]=CyberLimb(20)
 
         if event.type == game.MOUSEWHEEL:
             if coolHitbox.collidepoint(game.mouse.get_pos()):
@@ -960,6 +1092,7 @@ while True:
     charFrame(30,30,400,600) # char frame
     frame(460,30,WIDTH-490,600,BASEGREY) # main frame
     drawHudElements()
+    drawTraces(120,68,207,469)
     drawDude()
     drawSP(41,557,unit.armour.sp,unit.armour.spMax)
 
@@ -978,6 +1111,9 @@ while True:
 
     for particle in particles:
         particle.update()
+
+    #DEBUG
+    screen.blit(debugImg,debugImg.get_rect(center=(tempX,tempY)))
 
     game.display.update() 
     clock.tick(30)
