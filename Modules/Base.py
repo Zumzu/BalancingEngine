@@ -138,8 +138,6 @@ class Melee(Weapon):
         
         return enemyUnit.armour.typeAt(loc)==self.pref
 
-
-
 class Gun(Weapon):
     def __init__(self,name:str,cost:int,wa:int,d6:int,more:int,rof:int,mag:int,ammotype:Ammo):
         self.name=name
@@ -193,7 +191,7 @@ class Gun(Weapon):
     def _fullAuto(self,attacker,target): # Full auto
         rof=min(self.currentAmmo,self.rof)
         self.currentAmmo-=rof
-        bulletsHit=attacker.autoAttackRoll(rof)-(CLOSE_RANGE-1)
+        bulletsHit=attacker.autoAttackRoll(rof)-CLOSE_RANGE
         
         bulletsHit=min(bulletsHit,rof)
         for _ in range(bulletsHit):

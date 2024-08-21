@@ -34,8 +34,7 @@ SHOTDELAY=0.6 #measured in seconds
 TRACEDELAY=0.2 #measured in seconds
 
 #Barrier - exposed
-#Cyberware
-#Black Lace / temp heal?
+#Ignore wound levels
 #Button for stun
 #Load System
 #More Hud Symbols
