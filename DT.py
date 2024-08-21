@@ -20,6 +20,7 @@ TRACEBLUE=(0,200,255)
 TRACEYELLOW=(244,249,51)
 TRACERED=(255,0,0)
 CYBERCOLOR=(144,176,185)
+CYBERWOUNDCOLOR=(0,145,185)
 
 WOUNDCOLOR=(169,18,1)
 GREYWOUNDCOLOR=(200,150,150)
@@ -318,8 +319,11 @@ def drawPointer(loc:int,x:int,y:int,flip:bool=False):
 def drawSDP(loc:int,x:int,y:int,flip:bool=False):
     if unit.cyber[loc] is None:
         return
-    
-    sdpText=monospacedMediumLarge.render(str(unit.cyber[loc].sdp),True,BLACK)
+    if unit.cyber[loc].broken:
+        sdpText=monospacedMediumLarge.render(str(unit.cyber[loc].sdp),True,WOUNDCOLOR)
+    else:
+        sdpText=monospacedMediumLarge.render(str(unit.cyber[loc].sdp),True,BLACK)
+
     if flip:
         game.draw.line(screen, BLACK, (x,y), (x-28,y-28), 2)
         game.draw.line(screen, BLACK, (x-28,y-28), (x-40,y-28), 2)
@@ -605,9 +609,12 @@ class Log:
     def draw(self,x:int,y:int):
         black=BLACK
         woundColor=WOUNDCOLOR
+        cyberColor=CYBERWOUNDCOLOR
         if self.greyed:
             black=DARKGREY
             woundColor=DARKGREY
+            cyberColor=DARKGREY
+        
 
         offset=0
         if self.dmgRolled!=[]:
@@ -637,10 +644,18 @@ class Log:
         else:
             screen.blit(monospacedMedium.render("Dealt",True,black),(x,y+23))
             offset+=60
-            screen.blit(monospacedMediumLarge.render(f"{self.through}",True,woundColor),(x+offset,y+21))
-            offset+=len(str(self.through))*14+4
-            screen.blit(monospacedMedium.render(f"wound{'s' if self.through>1 else ''}",True,black),(x+offset,y+23))
-            offset+=72
+            
+            if self.through>0:
+                screen.blit(monospacedMediumLarge.render(f"{abs(self.through)}",True,woundColor),(x+offset,y+21))
+                offset+=len(str(abs(self.through)))*14+4
+                screen.blit(monospacedMedium.render(f"wound{'s' if self.through>1 else ''}",True,black),(x+offset,y+23))
+                offset+=72
+            else:
+                screen.blit(monospacedMediumLarge.render(f"{abs(self.through)}",True,cyberColor),(x+offset,y+21))
+                offset+=len(str(abs(self.through)))*14+4
+                screen.blit(monospacedMedium.render(f"SDP damage",True,black),(x+offset,y+23))
+                offset+=125
+
             if self.stunned:
                 screen.blit(stunSmolImg,(x+offset,y+20))
                 offset+=72
@@ -708,6 +723,9 @@ particleImg=game.image.load('DT/smolParticle.png').convert_alpha()
 bloodImg=game.image.load('DT/smolParticle.png').convert_alpha()
 bloodImg.fill(WOUNDCOLOR)
 
+sparkImg=game.image.load('DT/spark.png').convert_alpha()
+sparkImg.fill(TRACEYELLOW)
+
 class Particle:
     def __init__(self,loc:tuple[int],type:str):
         self.x,self.y=loc
@@ -716,6 +734,7 @@ class Particle:
         self.dx=0
         self.dy=0
         self.ry=0
+        self.damp=1
         if self.type=='blood':
             self.surface=bloodImg
             self.lifetime=int(0.5*30)
@@ -732,6 +751,13 @@ class Particle:
             self.surface=crossImg
             self.lifetime=int(1.2*30)
             self.ry=20
+
+        elif self.type=='spark':
+            self.surface=sparkImg
+            self.lifetime=int(0.9*30)
+            self.dx=uniform(-6,6)
+            self.dy=uniform(-6,6)
+            self.damp=1.15
         
         elif 'trace' in self.type:
             if 'yellow' in self.type:
@@ -741,6 +767,9 @@ class Particle:
             else:
                 self.surface=traceBlueImg
             self.lifetime=int(2.5*30)
+        
+        else:
+            raise "@@ BAD PARTICLE TYPE @@"
 
     def update(self):
         if self.lifetime<=0:
@@ -752,7 +781,7 @@ class Particle:
             self.surface.set_alpha(int(min(200,self.lifetime*15)))
         else:
             self.surface.set_alpha(int(min(255,self.lifetime*52)))
-        if self.type=='cross':
+        if self.type=='cross' or self.type=='spark':
             blitSurface,self.rect=rot_center(self.surface,self.r,self.rect[0],self.rect[1])
         else:
             blitSurface=self.surface
@@ -760,12 +789,15 @@ class Particle:
         self.x+=self.dx
         self.y+=self.dy
         self.r+=self.ry
+        self.dx/=self.damp
+        self.dy/=self.damp
 
         if self.type=='blood':
             self.dy+=1
         elif self.type=='cross':
             self.ry/=1.09
-
+        elif self.type=='spark':
+            self.r=(self.r+randint(-50,50))%360
 
 
 class Trace:
@@ -885,12 +917,16 @@ def runShot():
         weapon.ammotype=ammoTypes[shotAmmoIndex]
         oldUnit=deepcopy(unit)
         unit.damage(weapon=weapon,dmg=shotDmg,loc=shotLoc)
+        if oldUnit.wounds==unit.wounds and not oldUnit.uncon and unit.uncon:
+            unit.uncon=False
         logs.insert(0,Log(shotLoc,shotDmg,shotRolls,shotMore,oldUnit,unit))
         limbWiggle[shotLoc]=10
 
         if logs[0].through!=0:
             for _ in range(logs[0].through*2):
                 particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'blood'))
+            for _ in range(logs[0].through*-4):
+                particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'spark'))
         else:
             for _ in range(10):
                 particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'tink'))
