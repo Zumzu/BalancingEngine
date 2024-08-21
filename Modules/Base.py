@@ -292,6 +292,11 @@ class CyberLimb:
         if self.sdp==0:
             self.broken=True
 
+    def setSDP(self,sdp:int):
+        self.sdp=sdp
+        self.damaged=self.sdp<=self.maxSdp//2
+        self.broken=self.sdp==0
+
     def reset(self):
         self.sdp=self.maxSdp
         self.damaged=False

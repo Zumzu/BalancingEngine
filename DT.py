@@ -315,6 +315,13 @@ def drawPointer(loc:int,x:int,y:int,flip:bool=False):
                 screen.blit(injuryTextCache[injury.name],injuryTextCache[injury.name].get_rect(center=(x+70,y-40+verticalOffset)))
                 verticalOffset-=14
 
+sdpHitboxes=[]
+sdpHitboxes.append(game.Rect(260,44,32,20))
+sdpHitboxes.append(game.Rect(259,101,32,20))
+sdpHitboxes.append(game.Rect(117,166,32,20))
+sdpHitboxes.append(game.Rect(324,165,32,20))
+sdpHitboxes.append(game.Rect(136,350,32,20))
+sdpHitboxes.append(game.Rect(288,342,32,20))
 
 def drawSDP(loc:int,x:int,y:int,flip:bool=False):
     if unit.cyber[loc] is None:
@@ -959,7 +966,7 @@ traces:list[Trace]=[]
 logs:list[Log]=[]
 
 weapon=findGun("streetmaster")
-unit=Unit(None,findArmour([14,14,14,14,10,10]),0,7,7,cyber=[0,0,20,0,20,0]) # manual load
+unit=Unit(None,findArmour([14,14,14,14,10,10]),0,7,7,cyber=[0,0,0,0,0,0]) # manual load
 loadLog:Log=LoadLog(unit,"Default")
 
 populateBody()
@@ -1024,10 +1031,13 @@ while True:
 
             for i in range(6):
                 if limbCollision(i,game.mouse.get_pos()):
-                    if unit.cyber[i] is not None:
-                        unit.cyber[i]=None
-                    else:
+                    if unit.cyber[i] is None:
                         unit.cyber[i]=CyberLimb(20)
+                    elif unit.cyber[i].sdp==20:
+                        unit.cyber[i]=CyberLimb(30)
+                    else:
+                        unit.cyber[i]=None
+                        
 
         if event.type == game.MOUSEWHEEL:
             if coolHitbox.collidepoint(game.mouse.get_pos()):
@@ -1046,6 +1056,10 @@ while True:
 
             if logHitbox.collidepoint(game.mouse.get_pos()):
                 logIndex=max(logIndex+event.y,0)
+            
+            for i in range(6):
+                if sdpHitboxes[i].collidepoint(game.mouse.get_pos()):
+                    unit.cyber[i].setSDP(max(min(unit.cyber[i].maxSdp,unit.cyber[i].sdp+event.y),0))
 
         if event.type == game.KEYDOWN and event.key == game.K_RETURN:
             if damageSelected or multiplierSelected:
