@@ -25,6 +25,13 @@ class AP(Ammo):
             return 4
         return 0
     
+class TMJ():
+    def __init__(self):
+        super().__init__()
+        self.name="Total Metal Jacket"
+        self.desc="Pierces 15sp of barriers"
+        self.pierceBar=15
+
 class Incin(Ammo):
     def __init__(self):
         super().__init__()

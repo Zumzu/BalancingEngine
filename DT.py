@@ -595,6 +595,12 @@ def generateSPHitboxes(startX,startY):
 
 spHitboxes=generateSPHitboxes(41,557)
 
+barHitbox=game.Rect(800,500,63,63)
+def drawBar():
+    frame(800+tempX,500+tempY,63,63,BASEGREY)
+    barText=monospacedHuge.render(str(unit.barrier.sp),True,BLACK)
+    screen.blit(barText,barText.get_rect(center=(800+tempX+31,500+tempY+33)))
+
 locationTextNames=["Head","Torso","L.Arm","R.Arm","L.Leg","R.Leg"]
 class Log:
     def __init__(self,loc:int,dmgTotal:int,dmgRolled:list[int],more:int,oldUnit:Unit,newUnit:Unit) -> None:
@@ -952,6 +958,7 @@ ammoIndex=0
 ammoTypes=[Ammo(),
            HP(),
            AP(),
+           TMJ(),
            Explosive(),
            Incin(),
            API(),
@@ -1049,11 +1056,17 @@ while True:
                         unit.cyber[i]=CyberLimb(30)
                     else:
                         unit.cyber[i]=None
+                
+            if barHitbox.collidepoint(game.mouse.get_pos()):
+                unit.barrier.sp=0
                         
 
         if event.type == game.MOUSEWHEEL:
             if coolHitbox.collidepoint(game.mouse.get_pos()):
                 unit.cool=max(min(10,unit.cool+event.y),3)
+
+            if barHitbox.collidepoint(game.mouse.get_pos()):
+                unit.barrier.sp=max(min(99,unit.barrier.sp+event.y),0)
 
             if bodyHitbox.collidepoint(game.mouse.get_pos()):
                 unit.body=max(min(10,unit.body+event.y),3)
@@ -1161,6 +1174,7 @@ while True:
     loadBlit()
     bodyBlit()
     coolBlit()
+    drawBar()
     drawLog()
 
     drawWounds(unit.wounds)

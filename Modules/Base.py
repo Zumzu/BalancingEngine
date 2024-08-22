@@ -15,6 +15,7 @@ class Ammo:
         self.name='Normal'
         self.desc='~'
         self.pierceSP=0
+        self.pierceBar=0
         self.cybercontrol=False
 
     def bonusDamage(self,enemyUnit,loc:int):
@@ -52,6 +53,9 @@ class Weapon(ABC):
         pass
 
     def pierceSP(self):
+        return 0
+    
+    def pierceBar(self):
         return 0
     
     def cybercontrol(self):
@@ -212,6 +216,9 @@ class Gun(Weapon):
     def pierceSP(self):
         return self.ammotype.pierceSP
     
+    def pierceBar(self):
+        return self.ammotype.pierceBar
+    
     def cybercontrol(self):
         return self.ammotype.cybercontrol
 
@@ -301,15 +308,15 @@ class CyberLimb:
         self.broken=False
 
 class Barrier:
-    def __init__(self,sp:int,covers:tuple[int]):
+    def __init__(self,sp:int,covers:list[bool]):
         self.sp=sp
         self.covers=covers
 
-    def apply(self,loc:int,dmg:int):
-        if loc not in self.covers:
+    def apply(self,loc:int,dmg:int,ignore:int):
+        if not self.covers[loc]:
             return dmg
 
-        output=dmg-self.sp
+        output=max(dmg-max(self.sp-ignore,0),0)
         if self.sp>0:
             self.sp-=1
         return output
@@ -342,6 +349,7 @@ class Unit:
         self.dead=False
 
         self.critInjuries=[]
+        self.barrier=Barrier(0,[True]*6)
 
     def __str__(self):
         i=0
@@ -381,6 +389,7 @@ class Unit:
             if c is not None:
                 c.reset()
         self.critInjuries=[]
+        self.barrier=Barrier(0,[True]*6)
 
     def attack(self,enemy):
         if self.uncon:
@@ -409,10 +418,13 @@ class Unit:
             if weapon is None:
                 raise 'No source of damage, both dmg and weapon are null'
             dmg=weapon.getDamage()
+        
         if weapon is not None:
             dmg+=weapon.bonusDamage(self,loc)
+            dmg=self.barrier.apply(loc,dmg, weapon.pierceBar())
             dmg=self.armour.apply(loc,dmg, weapon.preferred(self,loc), weapon.pierceSP())
         else:
+            dmg=self.barrier.apply(loc,dmg,0)
             dmg=self.armour.apply(loc,dmg,False,0)
 
         if(dmg<=0): # return early if no damage
