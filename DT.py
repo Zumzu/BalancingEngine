@@ -180,6 +180,7 @@ undoImg=game.image.load('DT/undo.png').convert_alpha()
 bulletImg=game.image.load('DT/bullet.png').convert_alpha()
 
 stunHudHitbox=game.Rect(40,40,64,64)
+unconHudHitbox=game.Rect(110,40,64,64)
 def drawHudElements():
     if unit.wounds>=50:
         screen.blit(deadImg,(40,40))
@@ -501,6 +502,7 @@ def drawWoundSet(startX:int,startY:int,boxSize:float,wounds:int,greyWounds:int):
             game.draw.line(screen,GREYWOUNDCOLOR,(startX+boxSize*i+6,startY+int(boxSize)-2),(startX+boxSize*i+int(boxSize)-5,startY+3),8)
 
 woundsHitbox=game.Rect(30,645,WIDTH//2-15,HEIGHT-675)
+deadText=impactHuge.render("D  E  A  D",True,WOUNDCOLOR)
 zeroedText=impactHuge.render("Z E R O E D",True,WOUNDCOLOR)
 def drawWounds(wounds):
     greyWounds=0
@@ -518,8 +520,13 @@ def drawWounds(wounds):
         s=game.Surface((WIDTH//2-15,HEIGHT-675),game.SRCALPHA)
         s.fill((30,30,30,200))
         screen.blit(s,(30,645))
-
         screen.blit(zeroedText,zeroedText.get_rect(center=(394,699)))
+
+    elif unit.dead and not woundsHitbox.collidepoint(game.mouse.get_pos()):
+        s=game.Surface((WIDTH//2-15,HEIGHT-675),game.SRCALPHA)
+        s.fill((30,30,30,200))
+        screen.blit(s,(30,645))
+        screen.blit(deadText,deadText.get_rect(center=(394,699)))
 
 
 def generateWoundHitboxes(startX:int,startY:int,endX:int,buffer:int):
@@ -931,7 +938,7 @@ def runShot():
         if logs[0].through!=0:
             for _ in range(logs[0].through*2):
                 particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'blood'))
-            for _ in range(logs[0].through*-4):
+            for _ in range(logs[0].through*-2):
                 particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'spark'))
         else:
             for _ in range(10):
@@ -1001,7 +1008,13 @@ while True:
                 spInputsSelected[i]=spHitboxes[i].collidepoint(game.mouse.get_pos())
 
             if stunHudHitbox.collidepoint(game.mouse.get_pos()):
-                unit.stunned=False
+                unit.stunned=not unit.stunned
+            elif unconHudHitbox.collidepoint(game.mouse.get_pos()):
+                if unit.wounds<50:
+                    if unit.dead:
+                        unit.dead=False
+                    elif unit.uncon:
+                        unit.uncon=False
 
             for i in range(6):
                 if limbCollision(i,game.mouse.get_pos()):
