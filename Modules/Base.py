@@ -3,7 +3,7 @@ from copy import deepcopy
 from abc import ABC,abstractmethod
 
 from Modules.Dice import d10E,d10EDown,d6,locationDie
-from Modules.Injury import critInjuryRoll
+from Modules.Injury import critInjuryRoll,doubleCritInjuryRoll
 
 CLOSE_RANGE=15
 CALLED_HEAD_PENALTY=8
@@ -436,9 +436,16 @@ class Unit:
                 self.dead=True
                 self.critInjuries.append(critInjuryRoll(loc))
             elif loc!=1 and dmg>=8:
-                self.critInjuries.append(critInjuryRoll(loc))
+                if dmg>=16:
+                    self.critInjuries.append(doubleCritInjuryRoll(loc))
+                else:
+                    self.critInjuries.append(critInjuryRoll(loc))
             elif loc==1 and dmg>=15:
                 self.critInjuries.append(critInjuryRoll(loc))
+
+            for injury in self.critInjuries:
+                if 'spinal' in injury.name.lower():
+                    self.uncon=True
             
             if self.wounds>=WOUND_CAP:
                 self.uncon=True

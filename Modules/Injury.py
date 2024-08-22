@@ -77,3 +77,18 @@ def critInjuryRoll(loc:int):
 
     output.loc=loc
     return output
+
+def doubleCritInjuryRoll(loc:int):
+    if loc==0:
+        output=deepcopy(headCritInjury)
+    elif loc==1:
+        output=deepcopy(torsoCritInjuries[0])
+    elif loc==2 or loc==3:
+        output=deepcopy(armCritInjuries[0])
+    elif loc==4 or loc==5:
+        output=deepcopy(legCritInjuries[0])
+    else:
+        raise "Bad location"
+
+    output.loc=loc
+    return output
