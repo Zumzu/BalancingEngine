@@ -25,7 +25,7 @@ class AP(Ammo):
             return 4
         return 0
     
-class TMJ():
+class TMJ(Ammo):
     def __init__(self):
         super().__init__()
         self.name="Total Metal Jacket"
