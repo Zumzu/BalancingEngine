@@ -317,7 +317,7 @@ class Barrier:
             return dmg
 
         output=max(dmg-max(self.sp-ignore,0),0)
-        if self.sp>0:
+        if self.sp>0 and dmg>=self.sp//2:
             self.sp-=1
         return output
     

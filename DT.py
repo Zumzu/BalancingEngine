@@ -35,7 +35,6 @@ TRACEDELAY=0.2 #measured in seconds
 
 #Barrier - exposed
 #Ignore wound levels
-#Button for stun
 #Load System
 #More Hud Symbols
 #Skull Cusioning
@@ -228,17 +227,24 @@ def drawHudElements():
         screen.blit(shirt2Img,(57,460))
     elif totalSp/totalSpMax<0.9:
         screen.blit(shirtImg,(57,460))
+    
+    global shieldWiggle
 
-    screen.blit(shieldBorder,(321,384))
+    x=321+randint(-shieldWiggle//8,shieldWiggle//8)
+    y=384+randint(-shieldWiggle//8,shieldWiggle//8)
+    if shieldWiggle>0:
+        shieldWiggle-=1
+    screen.blit(shieldBorder,(x,y))
     for i in range(4):
         if unit.barrier.covers[i+2]:
-            screen.blit(shieldParts[i],(321,384))
+            screen.blit(shieldParts[i],(x,y))
         if shieldCollision(i,game.mouse.get_pos()):
-            screen.blit(shieldHighlightParts[i],(321,384))
+            screen.blit(shieldHighlightParts[i],(x,y))
 
     barText=monospacedHuge.render(str(unit.barrier.sp),True,BLACK)
-    screen.blit(barText,barText.get_rect(center=(361,431)))
+    screen.blit(barText,barText.get_rect(center=(x+40,y+47)))
 
+shieldWiggle=0
 barHitbox=game.Rect(330,390,63,83)
 
 def shieldCollision(i:int,pos):
@@ -698,8 +704,9 @@ class Log:
 
         screen.blit(line,(x+offset,y))
         offset=0
-
-        if not self.degraded and self.through==0:
+        if not self.degraded and self.unit.barrier.sp>0:
+            screen.blit(monospacedMedium.render(f"Absorbed by barrier",True,DARKGREY),(x,y+23))
+        elif not self.degraded and self.through==0:
             screen.blit(monospacedMedium.render(f"Did not degrade",True,DARKGREY),(x,y+23))
         elif self.through==0:
             screen.blit(monospacedMedium.render(f"Degraded",True,DARKGREY),(x,y+23))
@@ -967,7 +974,7 @@ def shoot():
         shotQueue.insert(0,(loc,dmg,rolls,more,ammoIndex))
 
 def runShot():
-    global shotQueue,logIndex,shotTimer
+    global shotQueue,logIndex,shotTimer,shieldWiggle
     shotLoc,shotDmg,shotRolls,shotMore,shotAmmoIndex=shotQueue[-1]
     shotQueue=shotQueue[:-1]
 
@@ -982,9 +989,17 @@ def runShot():
         if oldUnit.wounds==unit.wounds and not oldUnit.uncon and unit.uncon:
             unit.uncon=False
         logs.insert(0,Log(shotLoc,shotDmg,shotRolls,shotMore,oldUnit,unit))
-        limbWiggle[shotLoc]=10
 
-        if logs[0].through!=0:
+        if oldUnit.barrier.sp>0 and unit.barrier.covers[shotLoc]:
+            shieldWiggle=10
+
+        if unit.armour.sp[shotLoc]==0 or oldUnit.armour.sp[shotLoc]!=unit.armour.sp[shotLoc]:
+            limbWiggle[shotLoc]=10
+
+        if oldUnit.barrier.sp>0 and oldUnit.armour.sp[shotLoc]==unit.armour.sp[shotLoc]:
+            for _ in range(20):
+                particles.append(Particle((361+randint(-20,20),429+randint(-20,20)),'tink'))
+        elif logs[0].through!=0:
             for _ in range(logs[0].through*2):
                 particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'blood'))
             for _ in range(logs[0].through*-2):
