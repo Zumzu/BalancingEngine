@@ -166,6 +166,9 @@ for i in range(4):
     fill255(shieldParts[i],TRACEBLUE)
     fill255(shieldPartsDark[i],DARKGREY)
     fill255(shieldPartsHighlight[i],LIGHTGREY)
+
+shieldIconOn=game.image.load('DT/Shield/shieldIconOn.png').convert_alpha()
+shieldIconOff=game.image.load('DT/Shield/shieldIconOff.png').convert_alpha()
     
 limbImgs=dudeImgs()
 limbImgsWounded=dudeImgs()
@@ -261,6 +264,7 @@ def drawHudElements():
     else:
         if unit.barrier.sp!=0:
             unit.barrier.sp=0
+            unit.barrier.covers=[True]*6
 
 
 barValueHitbox=game.Rect(330,390,63,83)
@@ -668,6 +672,10 @@ barToggleHitbox=game.Rect(471,419,63,63)
 
 def drawBar():
     frame(471,419,63,63,BASEGREY)
+    if barrierActive:
+        screen.blit(shieldIconOn,(481,427))
+    else:
+        screen.blit(shieldIconOff,(481,427))
     
 
 locationTextNames=["Head","Torso","L.Arm","R.Arm","L.Leg","R.Leg"]
@@ -1129,6 +1137,7 @@ while True:
 
             if barToggleHitbox.collidepoint(game.mouse.get_pos()):
                 barrierActive=not barrierActive
+                unit.barrier.covers=[True]*6
 
         if event.type == game.MOUSEBUTTONDOWN and game.mouse.get_pressed()[2]:
             for i in range(6):
