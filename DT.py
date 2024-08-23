@@ -152,12 +152,20 @@ def shieldImgs():
     output.append(game.image.load('DT/Shield/shieldRleg.png').convert_alpha())
     return output
 
+shieldWiggle=0
+barrierActive=False
+
 shieldBorder=game.image.load('DT/Shield/shieldBorder.png').convert_alpha()
+shieldBorderDark=game.image.load('DT/Shield/shieldBorder.png').convert_alpha()
+fill255(shieldBorderDark,DARKGREY)
+
 shieldParts=shieldImgs()
-shieldHighlightParts=shieldImgs()
+shieldPartsDark=shieldImgs()
+shieldPartsHighlight=shieldImgs()
 for i in range(4):
     fill255(shieldParts[i],TRACEBLUE)
-    fill255(shieldHighlightParts[i],LIGHTGREY)
+    fill255(shieldPartsDark[i],DARKGREY)
+    fill255(shieldPartsHighlight[i],LIGHTGREY)
     
 limbImgs=dudeImgs()
 limbImgsWounded=dudeImgs()
@@ -228,24 +236,34 @@ def drawHudElements():
     elif totalSp/totalSpMax<0.9:
         screen.blit(shirtImg,(57,460))
     
-    global shieldWiggle
+    if barrierActive:
+        global shieldWiggle
+        x=321+randint(-shieldWiggle//8,shieldWiggle//8)
+        y=384+randint(-shieldWiggle//8,shieldWiggle//8)
+        if shieldWiggle>0:
+            shieldWiggle-=1
+        if unit.barrier.sp==0:
+            screen.blit(shieldBorderDark,(x,y))
+        else:
+            screen.blit(shieldBorder,(x,y))
 
-    x=321+randint(-shieldWiggle//8,shieldWiggle//8)
-    y=384+randint(-shieldWiggle//8,shieldWiggle//8)
-    if shieldWiggle>0:
-        shieldWiggle-=1
-    screen.blit(shieldBorder,(x,y))
-    for i in range(4):
-        if unit.barrier.covers[i+2]:
-            screen.blit(shieldParts[i],(x,y))
-        if shieldCollision(i,game.mouse.get_pos()):
-            screen.blit(shieldHighlightParts[i],(x,y))
+        for i in range(4):
+            if unit.barrier.covers[i+2]:
+                if unit.barrier.sp==0:
+                    screen.blit(shieldPartsDark[i],(x,y))
+                else:
+                    screen.blit(shieldParts[i],(x,y))
+            if shieldCollision(i,game.mouse.get_pos()):
+                screen.blit(shieldPartsHighlight[i],(x,y))
 
-    barText=monospacedHuge.render(str(unit.barrier.sp),True,BLACK)
-    screen.blit(barText,barText.get_rect(center=(x+40,y+47)))
+        barText=monospacedHuge.render(str(unit.barrier.sp),True,BLACK)
+        screen.blit(barText,barText.get_rect(center=(x+40,y+47)))
+    else:
+        if unit.barrier.sp!=0:
+            unit.barrier.sp=0
 
-shieldWiggle=0
-barHitbox=game.Rect(330,390,63,83)
+
+barValueHitbox=game.Rect(330,390,63,83)
 
 def shieldCollision(i:int,pos):
     width,height=shieldParts[i].get_size()
@@ -646,8 +664,10 @@ def generateSPHitboxes(startX,startY):
 
 spHitboxes=generateSPHitboxes(41,557)
 
+barToggleHitbox=game.Rect(471,419,63,63)
+
 def drawBar():
-    frame(800,500,63,63,BASEGREY)
+    frame(471,419,63,63,BASEGREY)
     
 
 locationTextNames=["Head","Torso","L.Arm","R.Arm","L.Leg","R.Leg"]
@@ -704,10 +724,11 @@ class Log:
 
         screen.blit(line,(x+offset,y))
         offset=0
-        if not self.degraded and self.unit.barrier.sp>0:
-            screen.blit(monospacedMedium.render(f"Absorbed by barrier",True,DARKGREY),(x,y+23))
-        elif not self.degraded and self.through==0:
-            screen.blit(monospacedMedium.render(f"Did not degrade",True,DARKGREY),(x,y+23))
+        if not self.degraded and self.through==0:
+            if self.unit.barrier.sp>0 and self.unit.barrier.covers[self.loc]:
+                screen.blit(monospacedMedium.render(f"Absorbed by barrier",True,DARKGREY),(x,y+23))
+            else:
+                screen.blit(monospacedMedium.render(f"Did not degrade",True,DARKGREY),(x,y+23))
         elif self.through==0:
             screen.blit(monospacedMedium.render(f"Degraded",True,DARKGREY),(x,y+23))
         else:
@@ -1106,6 +1127,9 @@ while True:
                     unit.barrier.covers[0]=unit.barrier.covers[2] and unit.barrier.covers[3]
                     unit.barrier.covers[1]=unit.barrier.covers[2] and unit.barrier.covers[3]
 
+            if barToggleHitbox.collidepoint(game.mouse.get_pos()):
+                barrierActive=not barrierActive
+
         if event.type == game.MOUSEBUTTONDOWN and game.mouse.get_pressed()[2]:
             for i in range(6):
                 if spHitboxes[i].collidepoint(game.mouse.get_pos()):
@@ -1120,15 +1144,15 @@ while True:
                     else:
                         unit.cyber[i]=None
                 
-            if barHitbox.collidepoint(game.mouse.get_pos()):
+            if barValueHitbox.collidepoint(game.mouse.get_pos()) and barrierActive:
                 unit.barrier.sp=0
-                        
+
 
         if event.type == game.MOUSEWHEEL:
             if coolHitbox.collidepoint(game.mouse.get_pos()):
                 unit.cool=max(min(10,unit.cool+event.y),3)
 
-            if barHitbox.collidepoint(game.mouse.get_pos()):
+            if barValueHitbox.collidepoint(game.mouse.get_pos()) and barrierActive:
                 unit.barrier.sp=max(min(99,unit.barrier.sp+event.y),0)
 
             if bodyHitbox.collidepoint(game.mouse.get_pos()):
