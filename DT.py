@@ -88,14 +88,25 @@ def fill(surface,rgb):
         for j in range(h):
             surface.set_at((i,j),game.Color(r,g,b,surface.get_at((i,j))[3]))
 
-def fillInner(surface,rgb): #alpha from 0-1
+def fill255(surface,rgb): #alpha from 0-1
+    w,h = surface.get_size()
+    r,g,b = rgb
+    for i in range(w):
+        for j in range(h):
+            a=surface.get_at((i,j))[3]
+            if a==255:
+                surface.set_at((i,j),game.Color(r,g,b,150))
+            else:
+                surface.set_at((i,j),game.Color(r,g,b,0))
+
+def fill100(surface,rgb): #alpha from 0-1
     w,h = surface.get_size()
     r,g,b = rgb
     for i in range(w):
         for j in range(h):
             a=surface.get_at((i,j))[3]
             if a==100:
-                surface.set_at((i,j),game.Color(r,g,b,a))
+                surface.set_at((i,j),game.Color(r,g,b,100))
             else:
                 surface.set_at((i,j),game.Color(r,g,b,0))
 
@@ -134,9 +145,22 @@ def dudeImgs():
     output.append(game.image.load('DT/Body/Rleg.png').convert_alpha())
     return output
 
-limbImgs=dudeImgs()
+def shieldImgs():
+    output=[]
+    output.append(game.image.load('DT/Shield/shieldLarm.png').convert_alpha())
+    output.append(game.image.load('DT/Shield/shieldRarm.png').convert_alpha())
+    output.append(game.image.load('DT/Shield/shieldLleg.png').convert_alpha())
+    output.append(game.image.load('DT/Shield/shieldRleg.png').convert_alpha())
+    return output
 
-#Cached versions of the limbs with the appropriate coloring
+shieldBorder=game.image.load('DT/Shield/shieldBorder.png').convert_alpha()
+shieldParts=shieldImgs()
+shieldHighlightParts=shieldImgs()
+for i in range(4):
+    fill255(shieldParts[i],TRACEBLUE)
+    fill255(shieldHighlightParts[i],LIGHTGREY)
+    
+limbImgs=dudeImgs()
 limbImgsWounded=dudeImgs()
 limbImgsCalled=dudeImgs()
 limbImgsHighlight=dudeImgs()
@@ -145,7 +169,7 @@ for i in range(6):
     fill(limbImgsWounded[i],WOUNDCOLOR)
     fill(limbImgsCalled[i],(10,50,200))
     fill(limbImgsHighlight[i],(200,200,200))
-    fillInner(limbImgCyber[i],CYBERCOLOR)
+    fill100(limbImgCyber[i],CYBERCOLOR)
 
 limbWiggle=[0]*6
 
@@ -204,6 +228,27 @@ def drawHudElements():
         screen.blit(shirt2Img,(57,460))
     elif totalSp/totalSpMax<0.9:
         screen.blit(shirtImg,(57,460))
+
+    screen.blit(shieldBorder,(321,384))
+    for i in range(4):
+        if unit.barrier.covers[i+2]:
+            screen.blit(shieldParts[i],(321,384))
+        if shieldCollision(i,game.mouse.get_pos()):
+            screen.blit(shieldHighlightParts[i],(321,384))
+
+    barText=monospacedHuge.render(str(unit.barrier.sp),True,BLACK)
+    screen.blit(barText,barText.get_rect(center=(361,431)))
+
+barHitbox=game.Rect(330,390,63,83)
+
+def shieldCollision(i:int,pos):
+    width,height=shieldParts[i].get_size()
+    posX,posY=pos
+    pixel=(posX-321,posY-384)
+    if pixel[0]<0 or pixel[0]>=width or pixel[1]<0 or pixel[1]>=height:
+        return False
+
+    return not shieldParts[i].get_at(pixel)[3]==0
 
 def limbCollision(i:int,pos):
     x=133
@@ -595,11 +640,9 @@ def generateSPHitboxes(startX,startY):
 
 spHitboxes=generateSPHitboxes(41,557)
 
-barHitbox=game.Rect(800,500,63,63)
 def drawBar():
-    frame(800+tempX,500+tempY,63,63,BASEGREY)
-    barText=monospacedHuge.render(str(unit.barrier.sp),True,BLACK)
-    screen.blit(barText,barText.get_rect(center=(800+tempX+31,500+tempY+33)))
+    frame(800,500,63,63,BASEGREY)
+    
 
 locationTextNames=["Head","Torso","L.Arm","R.Arm","L.Leg","R.Leg"]
 class Log:
@@ -1042,6 +1085,11 @@ while True:
                 logs=[]
                 logIndex=0
 
+            for i in range(4):
+                if shieldCollision(i,game.mouse.get_pos()):
+                    unit.barrier.covers[i+2]=not unit.barrier.covers[i+2]
+                    unit.barrier.covers[0]=unit.barrier.covers[2] and unit.barrier.covers[3]
+                    unit.barrier.covers[1]=unit.barrier.covers[2] and unit.barrier.covers[3]
 
         if event.type == game.MOUSEBUTTONDOWN and game.mouse.get_pressed()[2]:
             for i in range(6):
