@@ -392,8 +392,8 @@ def drawDude():
     drawSDP(4,x+51,y+334,True)
     drawSDP(5,x+135,y+327)
 
-injuryTextCache={}
 def drawPointer(loc:int,x:int,y:int,flip:bool=False):
+    global infoText
     verticalOffset=0
     draw=False
     for injury in unit.critInjuries:
@@ -407,31 +407,63 @@ def drawPointer(loc:int,x:int,y:int,flip:bool=False):
         game.draw.line(screen, BLACK, (x-30,y-30), (x-100,y-30), 2)
         for injury in unit.critInjuries:
             if injury.loc==loc:
-                if injury.name not in injuryTextCache:
-                    if injury.severity==0:
-                        textColor=DARKGREEN
-                    elif injury.severity==2:
-                        textColor=WOUNDCOLOR
-                    else:
-                        textColor=BLACK
-                    injuryTextCache[injury.name]=impactTiny.render(injury.name,True,textColor)
-                screen.blit(injuryTextCache[injury.name],injuryTextCache[injury.name].get_rect(center=(x-70,y-40+verticalOffset)))
+                if injury.severity==0:
+                    textColor=DARKGREEN
+                elif injury.severity==2:
+                    textColor=WOUNDCOLOR
+                else:
+                    textColor=BLACK
+                injuryText=impactTiny.render(injury.name,True,textColor)
+                injuryRect=injuryText.get_rect(center=(x-70,y-40+verticalOffset))
+                screen.blit(injuryText,injuryRect)
                 verticalOffset-=14
+                if injuryRect.collidepoint(game.mouse.get_pos()):
+                    infoText=injury.text
+
     else:
         game.draw.line(screen, BLACK, (x,y), (x+30,y-30), 2)
         game.draw.line(screen, BLACK, (x+30,y-30), (x+100,y-30), 2)
         for injury in unit.critInjuries:
             if injury.loc==loc:
-                if injury.name not in injuryTextCache:
-                    if injury.severity==0:
-                        textColor=DARKGREEN
-                    elif injury.severity==2:
-                        textColor=WOUNDCOLOR
-                    else:
-                        textColor=BLACK
-                    injuryTextCache[injury.name]=impactTiny.render(injury.name,True,textColor)
-                screen.blit(injuryTextCache[injury.name],injuryTextCache[injury.name].get_rect(center=(x+70,y-40+verticalOffset)))
+                if injury.severity==0:
+                    textColor=DARKGREEN
+                elif injury.severity==2:
+                    textColor=WOUNDCOLOR
+                else:
+                    textColor=BLACK
+                injuryText=impactTiny.render(injury.name,True,textColor)
+                injuryRect=injuryText.get_rect(center=(x+70,y-40+verticalOffset))
+                screen.blit(injuryText,injuryRect)
                 verticalOffset-=14
+                if injuryRect.collidepoint(game.mouse.get_pos()):
+                    infoText=injury.text
+
+infoText=""
+def drawInfoBox():
+    global infoText
+    if infoText=='':
+        return
+    x,y=game.mouse.get_pos()
+    maxWidth=0
+    maxHeight=20
+    lines=infoText.split(', ')
+    renderedText=[]
+    for line in lines:
+        renderedText.append(monospacedMedium.render(line,True,BLACK))
+        rect=renderedText[-1].get_rect()
+        maxWidth=max(maxWidth,rect.width+20)
+        maxHeight+=rect.height
+    
+    if maxWidth==0 or maxHeight==0:
+        raise "@@ INFO BOX BAD TEXT @@"
+
+    lineHeight=renderedText[-1].get_rect().height
+    frame(x,y,maxWidth,maxHeight,LIGHTGREY)
+    for i in range(len(renderedText)):
+        screen.blit(renderedText[i],(x+10,y+10+i*lineHeight))
+
+    infoText=''
+
 
 sdpHitboxes=[]
 sdpHitboxes.append(game.Rect(260,44,32,20))
@@ -1325,6 +1357,8 @@ while True:
     multiplierBlit()
     pewBlit()
     ammoSpinner()
+    
+    drawInfoBox()
 
     for particle in particles:
         particle.update()
