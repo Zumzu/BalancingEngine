@@ -22,7 +22,10 @@ TRACERED=(255,0,0)
 CYBERCOLOR=(144,176,185)
 CYBERWOUNDCOLOR=(0,145,185)
 
+STUNYELLOW=(255,244,55)
+
 WOUNDCOLOR=(169,18,1)
+DARKWOUNDCOLOR=(130,13,0)
 GREYWOUNDCOLOR=(200,150,150)
 
 DARKERGREY=(30,30,30)
@@ -30,14 +33,15 @@ DARKGREY=(100,100,100)
 BASEGREY=(180,180,180)
 LIGHTGREY=(220,220,220)
 
-SHOTDELAY=0.6 #measured in seconds
+SHOTDELAY=0.8 #measured in seconds
 TRACEDELAY=0.2 #measured in seconds
 
-#Barrier - exposed
+#Explosion and fire symbols in log
 #Ignore wound levels
-#Load System
-#More Hud Symbols
 #Skull Cusioning
+#Load System
+#More Hud Symbols - All negative
+
 
 game.init() 
 
@@ -47,12 +51,14 @@ screen = game.display.set_mode((WIDTH,HEIGHT))
 background=background.convert_alpha()
 game.display.set_caption("Damage Tracker Mk2")
 game.display.set_icon(game.image.load('DT/EngineIco.png'))
-impactHuge=game.font.SysFont('impact',70)
 monospacedHuge=game.font.SysFont('consolas',40)
 monospacedLarge=game.font.SysFont('consolas',30)
 monospacedMediumLarge=game.font.SysFont('consolas',23)
 monospacedMedium=game.font.SysFont('consolas',20)
 monospacedSmall=game.font.SysFont('consolas',15)
+
+impactHuge=game.font.SysFont('impact',70)
+impactLarge=game.font.SysFont('impact',30)
 impactTiny=game.font.SysFont('impact',13)
 
 clock = game.time.Clock()
@@ -177,7 +183,7 @@ limbImgsHighlight=dudeImgs()
 limbImgCyber=dudeImgs()
 for i in range(6):
     fill(limbImgsWounded[i],WOUNDCOLOR)
-    fill(limbImgsCalled[i],(10,50,200))
+    fill(limbImgsCalled[i],TRACEBLUE)
     fill(limbImgsHighlight[i],(200,200,200))
     fill100(limbImgCyber[i],CYBERCOLOR)
 
@@ -213,9 +219,18 @@ shirt2Img=game.image.load('DT/HUD/shirt2.png').convert_alpha()
 undoImg=game.image.load('DT/undo.png').convert_alpha()
 bulletImg=game.image.load('DT/bullet.png').convert_alpha()
 
+warningRedImg=game.image.load('DT/HUD/warning.png').convert_alpha()
+warningYellowImg=game.image.load('DT/HUD/warning.png').convert_alpha()
+fill(warningYellowImg,STUNYELLOW)
+warningBlinkTimer=40
+
+bleedImg=game.image.load('DT/HUD/bleed.png').convert_alpha()
+
 stunHudHitbox=game.Rect(40,40,64,64)
 unconHudHitbox=game.Rect(110,40,64,64)
 def drawHudElements():
+    global shieldWiggle, warningBlinkTimer
+
     if unit.wounds>=50:
         screen.blit(deadImg,(40,40))
         screen.blit(zeroedImg,(110,40))
@@ -234,15 +249,14 @@ def drawHudElements():
         totalSp+=unit.armour.sp[i]
         totalSpMax+=unit.armour.spMax[i]
 
-    if totalSp/totalSpMax<0.75:
+    if totalSp/totalSpMax<0.78:
         screen.blit(shirt2Img,(57,460))
     elif totalSp/totalSpMax<0.9:
         screen.blit(shirtImg,(57,460))
     
     if barrierActive:
-        global shieldWiggle
         x=321+randint(-shieldWiggle//8,shieldWiggle//8)
-        y=384+randint(-shieldWiggle//8,shieldWiggle//8)
+        y=374+randint(-shieldWiggle//8,shieldWiggle//8)
         if shieldWiggle>0:
             shieldWiggle-=1
         if unit.barrier.sp==0:
@@ -265,6 +279,37 @@ def drawHudElements():
         if unit.barrier.sp!=0:
             unit.barrier.sp=0
             unit.barrier.covers=[True]*6
+
+    if unit.wounds>=15:
+        warningBlinkTimer-=1
+        if unit.dead:
+            screen.blit(warningRedImg,(51,194))
+        elif warningBlinkTimer>=0:
+            if unit.wounds<=30:
+                screen.blit(warningYellowImg,(51,194))
+            else:
+                screen.blit(warningRedImg,(51,194))
+
+        dangerValue=max(3,50-unit.wounds*1.3)
+        if warningBlinkTimer<=-dangerValue:
+            warningBlinkTimer=dangerValue
+
+    bleeding=False
+    for injury in unit.critInjuries:
+        if 'bleeding' in injury.text:
+            bleeding=True
+
+    if (unit.uncon and unit.wounds>15) or bleeding:
+        screen.blit(bleedImg,(306,478))
+        if unit.wounds>=50:
+            minutesText=impactLarge.render('~',False,DARKWOUNDCOLOR)
+        else:
+            minutes=50-unit.wounds
+            for injury in unit.critInjuries:
+                minutes/=injury.bleedMultiplier
+            minutesText=impactLarge.render(str(round(minutes))+'m',False,DARKWOUNDCOLOR)
+
+        screen.blit(minutesText,minutesText.get_rect(center=(380,516)))
 
 
 barValueHitbox=game.Rect(330,390,63,83)
@@ -1022,7 +1067,7 @@ def runShot():
         if oldUnit.barrier.sp>0 and unit.barrier.covers[shotLoc]:
             shieldWiggle=10
 
-        if unit.armour.sp[shotLoc]==0 or oldUnit.armour.sp[shotLoc]!=unit.armour.sp[shotLoc]:
+        if unit.armour.sp[shotLoc]==0 or oldUnit.armour.sp[shotLoc]!=unit.armour.sp[shotLoc] or oldUnit.barrier.sp==0:
             limbWiggle[shotLoc]=10
 
         if oldUnit.barrier.sp>0 and oldUnit.armour.sp[shotLoc]==unit.armour.sp[shotLoc]:
