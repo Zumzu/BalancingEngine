@@ -4,6 +4,7 @@ from sys import exit
 from colour import Color
 from copy import deepcopy
 from os import system
+from math import cos,sin,pi
 
 from Modules.Base import Unit,bodyToBTM,CyberLimb
 from Modules.Generator import findGun,findArmour
@@ -392,6 +393,10 @@ def drawDude():
     drawSDP(4,x+51,y+334,True)
     drawSDP(5,x+135,y+327)
 
+    global pointerAngle
+    pointerAngle+=0.03
+
+pointerAngle=0
 def drawPointer(loc:int,x:int,y:int,flip:bool=False):
     global infoText
     verticalOffset=0
@@ -438,6 +443,12 @@ def drawPointer(loc:int,x:int,y:int,flip:bool=False):
                 if injuryRect.collidepoint(game.mouse.get_pos()):
                     infoText=injury.text
 
+    count=3
+    for i in range(count):
+        newParticle=Particle((8*cos(pointerAngle+pi*2*(i/count))+x,8*sin(pointerAngle+pi*2*(i/count))+y),'tracewound')
+        newParticle.lifetime/=2
+        particles.append(newParticle)
+
 infoText=""
 def drawInfoBox():
     global infoText
@@ -456,6 +467,12 @@ def drawInfoBox():
     
     if maxWidth==0 or maxHeight==0:
         raise "@@ INFO BOX BAD TEXT @@"
+    
+    if x+maxWidth>WIDTH:
+        x-=maxWidth
+    
+    if y+maxHeight>HEIGHT:
+        y-=maxHeight
 
     lineHeight=renderedText[-1].get_rect().height
     frame(x,y,maxWidth,maxHeight,LIGHTGREY)
@@ -616,12 +633,14 @@ woundTrackLabels=[]
 for text in woundTrackText:
     woundTrackLabels.append(monospacedSmall.render(text,True,BLACK))
 
+medicalIconImage=game.image.load('DT/medical.png').convert_alpha()
 zeroIconImage=game.image.load('DT/ZeroIco.png')
 zeroIconImage=game.transform.scale(zeroIconImage,(26,26)).convert_alpha()
 def drawWoundTrack(startX:int,startY:int,endX:int,buffer:int,wounds:int,greyWounds:int):
     wounds=max(0,min(50,wounds))
     boxSize=(endX-startX-buffer*10)/50
-    screen.blit(zeroIconImage,(startX-boxSize+buffer//2,startY-3))
+    screen.blit(zeroIconImage,(startX-boxSize+buffer//3,startY-3))
+    screen.blit(medicalIconImage,(startX-boxSize+buffer//3,startY+49))
     
     offsetX=0
     offsetY=0
@@ -665,7 +684,7 @@ def drawWounds(wounds):
                 wounds-=greyWounds
             break
     frame(30,645,WIDTH//2-15,HEIGHT-675,BASEGREY)
-    drawWoundTrack(60,670,WIDTH-150,4,wounds,greyWounds)
+    drawWoundTrack(64,670,WIDTH-150,4,wounds,greyWounds)
     if wounds>=50 and not woundsHitbox.collidepoint(game.mouse.get_pos()):
         s=game.Surface((WIDTH//2-15,HEIGHT-675),game.SRCALPHA)
         s.fill((30,30,30,200))
@@ -678,11 +697,22 @@ def drawWounds(wounds):
         screen.blit(s,(30,645))
         screen.blit(deadText,deadText.get_rect(center=(394,699)))
 
+    
+    if medicalHitbox.collidepoint(game.mouse.get_pos()):
+        global infoText
+        if unit.wounds==0:
+            infoText='This unit is perfectly healthy! :)'
+        elif unit.wounds>=50 or unit.dead:
+            infoText='This unit is super not alive'
+        else:
+            infoText=f'Med DC-{10+2*((unit.wounds-1)//5)}, First Aid Time: {5 if unit.wounds<=25 else 10}m, Surgery Time: {5+5*((unit.wounds-1)//10)}m'
+
 
 def generateWoundHitboxes(startX:int,startY:int,endX:int,buffer:int):
     output=[]
     boxSize=(endX-startX-buffer*10)/50
-    output.append(game.Rect((startX-boxSize+buffer//2),startY,boxSize+1,boxSize))
+    output.append(game.Rect((startX-boxSize+buffer//3),startY-3,boxSize+5,boxSize+5))
+    medicalHitbox=game.Rect((startX-boxSize+buffer//3),startY+49,boxSize+5,boxSize+5)
     offsetX=0
     offsetY=0
     for i in range(10):
@@ -693,9 +723,9 @@ def generateWoundHitboxes(startX:int,startY:int,endX:int,buffer:int):
         for j in range(5):
             output.append(game.Rect((startX+i*5*boxSize+offsetX)+boxSize*j,startY+offsetY,boxSize+1,boxSize))
 
-    return output
+    return (medicalHitbox,output)
 
-woundTrackHitBoxes=generateWoundHitboxes(60,670,WIDTH-150,4)
+medicalHitbox,woundTrackHitBoxes=generateWoundHitboxes(60,670,WIDTH-150,4)
 
 spGradient=[Color("white")]
 spGradient+=list(Color("#FBE795").range_to(Color("red"),8))
@@ -890,9 +920,11 @@ fill(crossImg,(255,0,0))
 traceBlueImg=game.image.load('DT/tinyParticle.png').convert_alpha()
 traceYellowImg=game.image.load('DT/tinyParticle.png').convert_alpha()
 traceRedImg=game.image.load('DT/tinyParticle.png').convert_alpha()
+traceWoundImg=game.image.load('DT/tinyParticle.png').convert_alpha()
 fill(traceBlueImg,TRACEBLUE)
 fill(traceYellowImg,TRACEYELLOW)
 fill(traceRedImg,TRACERED)
+fill(traceWoundImg,WOUNDCOLOR)
 
 particleImg=game.image.load('DT/smolParticle.png').convert_alpha()
 bloodImg=game.image.load('DT/smolParticle.png').convert_alpha()
@@ -939,8 +971,12 @@ class Particle:
                 self.surface=traceYellowImg
             elif 'red' in self.type:
                 self.surface=traceRedImg
-            else:
+            elif 'blue' in self.type:
                 self.surface=traceBlueImg
+            elif 'wound' in self.type:
+                self.surface=traceWoundImg
+            else:
+                raise '@@ TRACE ERROR @@'
             self.lifetime=int(2.5*30)
         
         else:
