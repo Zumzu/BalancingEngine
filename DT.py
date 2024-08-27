@@ -460,7 +460,10 @@ def drawInfoBox():
     lines=infoText.split(', ')
     renderedText=[]
     for line in lines:
-        renderedText.append(monospacedMedium.render(line,True,BLACK))
+        if line[0]=='@':
+            renderedText.append(monospacedMediumLarge.render(line[1:],True,BLACK))
+        else:
+            renderedText.append(monospacedMedium.render(line,True,BLACK))
         rect=renderedText[-1].get_rect()
         maxWidth=max(maxWidth,rect.width+20)
         maxHeight+=rect.height
@@ -471,13 +474,14 @@ def drawInfoBox():
     if x+maxWidth>WIDTH:
         x-=maxWidth
     
-    if y+maxHeight>HEIGHT:
+    if y-maxHeight>=0:
         y-=maxHeight
 
-    lineHeight=renderedText[-1].get_rect().height
+    offset=0
     frame(x,y,maxWidth,maxHeight,LIGHTGREY)
     for i in range(len(renderedText)):
-        screen.blit(renderedText[i],(x+10,y+10+i*lineHeight))
+        screen.blit(renderedText[i],(x+10,y+10+offset))
+        offset+=renderedText[i].get_rect().height
 
     infoText=''
 
@@ -625,6 +629,10 @@ def ammoSpinner():
             ammoFaintTextCache[ammoIndex]=monospacedMedium.render(ammoTypes[ammoIndex+1].name,True,DARKGREY)
         screen.blit(ammoFaintTextCache[ammoIndex],(1143,729))
 
+    if ammoHitbox.collidepoint(game.mouse.get_pos()):
+        global infoText
+        infoText=f"@{ammoTypes[ammoIndex].name}, {ammoTypes[ammoIndex].desc}"
+
 woundTrackText=['LIGHT','SERIOUS','CRITICAL']
 for i in range(7):
     woundTrackText.append(f"MORTAL_{i}")
@@ -705,7 +713,7 @@ def drawWounds(wounds):
         elif unit.wounds>=50 or unit.dead:
             infoText='This unit is super not alive'
         else:
-            infoText=f'Med DC-{10+2*((unit.wounds-1)//5)}, First Aid Time: {5 if unit.wounds<=25 else 10}m, Surgery Time: {5+5*((unit.wounds-1)//10)}m'
+            infoText=f'@DC-{10+2*((unit.wounds-1)//5)}, First Aid Time: {5 if unit.wounds<=25 else 10}m, Surgery Time: {5+5*((unit.wounds-1)//10)}m'
 
 
 def generateWoundHitboxes(startX:int,startY:int,endX:int,buffer:int):

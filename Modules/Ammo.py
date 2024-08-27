@@ -5,7 +5,7 @@ class HP(Ammo):
     def __init__(self):
         super().__init__()
         self.name="Hollow Point"
-        self.desc="Deals +2 damage against soft armour, or +6 damage against unarmoured locations"
+        self.desc="Deals +2 damage against soft armour, Deals +6 damage against unarmoured locations"
 
     def bonusDamage(self,enemyUnit:Unit,loc:int):
         if enemyUnit.armour.sp[loc]==0:
@@ -29,14 +29,14 @@ class TMJ(Ammo):
     def __init__(self):
         super().__init__()
         self.name="Total Metal Jacket"
-        self.desc="Pierces 15sp of barriers"
+        self.desc="Pierces 15sp of barriers  "
         self.pierceBar=15
 
 class Incin(Ammo):
     def __init__(self):
         super().__init__()
         self.name="Incendiary Rounds"
-        self.desc="When dealing damage through, do an additional 1D6 damage direct to body (triggers an additional stun check)"
+        self.desc="When dealing damage through:, +1D6 damage direct to body, (triggers an additional stun check)"
     
     def onDamage(self,enemyUnit:Unit,loc:int):
         enemyUnit.directToBody(d6())
@@ -63,7 +63,7 @@ class HEI(Ammo):
     def __init__(self):
         super().__init__()
         self.name="HEI"
-        self.desc="Acts as explosive rounds, with the additional incendiary round effect"
+        self.desc="Explosive with additional incendiary effect"
 
     def onDamage(self,enemyUnit:Unit,loc:int):
         enemyUnit.directToBody(d6())
@@ -75,7 +75,7 @@ class API(Ammo):
     def __init__(self):
         super().__init__()
         self.name="API"
-        self.desc="Acts as AP rounds, with the additional incendiary round effect"
+        self.desc="AP with additional incendiary effect"
 
     def onDamage(self,enemyUnit:Unit,loc:int):
         enemyUnit.directToBody(d6())
@@ -89,7 +89,7 @@ class FragFlechette(Ammo):
     def __init__(self):
         super().__init__()
         self.name="Frag Flechette"
-        self.desc="Preferred both (0.5x SP)"
+        self.desc="Preferred both (0.5x SP) "
 
     def preferred(self,enemyUnit:Unit,loc:int):
         return True
@@ -98,14 +98,14 @@ class Cybercontrol(Ammo):
     def __init__(self):
         super().__init__()
         self.name="Cybercontrol Round"
-        self.desc="Deals 2x SDP damage on cyber limbs, robotics, or other electronics. When dealing damage to a cyberlimb, its owner to makes a stun check."
+        self.desc="Deals 2x SDP damage to cyber limbs, Triggers a stun check"
         self.cybercontrol=True
 
 class CybercontrolSlug(Ammo):
     def __init__(self):
         super().__init__()
         self.name="Cybercontrol Slug"
-        self.desc="Slug, additionally deals 2x SDP damage on cyber limbs, robotics, or other electronics. When dealing damage to a cyberlimb, its owner to makes a stun check"
+        self.desc="Slug that additionally, deals 2x SDP damage to cyber limbs, Triggers a stun check"
         self.cybercontrol=True
     
     def preferred(self,enemyUnit:Unit,loc:int):
@@ -115,7 +115,7 @@ class Slug(Ammo):
     def __init__(self):
         super().__init__()
         self.name="Slugs"
-        self.desc="2x Range, preferred hard (0.5x SP if hard)"
+        self.desc="2x Range, Preferred hard (0.5x SP if hard)"
 
     def preferred(self,enemyUnit:Unit,loc:int):
         return enemyUnit.armour.typeAt(loc)=='hard'
