@@ -351,6 +351,8 @@ class Unit:
         self.critInjuries=[]
         self.barrier=Barrier(0,[True]*6)
 
+        self.deflection=False
+
     def __str__(self):
         i=0
         output=f"{self.weapon.name}  -  {str(self.weapon)}  ({self.multiPenalty})\n{self.armour}{'  -STUN-' if self.stunned else ''}{'  ##UNCON##' if self.uncon else ''}\nCyber: ("
@@ -437,6 +439,8 @@ class Unit:
                 dmg*=2
 
             dmg=max(1,floor(dmg)-self.btm) # apply btm
+            if self.deflection:
+                dmg-=1
             self.wounds+=dmg # apply wounds
             
             for injury in self.critInjuries:

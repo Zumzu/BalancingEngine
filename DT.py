@@ -40,6 +40,8 @@ TRACEDELAY=0.2 #measured in seconds
 #Explosion and fire symbols in log
 #Ignore wound levels
 #Skull Cusioning
+#Solo damage deflection
+#Luck
 #Load System
 #More Hud Symbols - All negative
 
@@ -173,9 +175,6 @@ for i in range(4):
     fill255(shieldParts[i],TRACEBLUE)
     fill255(shieldPartsDark[i],DARKGREY)
     fill255(shieldPartsHighlight[i],LIGHTGREY)
-
-shieldIconOn=game.image.load('DT/Shield/shieldIconOn.png').convert_alpha()
-shieldIconOff=game.image.load('DT/Shield/shieldIconOff.png').convert_alpha()
     
 limbImgs=dudeImgs()
 limbImgsWounded=dudeImgs()
@@ -613,6 +612,7 @@ ammoBoldTextCache={}
 ammoFaintTextCache={}
 
 ammoHitbox=game.Rect(1135,647,252,100)
+ammoInnerHitbox=game.Rect(1135,683,252,40)
 def ammoSpinner():
     frame(1135,683,252,40,LIGHTGREY)
     if ammoIndex>0:
@@ -629,7 +629,7 @@ def ammoSpinner():
             ammoFaintTextCache[ammoIndex]=monospacedMedium.render(ammoTypes[ammoIndex+1].name,True,DARKGREY)
         screen.blit(ammoFaintTextCache[ammoIndex],(1143,729))
 
-    if ammoHitbox.collidepoint(game.mouse.get_pos()):
+    if ammoInnerHitbox.collidepoint(game.mouse.get_pos()):
         global infoText
         infoText=f"@{ammoTypes[ammoIndex].name}, {ammoTypes[ammoIndex].desc}"
 
@@ -783,14 +783,27 @@ def generateSPHitboxes(startX,startY):
 
 spHitboxes=generateSPHitboxes(41,557)
 
-barToggleHitbox=game.Rect(471,419,63,63)
+barrierIconOn=game.image.load('DT/Shield/shieldIconOn.png').convert_alpha()
+barrierIconOff=game.image.load('DT/Shield/shieldIconOff.png').convert_alpha()
 
+barToggleHitbox=game.Rect(471,419,63,63)
 def drawBar():
     frame(471,419,63,63,BASEGREY)
     if barrierActive:
-        screen.blit(shieldIconOn,(481,427))
+        screen.blit(barrierIconOn,(481,427))
     else:
-        screen.blit(shieldIconOff,(481,427))
+        screen.blit(barrierIconOff,(481,427))
+
+deflectionIconOn=game.image.load('DT/deflectionIconOn.png').convert_alpha()
+deflectionIconOff=game.image.load('DT/deflectionIconOff.png').convert_alpha()
+
+deflectionHitbox=game.Rect(471,236,63,63)
+def drawDeflection():
+    frame(471,236,63,63,BASEGREY)
+    if unit.deflection:
+        screen.blit(deflectionIconOn,(481,244))
+    else:
+        screen.blit(deflectionIconOff,(481,244))
     
 
 locationTextNames=["Head","Torso","L.Arm","R.Arm","L.Leg","R.Leg"]
@@ -1260,6 +1273,9 @@ while True:
                 barrierActive=not barrierActive
                 unit.barrier.covers=[True]*6
 
+            if deflectionHitbox.collidepoint(game.mouse.get_pos()):
+                unit.deflection=not unit.deflection
+
         if event.type == game.MOUSEBUTTONDOWN and game.mouse.get_pressed()[2]:
             for i in range(6):
                 if spHitboxes[i].collidepoint(game.mouse.get_pos()):
@@ -1392,6 +1408,7 @@ while True:
     bodyBlit()
     coolBlit()
     drawBar()
+    drawDeflection()
     drawLog()
 
     drawWounds(unit.wounds)
@@ -1401,11 +1418,11 @@ while True:
     multiplierBlit()
     pewBlit()
     ammoSpinner()
-    
-    drawInfoBox()
 
     for particle in particles:
         particle.update()
+
+    drawInfoBox()
 
     #DEBUG
     screen.blit(debugImg,debugImg.get_rect(center=(tempX,tempY)))
