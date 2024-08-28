@@ -7,7 +7,7 @@ from os import system
 from math import cos,sin,pi
 
 from Modules.Base import Unit,bodyToBTM,CyberLimb
-from Modules.Generator import findGun,findArmour
+from Modules.Generator import findGun,findArmour,generateUnitList
 from Modules.Ammo import *
 from Modules.Dice import locationDie
 from random import randint,uniform,random
@@ -1203,6 +1203,13 @@ shotQueue:list[tuple]=[]
 particles:list[Particle]=[]
 traces:list[Trace]=[]
 logs:list[Log]=[]
+units:list[dict]=[]
+try:
+    units=generateUnitList()
+except:
+    print('@@@ FAILED TO INITIALIZE FIRESTORE @@@')
+
+
 
 weapon=findGun("streetmaster")
 unit=Unit(None,findArmour([14,14,14,14,10,10]),0,7,7,cyber=[0,0,0,0,0,0]) # manual load
@@ -1221,7 +1228,7 @@ while True:
     events=game.event.get()
     for event in events: 
         if event.type == game.QUIT: 
-            print(round(tempX),"|",round(tempY))
+            #print(round(tempX),"|",round(tempY))
             game.quit()
             exit()
 
@@ -1430,7 +1437,7 @@ while True:
     drawInfoBox()
 
     #DEBUG
-    screen.blit(debugImg,debugImg.get_rect(center=(tempX,tempY)))
+    #screen.blit(debugImg,debugImg.get_rect(center=(tempX,tempY)))
 
     game.display.update() 
     clock.tick(30)
@@ -1438,5 +1445,5 @@ while True:
     if logs==[]:
         loadLog=LoadLog(unit,loadLog.desc)
 
-    system('cls')
-    print(round(clock.get_fps(),1))
+    #system('cls')
+    #print(round(clock.get_fps(),1))

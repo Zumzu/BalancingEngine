@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 from copy import deepcopy
+import firebase_admin
+from firebase_admin import credentials,firestore
 
 from Modules.Base import Ammo,Gun,Armour,ArmourSet
 from Modules.Ammo import *
@@ -157,6 +159,23 @@ def findArmour(sp):
 
     raise "Invalid or nonstandard set of armour, update equipment list with appropriate armour option or manually construct the armour set"
     #fail condition/approx
+
+def generateUnitList():
+    cred = credentials.Certificate("C:/Users/zaneg/Documents/Junk Drawer/dt-tracker-d5d20-firebase-adminsdk-5sitn-0e6ea61dcc.json")
+    firebase_admin.initialize_app(cred)
+
+    db = firebase_admin.firestore.client()
+
+    users_ref = db.collection("units")
+    docs = users_ref.stream()
+
+    output=[]
+    for doc in docs:
+      docDict=doc.to_dict()
+      docDict['name']=doc.id
+      output.append(docDict)
+    
+    return output
 
 GUN_LIST=generateGunList()
 ARMOUR_LIST=generateArmourList()
