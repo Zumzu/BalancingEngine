@@ -916,6 +916,7 @@ logHitbox=game.Rect(930,100,450,510)
 logTextLabel=monospacedHuge.render("History",True,BLACK)
 def drawLog():
     screen.blit(logTextLabel,logTextLabel.get_rect(center=(930+450//2,80)))
+    drawTabs()
     frame(930,100,450,510,LIGHTGREY)
     offset=0
     for i in range(logIndex,len(logs)):
@@ -931,6 +932,10 @@ def drawLog():
 
     if logIndex>0:
         game.draw.polygon(screen,BLACK,((1100,580),(1155,600),(1210,580)))
+
+def drawTabs():
+    for i in range(8):
+        frame(700,560-i*50,235,40,BASEGREY)
 
 debugImg=game.image.load('DT/smolParticle.png').convert_alpha()
 fill(debugImg,(255,0,255))
