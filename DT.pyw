@@ -16,6 +16,8 @@ WIDTH=1429 #actively clean multiples of hexagons native resolution
 HEIGHT=789
 
 BLACK=(0,0,0)
+WHITE=(255,255,255)
+
 DARKGREEN=(10,100,10)
 TRACEBLUE=(0,200,255)
 TRACEYELLOW=(244,249,51)
@@ -37,12 +39,12 @@ LIGHTGREY=(220,220,220)
 SHOTDELAY=0.8 #measured in seconds
 TRACEDELAY=0.2 #measured in seconds
 
+#Tabss
 #Explosion and fire symbols in log
 #Ignore wound levels
 #Skull Cusioning
-#Solo damage deflection
 #Luck
-#Load System
+#Armour div by zero
 #More Hud Symbols - All negative
 
 
@@ -59,6 +61,8 @@ monospacedLarge=game.font.SysFont('consolas',30)
 monospacedMediumLarge=game.font.SysFont('consolas',23)
 monospacedMedium=game.font.SysFont('consolas',20)
 monospacedSmall=game.font.SysFont('consolas',15)
+monospacedTiny=game.font.SysFont('consolas',12)
+
 
 impactHuge=game.font.SysFont('impact',70)
 impactLarge=game.font.SysFont('impact',30)
@@ -136,6 +140,10 @@ def frame(x:int,y:int,dx:int,dy:int,rgb:tuple):
     game.draw.rect(screen, DARKERGREY, game.Rect(x,y,dx,dy), border_radius=5)
     game.draw.rect(screen, rgb, game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
 
+def frameSelect(x:int,y:int,dx:int,dy:int,rgb:tuple):
+    game.draw.rect(screen, BLACK, game.Rect(x,y,dx,dy), border_radius=5)
+    game.draw.rect(screen, rgb, game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
+
 def buttonFrame(x:int,y:int,dx:int,dy:int,hover:bool):
     game.draw.rect(screen, DARKERGREY, game.Rect(x,y,dx,dy), border_radius=5)
     if hover:
@@ -151,6 +159,16 @@ def dudeImgs():
     output.append(game.image.load('DT/Body/Rarm.png').convert_alpha())
     output.append(game.image.load('DT/Body/Lleg.png').convert_alpha())
     output.append(game.image.load('DT/Body/Rleg.png').convert_alpha())
+    return output
+
+def smallDudeImgs():
+    output=[]
+    output.append(game.image.load('DT/SmallBody/Head.png').convert_alpha())
+    output.append(game.image.load('DT/SmallBody/Torso.png').convert_alpha())
+    output.append(game.image.load('DT/SmallBody/Larm.png').convert_alpha())
+    output.append(game.image.load('DT/SmallBody/Rarm.png').convert_alpha())
+    output.append(game.image.load('DT/SmallBody/Lleg.png').convert_alpha())
+    output.append(game.image.load('DT/SmallBody/Rleg.png').convert_alpha())
     return output
 
 def shieldImgs():
@@ -175,7 +193,16 @@ for i in range(4):
     fill255(shieldParts[i],TRACEBLUE)
     fill255(shieldPartsDark[i],DARKGREY)
     fill255(shieldPartsHighlight[i],LIGHTGREY)
-    
+
+smallLimbImgs=smallDudeImgs()
+smallLimbImgsWounded=smallDudeImgs()
+smallLimbImgsCyber=smallDudeImgs()
+smallLimbImgsCyberDamaged=smallDudeImgs()
+for i in range(6):
+    fill(smallLimbImgsWounded[i],WOUNDCOLOR)
+    fill(smallLimbImgsCyber[i],TRACEBLUE)
+    fill(smallLimbImgsCyberDamaged[i],TRACEYELLOW)
+
 limbImgs=dudeImgs()
 limbImgsWounded=dudeImgs()
 limbImgsCalled=dudeImgs()
@@ -520,11 +547,35 @@ loadInput.font_object=monospacedMedium
 loadInput.manager.validator=(lambda x: len(x)<=21 and str(x).isprintable())
 loadSelected=False
 loadHitbox=game.Rect(550,42,246,36)
+loadDict=None
 def loadBlit():
+    global loadDict
+    loadDict=None
+
+    index=0
+    if loadSelected:
+        for unitDict in unitDicts:
+            if loadInput.value.lower() in unitDict['name'].lower():
+                drawUnitPreview(550,78+index*40,unitDict)
+                index+=1
+                if index>=3:
+                    break
     screen.blit(loadTextLabel,(473,45))
     frame(550,42,246,36,LIGHTGREY)
     screen.blit(loadInput.surface,(556,50))
 
+def drawUnitPreview(x:int,y:int,unitDict:dict):
+    global loadDict
+    frameRect=game.Rect(x,y,246,40)
+    if frameRect.collidepoint(game.mouse.get_pos()):
+        frame(x,y,246,40,TRACEBLUE)
+        loadDict=unitDict
+    else:
+        frame(x,y,246,40,LIGHTGREY)
+        
+    screen.blit(monospacedMedium.render(unitDict['name'].title(),True,BLACK),(x+4,y+6))
+    sp=unitDict['sp']
+    screen.blit(monospacedTiny.render(f"[{sp[0]},{sp[1]},{sp[2]},{sp[3]},{sp[4]},{sp[5]}] Body:{unitDict['body']} Cool:{unitDict['cool']}",True,BLACK),(x+3,y+25))
 
 bodyTextLabel=monospacedLarge.render("Body",True,BLACK)
 btmTextLabel=monospacedMedium.render("BTM:",True,BLACK)
@@ -635,7 +686,7 @@ def ammoSpinner():
 
 woundTrackText=['LIGHT','SERIOUS','CRITICAL']
 for i in range(7):
-    woundTrackText.append(f"MORTAL_{i}")
+    woundTrackText.append(f"MORTAL {i}")
 
 woundTrackLabels=[]
 for text in woundTrackText:
@@ -908,7 +959,7 @@ class LoadLog:
         self.desc=desc
 
     def draw(self):
-        screen.blit(monospacedMediumLarge.render(f"Loaded \'{self.desc}\'",True,BLACK),(950,107))
+        screen.blit(monospacedMediumLarge.render(f"{self.desc.title()}",True,BLACK),(950,107))
         screen.blit(monospacedSmall.render(f"[{self.unit.armour.sp[0]}] [{self.unit.armour.sp[1]}] [{self.unit.armour.sp[2]}|{self.unit.armour.sp[3]}] [{self.unit.armour.sp[4]}|{self.unit.armour.sp[5]}], BODY-{self.unit.body}, COOL-{self.unit.cool}",True,BLACK),(950,134))
         screen.blit(undoImg,self.hitbox)
 
@@ -933,9 +984,63 @@ def drawLog():
     if logIndex>0:
         game.draw.polygon(screen,BLACK,((1100,580),(1155,600),(1210,580)))
 
+
+class Tab:
+    def __init__(self,loadLog:LoadLog,logs:list[Log]) -> None:
+        self.loadLog=loadLog
+        self.logs=logs
+        self.hitbox=game.Rect(0,0,1,1)
+        if self.logs==[]:
+            self.currentUnit=deepcopy(loadLog.unit)
+        else:
+            self.currentUnit=deepcopy(logs[0].unit)
+
+    def saveState(self):
+        self.loadLog=loadLog
+        self.logs=logs
+        self.currentUnit=deepcopy(unit)
+
+    def loadState(self):
+        global loadLog,logs,unit
+        loadLog=self.loadLog
+        logs=self.logs 
+        unit=deepcopy(self.currentUnit)
+        
+
 def drawTabs():
-    for i in range(8):
-        frame(700,560-i*50,235,40,BASEGREY)
+    for i in range(min(len(tabs),8)):
+        x=760
+        y=553-i*56
+        tabs[i].hitbox=game.Rect(x,y,175,52)
+          
+        if tabIndex==i:
+            frameSelect(x,y,175,52,WHITE if game.Rect(x,y,175,52).collidepoint(game.mouse.get_pos()) else LIGHTGREY)
+        else:
+            frame(x,y,175,52,WHITE if game.Rect(x,y,175,52).collidepoint(game.mouse.get_pos()) else BASEGREY)  
+
+        name=tabs[i].loadLog.desc.title()
+        if len(name)>15:
+            name=name[:12]+'...'
+        screen.blit(monospacedSmall.render(name,True,BLACK),(x+6,y+6))
+
+        critWounded=[False]*6
+        for injury in tabs[i].currentUnit.critInjuries:
+            critWounded[injury.loc]=True
+
+        for j in range(6):
+            if critWounded[j]:
+                screen.blit(smallLimbImgsWounded[j],(x+138,y+4))
+            elif tabs[i].currentUnit.cyber[j] is not None:
+                if tabs[i].currentUnit.cyber[j].damaged:
+                    screen.blit(smallLimbImgsCyberDamaged[j],(x+138,y+4))
+                else:
+                    screen.blit(smallLimbImgsCyber[j],(x+138,y+4))
+            else:
+                screen.blit(smallLimbImgs[j],(x+138,y+4))
+
+        wounds=tabs[i].currentUnit.wounds
+        if wounds>0:
+            game.draw.line(screen,WOUNDCOLOR,(x+3,y+46),(x+3+min(50,max(0,wounds))/50*169,y+46),4)
 
 debugImg=game.image.load('DT/smolParticle.png').convert_alpha()
 fill(debugImg,(255,0,255))
@@ -1092,6 +1197,25 @@ def drawTraces(x,y,dx,dy):
 
 ############### MECHANICAL BELOW
 
+def loadFromDict():
+    newUnit=Unit(weapon,findArmour([10,10,10,10,8,8]),0,loadDict['body'],loadDict['cool'],cyber=loadDict['cyber'])
+    newUnit.armour.sp=deepcopy(loadDict['sp'])
+    newUnit.armour.spMax=deepcopy(loadDict['sp'])
+    
+    hardness=[]
+    for isHard in loadDict['hard']:
+        hardness.append('hard' if isHard else 'soft')
+    newUnit.armour.type=hardness
+
+    newLoadLog=LoadLog(newUnit,loadDict['name'])
+    
+    tabs.append(Tab(newLoadLog,[]))
+    global tabIndex
+    tabIndex=len(tabs)-1
+    tabs[tabIndex].loadState()
+
+    
+
 def processDamage():
     dmg=0
     rolled=[]
@@ -1198,14 +1322,14 @@ ammoTypes=[Ammo(),
 
 logIndex=0
 calledShotLoc=-1
+tabIndex=0
 
 shotQueue:list[tuple]=[]
 particles:list[Particle]=[]
 traces:list[Trace]=[]
-logs:list[Log]=[]
-units:list[dict]=[]
+unitDicts:list[dict]=[]
 try:
-    units=generateUnitList()
+    unitDicts=generateUnitList()
 except:
     print('@@@ FAILED TO INITIALIZE FIRESTORE @@@')
 
@@ -1213,7 +1337,10 @@ except:
 
 weapon=findGun("streetmaster")
 unit=Unit(None,findArmour([14,14,14,14,10,10]),0,7,7,cyber=[0,0,0,0,0,0]) # manual load
-loadLog:Log=LoadLog(unit,"Default")
+
+logs:list[Log]=[]
+loadLog:LoadLog=LoadLog(unit,"Default")
+tabs:list[Tab]=[Tab(loadLog,logs)]
 
 populateBody()
 populateSPInputs()
@@ -1228,7 +1355,7 @@ while True:
     events=game.event.get()
     for event in events: 
         if event.type == game.QUIT: 
-            #print(round(tempX),"|",round(tempY))
+            print(round(tempX),"|",round(tempY))
             game.quit()
             exit()
 
@@ -1288,6 +1415,15 @@ while True:
             if deflectionHitbox.collidepoint(game.mouse.get_pos()):
                 unit.deflection=not unit.deflection
 
+            if loadDict is not None:
+                loadFromDict()
+                loadInput.value=''
+
+            for i in range(min(len(tabs),8)):
+                if tabs[i].hitbox.collidepoint(game.mouse.get_pos()):
+                    tabs[i].loadState()
+                    tabIndex=i
+
         if event.type == game.MOUSEBUTTONDOWN and game.mouse.get_pressed()[2]:
             for i in range(6):
                 if spHitboxes[i].collidepoint(game.mouse.get_pos()):
@@ -1338,6 +1474,15 @@ while True:
                 spInputsSelected[i]=False
             bodySelected=False
             coolSelected=False
+
+            if loadSelected:
+                for unitDict in unitDicts:
+                    if loadInput.value.lower() in unitDict['name'].lower():
+                        loadDict=unitDict
+                        loadFromDict()
+                        loadSelected=False
+                        loadInput.value=''
+                        break
 
         if event.type == game.KEYDOWN and event.key == game.K_TAB:
             if damageSelected:
@@ -1416,12 +1561,12 @@ while True:
     drawDude()
     drawSP(41,557,unit.armour.sp,unit.armour.spMax)
 
-    loadBlit()
     bodyBlit()
     coolBlit()
     drawBar()
     drawDeflection()
     drawLog()
+    loadBlit()
 
     drawWounds(unit.wounds)
 
@@ -1437,13 +1582,15 @@ while True:
     drawInfoBox()
 
     #DEBUG
-    #screen.blit(debugImg,debugImg.get_rect(center=(tempX,tempY)))
+    screen.blit(debugImg,debugImg.get_rect(center=(tempX,tempY)))
 
     game.display.update() 
     clock.tick(30)
 
     if logs==[]:
         loadLog=LoadLog(unit,loadLog.desc)
+    
+    tabs[tabIndex].saveState()
 
     #system('cls')
     #print(round(clock.get_fps(),1))
