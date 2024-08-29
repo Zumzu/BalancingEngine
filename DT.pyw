@@ -12,7 +12,27 @@ from Modules.Ammo import *
 from Modules.Dice import locationDie
 from random import randint,uniform,random
 
-WIDTH=1429 #actively clean multiples of hexagons native resolution
+
+#  PREFACE
+#OKAY if anyone is reading this code at this point in development, Im aware this is an absolutely awful way of doing front end
+#This is the definition of code debt, and the only reason I can get away with this is because this god document is strictly UI, all functionality is handled in a WAY more elegant way
+#But in the short term, this is actually highly malleable for a solo dev, and I do plan on going back and refactoring this if I dont move on to better architectures than literal pygame
+#The choice of pygame was largely with the intention of making a portable, relatively lightweight UI that supports things like particles and animation so long as I write them myself
+#(An older iteration of this was in unity and the overhead was UNREAL)
+
+#  TODO
+#Tabss - Rename duplicate delete reorder
+#Explosion and fire symbols in log
+#Ignore wound levels
+#Skull Cusioning
+#Luck
+#Armour div by zero bug
+#More Hud Symbols - All negative, Stun negative
+#Push melee/gun/armour list to firestore eventually
+#SO much refactoring to a real code format
+
+
+WIDTH=1429 #actively clean multiple of hexagon backgrounds native resolution
 HEIGHT=789
 
 BLACK=(0,0,0)
@@ -38,15 +58,6 @@ LIGHTGREY=(220,220,220)
 
 SHOTDELAY=0.8 #measured in seconds
 TRACEDELAY=0.2 #measured in seconds
-
-#Tabss
-#Explosion and fire symbols in log
-#Ignore wound levels
-#Skull Cusioning
-#Luck
-#Armour div by zero
-#More Hud Symbols - All negative
-
 
 game.init() 
 
