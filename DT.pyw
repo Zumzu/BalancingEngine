@@ -234,10 +234,13 @@ woundPoints.append((135,327))
 
 stunImg=game.image.load('DT/HUD/stun.png').convert_alpha()
 stunSmolImg=game.image.load('DT/HUD/stunSmol.png').convert_alpha()
+stunTinyImg=game.image.load('DT/HUD/stunTiny.png').convert_alpha()
 unconImg=game.image.load('DT/HUD/uncon.png').convert_alpha()
 unconSmolImg=game.image.load('DT/HUD/unconSmol.png').convert_alpha()
+unconTinyImg=game.image.load('DT/HUD/unconTiny.png').convert_alpha()
 deadImg=game.image.load('DT/HUD/dead.png').convert_alpha()
 deadSmolImg=game.image.load('DT/HUD/deadSmol.png').convert_alpha()
+deadTinyImg=game.image.load('DT/HUD/deadTiny.png').convert_alpha()
 zeroedImg=game.image.load('DT/HUD/zeroed.png').convert_alpha()
 
 shirtImg=game.image.load('DT/HUD/shirt.png').convert_alpha()
@@ -1037,6 +1040,13 @@ def drawTabs():
                     screen.blit(smallLimbImgsCyber[j],(x+138,y+4))
             else:
                 screen.blit(smallLimbImgs[j],(x+138,y+4))
+
+        if tabs[i].currentUnit.dead:
+            screen.blit(deadTinyImg,(x+6,y+22))
+        elif tabs[i].currentUnit.uncon:
+            screen.blit(unconTinyImg,(x+6,y+22))
+        elif tabs[i].currentUnit.stunned:
+            screen.blit(stunTinyImg,(x+6,y+22))
 
         wounds=tabs[i].currentUnit.wounds
         if wounds>0:
