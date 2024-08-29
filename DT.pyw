@@ -22,6 +22,7 @@ from random import randint,uniform,random
 
 #  TODO
 #Tabss - Rename duplicate delete reorder
+#Graveyard
 #Explosion and fire symbols in log
 #Ignore wound levels
 #Skull Cusioning
@@ -568,12 +569,17 @@ def loadBlit():
 
     index=0
     if loadSelected:
-        for unitDict in unitDicts:
-            if loadInput.value.lower() in unitDict['name'].lower():
-                drawUnitPreview(550,78+index*40,unitDict)
-                index+=1
-                if index>=3:
-                    break
+        if unitDicts==[]:
+            frame(550,78,246,40,LIGHTGREY)
+            screen.blit(monospacedLarge.render('Firestore Err.',True,WOUNDCOLOR),(554,84))
+        else:
+            for unitDict in unitDicts:
+                if loadInput.value.lower() in unitDict['name'].lower():
+                    drawUnitPreview(550,78+index*40,unitDict)
+                    index+=1
+                    if index>=3:
+                        break
+
     screen.blit(loadTextLabel,(473,45))
     frame(550,42,246,36,LIGHTGREY)
     screen.blit(loadInput.surface,(556,50))
@@ -1003,7 +1009,7 @@ class Tab:
     def __init__(self,loadLog:LoadLog,logs:list[Log]) -> None:
         self.loadLog=loadLog
         self.logs=logs
-        self.hitbox=game.Rect(0,0,1,1)
+        self.mainHitbox=game.Rect(0,0,1,1)
         if self.logs==[]:
             self.currentUnit=deepcopy(loadLog.unit)
         else:
@@ -1025,7 +1031,7 @@ def drawTabs():
     for i in range(min(len(tabs),8)):
         x=760
         y=553-i*56
-        tabs[i].hitbox=game.Rect(x,y,175,52)
+        tabs[i].mainHitbox=game.Rect(x,y,175,52)
           
         if tabIndex==i:
             frameSelect(x,y,175,52,WHITE if game.Rect(x,y,175,52).collidepoint(game.mouse.get_pos()) else LIGHTGREY)
@@ -1441,7 +1447,7 @@ while True:
                 loadInput.value=''
 
             for i in range(min(len(tabs),8)):
-                if tabs[i].hitbox.collidepoint(game.mouse.get_pos()):
+                if tabs[i].mainHitbox.collidepoint(game.mouse.get_pos()):
                     tabs[i].loadState()
                     tabIndex=i
 
