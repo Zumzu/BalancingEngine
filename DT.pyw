@@ -21,7 +21,7 @@ from random import randint,uniform,random
 #(An older iteration of this was in unity and the overhead was UNREAL)
 
 #  TODO
-#Tabss - Rename duplicate delete reorder
+#Tabss - Rename reorder
 #Graveyard
 #Explosion and fire symbols in log
 #Ignore wound levels
@@ -31,6 +31,7 @@ from random import randint,uniform,random
 #More Hud Symbols - All negative, Stun negative
 #Push melee/gun/armour list to firestore eventually
 #SO much refactoring to a real code format
+#Grey out cool
 
 
 WIDTH=1429 #actively clean multiple of hexagon backgrounds native resolution
@@ -1010,6 +1011,9 @@ class Tab:
         self.loadLog=loadLog
         self.logs=logs
         self.mainHitbox=game.Rect(0,0,1,1)
+        self.outerHitbox=game.Rect(0,0,1,1)
+        self.duplicateHitbox=game.Rect(0,0,1,1)
+        self.deleteHitbox=game.Rect(0,0,1,1)
         if self.logs==[]:
             self.currentUnit=deepcopy(loadLog.unit)
         else:
@@ -1025,14 +1029,24 @@ class Tab:
         loadLog=self.loadLog
         logs=self.logs 
         unit=deepcopy(self.currentUnit)
-        
+
+deleteImg=game.image.load('DT/delete.png').convert_alpha()
+deleteImgHighlight=game.image.load('DT/delete.png').convert_alpha()
+fill(deleteImgHighlight,WOUNDCOLOR)
+
+duplicateImg=game.image.load('DT/duplicate.png').convert_alpha()
+duplicateImgHighlight=game.image.load('DT/duplicate.png').convert_alpha()
+fill(duplicateImgHighlight,DARKGREEN)
 
 def drawTabs():
     for i in range(min(len(tabs),8)):
         x=760
         y=553-i*56
         tabs[i].mainHitbox=game.Rect(x,y,175,52)
-          
+        tabs[i].outerHitbox=game.Rect(x-80,y,255,52)
+        tabs[i].duplicateHitbox=duplicateImg.get_rect(topleft=(x-32,y+12))
+        tabs[i].deleteHitbox=deleteImg.get_rect(topleft=(x-64,y+12))
+        
         if tabIndex==i:
             frameSelect(x,y,175,52,WHITE if game.Rect(x,y,175,52).collidepoint(game.mouse.get_pos()) else LIGHTGREY)
         else:
@@ -1064,6 +1078,17 @@ def drawTabs():
             screen.blit(unconTinyImg,(x+6,y+22))
         elif tabs[i].currentUnit.stunned:
             screen.blit(stunTinyImg,(x+6,y+22))
+        
+        if tabs[i].outerHitbox.collidepoint(game.mouse.get_pos()):
+            if tabs[i].duplicateHitbox.collidepoint(game.mouse.get_pos()):
+                screen.blit(duplicateImgHighlight,(x-32,y+12))
+            else:
+                screen.blit(duplicateImg,(x-32,y+12))
+
+            if tabs[i].deleteHitbox.collidepoint(game.mouse.get_pos()):
+                screen.blit(deleteImgHighlight,(x-64,y+12))
+            else:
+                screen.blit(deleteImg,(x-64,y+12))
 
         wounds=tabs[i].currentUnit.wounds
         if wounds>0:
@@ -1241,7 +1266,19 @@ def loadFromDict():
     tabIndex=len(tabs)-1
     tabs[tabIndex].loadState()
 
-    
+def duplicateTabAt(index:int):
+    tabs.insert(index+1,deepcopy(tabs[tabIndex]))
+
+def deleteTabAt(index:int):
+    global tabIndex
+    tabs.remove(tabs[index])
+    if tabIndex==index:
+        tabIndex=0
+        if tabs==[]:
+            tabs.append(Tab(LoadLog(Unit(None,findArmour([14,14,14,14,10,10]),0,7,7,cyber=[0,0,0,0,0,0]),'Default'),[]))
+        tabs[tabIndex].loadState()
+    elif tabIndex>index:
+        tabIndex-=1
 
 def processDamage():
     dmg=0
@@ -1450,6 +1487,14 @@ while True:
                 if tabs[i].mainHitbox.collidepoint(game.mouse.get_pos()):
                     tabs[i].loadState()
                     tabIndex=i
+
+            for i in range(len(tabs)):
+                if tabs[i].duplicateHitbox.collidepoint(game.mouse.get_pos()):
+                    duplicateTabAt(i)
+                    break
+                elif tabs[i].deleteHitbox.collidepoint(game.mouse.get_pos()):
+                    deleteTabAt(i)
+                    break
 
         if event.type == game.MOUSEBUTTONDOWN and game.mouse.get_pressed()[2]:
             for i in range(6):
