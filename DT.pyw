@@ -32,6 +32,7 @@ from random import randint,uniform,random
 #Push melee/gun/armour list to firestore eventually
 #SO much refactoring to a real code format
 #Grey out cool
+#Loading symbol
 
 
 WIDTH=1429 #actively clean multiple of hexagon backgrounds native resolution
@@ -212,6 +213,7 @@ smallLimbImgsWounded=smallDudeImgs()
 smallLimbImgsCyber=smallDudeImgs()
 smallLimbImgsCyberDamaged=smallDudeImgs()
 for i in range(6):
+    fill(smallLimbImgs[i],DARKERGREY)
     fill(smallLimbImgsWounded[i],WOUNDCOLOR)
     fill(smallLimbImgsCyber[i],TRACEBLUE)
     fill(smallLimbImgsCyberDamaged[i],TRACEYELLOW)
