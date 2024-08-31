@@ -259,8 +259,7 @@ zeroedImg=game.image.load('DT/HUD/zeroed.png').convert_alpha()
 
 allNegativeImg=game.image.load('DT/HUD/allNegative.png').convert_alpha()
 stunNegativeImg=game.image.load('DT/HUD/stunNegative.png').convert_alpha()
-stunNegativeRedImg=game.image.load('DT/HUD/stunNegative.png').convert_alpha()
-fill(stunNegativeRedImg,WOUNDCOLOR)
+stunNegativeSmolImg=game.image.load('DT/HUD/stunNegativeSmol.png').convert_alpha()
 
 shirtImg=game.image.load('DT/HUD/shirt.png').convert_alpha()
 shirt2Img=game.image.load('DT/HUD/shirt2.png').convert_alpha()
@@ -292,23 +291,24 @@ def drawHudElements():
     elif unit.stunned:
         screen.blit(stunImg,(40,40))  
     
-    if unit.dead:
-        stunNegativeText=monospacedMediumLarge.render('DEAD',True,DARKERGREY)
-        screen.blit(stunNegativeRedImg,(43,103)) 
-        screen.blit(stunNegativeText,stunNegativeText.get_rect(center=(107,118)))
-    elif unit.stunMod()>0:
-        stunNegativeText=monospacedMediumLarge.render(f'STUN -{unit.stunMod()}',True,DARKERGREY)
-        if unit.stunned or unit.uncon:
-            screen.blit(stunNegativeImg,(43,103)) 
-            screen.blit(stunNegativeText,stunNegativeText.get_rect(center=(107,118)))
+    if not (unit.uncon or unit.dead or unit.wounds>=50) and unit.stunMod()>0:
+        if unit.stunned:
+            stunNegativeText=monospacedMediumLarge.render(f'-{unit.stunMod()}',True,DARKERGREY)
+            screen.blit(stunNegativeSmolImg,(110,36)) 
+            screen.blit(stunNegativeText,stunNegativeText.get_rect(center=(142,51)))
         else:
+            stunNegativeText=monospacedMediumLarge.render(f'STUN -{unit.stunMod()}',True,DARKERGREY)
             screen.blit(stunNegativeImg,(43,36)) 
             screen.blit(stunNegativeText,stunNegativeText.get_rect(center=(107,51)))
 
     if unit.wounds>20:
-        allNegativeText=allNegativeFont.render(f'ALL -{unit.allNegative()}',True,DARKWOUNDCOLOR)
-        screen.blit(allNegativeImg,(262,40)) 
-        screen.blit(allNegativeText,allNegativeText.get_rect(center=(342,64)))
+        if unit.wounds>=50 or unit.dead:
+            allNegativeText=allNegativeFont.render('DEAD',True,DARKWOUNDCOLOR)
+        else:
+            allNegativeText=allNegativeFont.render(f'ALL -{unit.allNegative()}',True,DARKWOUNDCOLOR)
+            
+        screen.blit(allNegativeImg,(270,40)) 
+        screen.blit(allNegativeText,allNegativeText.get_rect(center=(346,64)))
 
     totalSp=0
     totalSpMax=0
