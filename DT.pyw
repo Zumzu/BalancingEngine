@@ -27,12 +27,9 @@ from random import randint,uniform,random
 #Ignore wound levels
 #Skull Cusioning
 #Luck
-#Armour div by zero bug
 #More Hud Symbols - All negative, Stun negative
 #Push melee/gun/armour list to firestore eventually
 #SO much refactoring to a real code format
-#Grey out cool
-#Loading symbol
 
 
 WIDTH=1429 #actively clean multiple of hexagon backgrounds native resolution
@@ -294,10 +291,11 @@ def drawHudElements():
         totalSp+=unit.armour.sp[i]
         totalSpMax+=unit.armour.spMax[i]
 
-    if totalSp/totalSpMax<0.78:
-        screen.blit(shirt2Img,(57,460))
-    elif totalSp/totalSpMax<0.9:
-        screen.blit(shirtImg,(57,460))
+    if totalSpMax!=0:
+        if totalSp/totalSpMax<0.78:
+            screen.blit(shirt2Img,(57,460))
+        elif totalSp/totalSpMax<0.9:
+            screen.blit(shirtImg,(57,460))
     
     if barrierActive:
         x=321+randint(-shieldWiggle//8,shieldWiggle//8)
@@ -629,6 +627,7 @@ coolHitbox=game.Rect(471,488,63,63)
 def coolBlit():
     screen.blit(coolTextLabel,(539,505))
     frame(471,488,63,63,BASEGREY)
+    coolInput.font_color=BLACK if unit.cool>unit.body else DARKGREY
     if len(coolInput.value)==2:
         screen.blit(coolInput.surface,(479,501))
     else:
