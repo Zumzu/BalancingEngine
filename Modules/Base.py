@@ -532,6 +532,8 @@ class Unit:
         return output
 
     def stunMod(self):
+        if self.wounds<=0:
+            return 0
         output=floor((self.wounds-1)/5)
         for injury in self.critInjuries:
             output+=injury.allNegative+injury.stunUnconPenalty

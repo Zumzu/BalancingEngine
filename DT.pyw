@@ -255,6 +255,9 @@ deadSmolImg=game.image.load('DT/HUD/deadSmol.png').convert_alpha()
 deadTinyImg=game.image.load('DT/HUD/deadTiny.png').convert_alpha()
 zeroedImg=game.image.load('DT/HUD/zeroed.png').convert_alpha()
 
+stunNegativeImg=game.image.load('DT/HUD/stunNegative.png').convert_alpha()
+stunNegativeRedImg=game.image.load('DT/HUD/stunNegative.png').convert_alpha()
+fill(stunNegativeRedImg,WOUNDCOLOR)
 shirtImg=game.image.load('DT/HUD/shirt.png').convert_alpha()
 shirt2Img=game.image.load('DT/HUD/shirt2.png').convert_alpha()
 
@@ -285,6 +288,19 @@ def drawHudElements():
     elif unit.stunned:
         screen.blit(stunImg,(40,40))  
     
+    if unit.dead:
+        stunNegativeText=monospacedMediumLarge.render('DEAD',True,DARKERGREY)
+        screen.blit(stunNegativeRedImg,(43,103)) 
+        screen.blit(stunNegativeText,stunNegativeText.get_rect(center=(107,118)))
+    elif unit.stunMod()>0:
+        stunNegativeText=monospacedMediumLarge.render(f'STUN -{unit.stunMod()}',True,DARKERGREY)
+        if unit.stunned or unit.uncon:
+            screen.blit(stunNegativeImg,(43,103)) 
+            screen.blit(stunNegativeText,stunNegativeText.get_rect(center=(107,118)))
+        else:
+            screen.blit(stunNegativeImg,(43,36)) 
+            screen.blit(stunNegativeText,stunNegativeText.get_rect(center=(107,51)))
+
     totalSp=0
     totalSpMax=0
     for i in range(6):
