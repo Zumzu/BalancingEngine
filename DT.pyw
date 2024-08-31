@@ -79,6 +79,8 @@ impactHuge=game.font.SysFont('impact',70)
 impactLarge=game.font.SysFont('impact',30)
 impactTiny=game.font.SysFont('impact',13)
 
+allNegativeFont=game.font.SysFont('impact',33)
+
 clock = game.time.Clock()
 
   
@@ -255,9 +257,11 @@ deadSmolImg=game.image.load('DT/HUD/deadSmol.png').convert_alpha()
 deadTinyImg=game.image.load('DT/HUD/deadTiny.png').convert_alpha()
 zeroedImg=game.image.load('DT/HUD/zeroed.png').convert_alpha()
 
+allNegativeImg=game.image.load('DT/HUD/allNegative.png').convert_alpha()
 stunNegativeImg=game.image.load('DT/HUD/stunNegative.png').convert_alpha()
 stunNegativeRedImg=game.image.load('DT/HUD/stunNegative.png').convert_alpha()
 fill(stunNegativeRedImg,WOUNDCOLOR)
+
 shirtImg=game.image.load('DT/HUD/shirt.png').convert_alpha()
 shirt2Img=game.image.load('DT/HUD/shirt2.png').convert_alpha()
 
@@ -300,6 +304,11 @@ def drawHudElements():
         else:
             screen.blit(stunNegativeImg,(43,36)) 
             screen.blit(stunNegativeText,stunNegativeText.get_rect(center=(107,51)))
+
+    if unit.wounds>20:
+        allNegativeText=allNegativeFont.render(f'ALL -{unit.allNegative()}',True,DARKWOUNDCOLOR)
+        screen.blit(allNegativeImg,(262,40)) 
+        screen.blit(allNegativeText,allNegativeText.get_rect(center=(342,64)))
 
     totalSp=0
     totalSpMax=0
