@@ -261,8 +261,8 @@ allNegativeImg=game.image.load('DT/HUD/allNegative.png').convert_alpha()
 stunNegativeImg=game.image.load('DT/HUD/stunNegative.png').convert_alpha()
 stunNegativeSmolImg=game.image.load('DT/HUD/stunNegativeSmol.png').convert_alpha()
 
-shirtImg=game.image.load('DT/HUD/shirt.png').convert_alpha()
-shirt2Img=game.image.load('DT/HUD/shirt2.png').convert_alpha()
+shirtImg=game.image.load('DT/HUD/shirtSmall.png').convert_alpha()
+shirt2Img=game.image.load('DT/HUD/shirt2Small.png').convert_alpha()
 
 undoImg=game.image.load('DT/undo.png').convert_alpha()
 bulletImg=game.image.load('DT/bullet.png').convert_alpha()
@@ -318,9 +318,9 @@ def drawHudElements():
 
     if totalSpMax!=0:
         if totalSp/totalSpMax<0.78:
-            screen.blit(shirt2Img,(57,460))
+            screen.blit(shirt2Img,(41,477))
         elif totalSp/totalSpMax<0.9:
-            screen.blit(shirtImg,(57,460))
+            screen.blit(shirtImg,(41,477))
     
     if barrierActive:
         x=321+randint(-shieldWiggle//8,shieldWiggle//8)
@@ -362,12 +362,13 @@ def drawHudElements():
         if warningBlinkTimer<=-dangerValue:
             warningBlinkTimer=dangerValue
 
-    bleeding=False
+    bleeding=unit.uncon and unit.wounds>15
     for injury in unit.critInjuries:
         if 'bleeding' in injury.text:
             bleeding=True
+            break
 
-    if (unit.uncon and unit.wounds>15) or bleeding:
+    if bleeding:
         screen.blit(bleedImg,(306,478))
         if unit.wounds>=50:
             minutesText=impactLarge.render('~',False,DARKWOUNDCOLOR)
@@ -378,6 +379,12 @@ def drawHudElements():
             minutesText=impactLarge.render(str(round(minutes))+'m',False,DARKWOUNDCOLOR)
 
         screen.blit(minutesText,minutesText.get_rect(center=(380,516)))
+
+    if bleeding:
+        screen.blit(monospacedMediumLarge.render(f'DC-{10+2*((unit.wounds-1)//5)}',True,DARKERGREY),(42,410))
+        screen.blit(monospacedSmall.render(f'First Aid: {5 if unit.wounds<=25 else 10}m',True,DARKERGREY),(42,430))
+        screen.blit(monospacedSmall.render(f'Surgery: {5+5*((unit.wounds-1)//10)}m',True,DARKERGREY),(42,440))
+        #f'@DC-{10+2*((unit.wounds-1)//5)}, First Aid Time: {5 if unit.wounds<=25 else 10}m, Surgery Time: {5+5*((unit.wounds-1)//10)}m'
 
 
 barValueHitbox=game.Rect(330,390,63,83)
