@@ -1392,6 +1392,9 @@ def processDamage():
 
 def shoot():
     global shotTimer
+    if shotTimer>5000:
+        return
+
     shotTimer=0
     if damageInput.value=='':
         return
@@ -1564,7 +1567,7 @@ while True:
 
             if shotTimer>5000:
                 if luckRerollHitbox.collidepoint(game.mouse.get_pos()):
-                    particles.remove(particles[-1])
+                    particles=[]
                     luckActive=False
                     loc=locationDie()
                     if loc==0:
@@ -1574,10 +1577,11 @@ while True:
                     shotQueue.append((loc,shotDmg,shotRolls,shotMore,shotAmmoIndex))
                     shotTimer=15
                     for _ in range(30):
-                        particles.append(Particle((133+woundPoints[0][0],63+woundPoints[0][1]),'luck'))
+                        particles.append(Particle((133+woundPoints[0][0]+randint(-10,10),63+woundPoints[0][1]+randint(-10,10)),'luck'))
                 elif luckDontHitbox.collidepoint(game.mouse.get_pos()):
                     shotTimer=15
-                    particles[-1].lifetime=18
+                    for particle in particles:
+                        particle.lifetime=18
 
             if deflectionHitbox.collidepoint(game.mouse.get_pos()):
                 unit.deflection=not unit.deflection
