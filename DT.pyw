@@ -38,6 +38,7 @@ HEIGHT=789
 BLACK=(0,0,0)
 WHITE=(255,255,255)
 
+LUCKGREEN=(0,158,0)
 DARKGREEN=(10,100,10)
 TRACEBLUE=(0,200,255)
 TRACEYELLOW=(244,249,51)
@@ -900,8 +901,8 @@ def generateSPHitboxes(startX,startY):
 
 spHitboxes=generateSPHitboxes(41,557)
 
-barrierIconOn=game.image.load('DT/Shield/shieldIconOn.png').convert_alpha()
-barrierIconOff=game.image.load('DT/Shield/shieldIconOff.png').convert_alpha()
+barrierIconOn=game.image.load('DT/shieldIconOn.png').convert_alpha()
+barrierIconOff=game.image.load('DT/shieldIconOff.png').convert_alpha()
 
 barToggleHitbox=game.Rect(471,419,63,63)
 def drawBar():
@@ -910,6 +911,29 @@ def drawBar():
         screen.blit(barrierIconOn,(481,427))
     else:
         screen.blit(barrierIconOff,(481,427))
+
+luckActive=False
+luckIconOn=game.image.load('DT/luckIconOn.png').convert_alpha()
+luckIconOff=game.image.load('DT/luckIconOff.png').convert_alpha()
+
+luckToggleHitbox=game.Rect(471,350,63,63)
+def drawLuck():
+    frame(471,350,63,63,BASEGREY)
+    if luckActive:
+        screen.blit(luckIconOn,(481,358))
+    else:
+        screen.blit(luckIconOff,(481,358))
+
+luckRerollHitbox=game.Rect(290,77,65,30)
+luckDontHitbox=game.Rect(360,77,55,30)
+def drawReroll():
+    if shotTimer>5000:
+        frame(285,72,135,40,LUCKGREEN)
+        frame(290,77,65,30,WHITE if luckRerollHitbox.collidepoint(game.mouse.get_pos()) else LIGHTGREY)
+        frame(360,77,55,30,WHITE if luckDontHitbox.collidepoint(game.mouse.get_pos()) else LIGHTGREY)
+
+        screen.blit(impactMedium.render('Reroll',True,BLACK),(295,77))
+        screen.blit(impactMedium.render('Dont',True,BLACK),(365,77))
 
 deflectionIconOn=game.image.load('DT/deflectionIconOn.png').convert_alpha()
 deflectionIconOff=game.image.load('DT/deflectionIconOff.png').convert_alpha()
@@ -1154,6 +1178,9 @@ fill(traceYellowImg,TRACEYELLOW)
 fill(traceRedImg,TRACERED)
 fill(traceWoundImg,WOUNDCOLOR)
 
+luckParticleImg=game.image.load('DT/particle.png').convert_alpha()
+fill255(luckParticleImg,LUCKGREEN)
+
 particleImg=game.image.load('DT/smolParticle.png').convert_alpha()
 bloodImg=game.image.load('DT/smolParticle.png').convert_alpha()
 bloodImg.fill(WOUNDCOLOR)
@@ -1189,6 +1216,13 @@ class Particle:
 
         elif self.type=='spark':
             self.surface=sparkImg
+            self.lifetime=int(0.9*30)
+            self.dx=uniform(-6,6)
+            self.dy=uniform(-6,6)
+            self.damp=1.15
+
+        elif self.type=='luck':
+            self.surface=luckParticleImg
             self.lifetime=int(0.9*30)
             self.dx=uniform(-6,6)
             self.dy=uniform(-6,6)
@@ -1234,7 +1268,7 @@ class Particle:
         if self.type=='blood':
             self.dy+=1
         elif self.type=='cross':
-            self.ry/=1.09
+            self.ry=max(self.ry/1.09,0.5)
         elif self.type=='spark':
             self.r=(self.r+randint(-50,50))%360
 
@@ -1382,7 +1416,11 @@ def runShot():
     if shotLoc==-2:
         particles.append(Particle((133+148,63+76),'cross'))
         shotQueue.append((0,shotDmg,shotRolls,shotMore,shotAmmoIndex))
-        shotTimer=int(1.15*30)
+        if luckActive:
+            particles[-1].lifetime=9999999
+            shotTimer=9999999
+        else:
+            shotTimer=int(1.15*30)
     else:
         weapon.ammotype=ammoTypes[shotAmmoIndex]
         oldUnit=deepcopy(unit)
@@ -1520,6 +1558,26 @@ while True:
             if barToggleHitbox.collidepoint(game.mouse.get_pos()):
                 barrierActive=not barrierActive
                 unit.barrier.covers=[True]*6
+
+            if luckToggleHitbox.collidepoint(game.mouse.get_pos()):
+                luckActive=not luckActive
+
+            if shotTimer>5000:
+                if luckRerollHitbox.collidepoint(game.mouse.get_pos()):
+                    particles.remove(particles[-1])
+                    luckActive=False
+                    loc=locationDie()
+                    if loc==0:
+                        loc=-2
+                    _,shotDmg,shotRolls,shotMore,shotAmmoIndex=shotQueue[-1]
+                    shotQueue=shotQueue[:-1]
+                    shotQueue.append((loc,shotDmg,shotRolls,shotMore,shotAmmoIndex))
+                    shotTimer=15
+                    for _ in range(30):
+                        particles.append(Particle((133+woundPoints[0][0],63+woundPoints[0][1]),'luck'))
+                elif luckDontHitbox.collidepoint(game.mouse.get_pos()):
+                    shotTimer=15
+                    particles[-1].lifetime=18
 
             if deflectionHitbox.collidepoint(game.mouse.get_pos()):
                 unit.deflection=not unit.deflection
@@ -1681,6 +1739,7 @@ while True:
     bodyBlit()
     coolBlit()
     drawBar()
+    drawLuck()
     drawDeflection()
     drawLog()
     loadBlit()
@@ -1695,6 +1754,8 @@ while True:
 
     for particle in particles:
         particle.update()
+
+    drawReroll()
 
     drawInfoBox()
 
