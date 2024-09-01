@@ -380,11 +380,9 @@ def drawHudElements():
 
         screen.blit(minutesText,minutesText.get_rect(center=(380,516)))
 
-    if bleeding:
-        screen.blit(monospacedMediumLarge.render(f'DC-{10+2*((unit.wounds-1)//5)}',True,DARKERGREY),(42,410))
-        screen.blit(monospacedSmall.render(f'First Aid: {5 if unit.wounds<=25 else 10}m',True,DARKERGREY),(42,430))
-        screen.blit(monospacedSmall.render(f'Surgery: {5+5*((unit.wounds-1)//10)}m',True,DARKERGREY),(42,440))
-        #f'@DC-{10+2*((unit.wounds-1)//5)}, First Aid Time: {5 if unit.wounds<=25 else 10}m, Surgery Time: {5+5*((unit.wounds-1)//10)}m'
+    if bleeding and not unit.dead:
+        screen.blit(monospacedMediumLarge.render(f'DC-{10+2*((unit.wounds-1)//5)}',True,DARKGREY),(42,410))
+        screen.blit(monospacedSmall.render(f'{5 if unit.wounds<=25 else 10}m / {5+5*((unit.wounds-1)//10)}m',True,DARKGREY),(42,430))
 
 
 barValueHitbox=game.Rect(330,390,63,83)
