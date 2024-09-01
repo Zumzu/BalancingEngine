@@ -1181,7 +1181,7 @@ fill(traceRedImg,TRACERED)
 fill(traceWoundImg,WOUNDCOLOR)
 
 luckParticleImg=game.image.load('DT/particle.png').convert_alpha()
-fill255(luckParticleImg,LUCKGREEN)
+fill(luckParticleImg,LUCKGREEN)
 
 particleImg=game.image.load('DT/smolParticle.png').convert_alpha()
 bloodImg=game.image.load('DT/smolParticle.png').convert_alpha()
@@ -1579,7 +1579,7 @@ while True:
                     shotQueue.append((loc,shotDmg,shotRolls,shotMore,shotAmmoIndex))
                     shotTimer=15
                     for _ in range(30):
-                        particles.append(Particle((133+woundPoints[0][0]+randint(-10,10),63+woundPoints[0][1]+randint(-10,10)),'luck'))
+                        particles.append(Particle((73,559),'luck'))
                 elif luckDontHitbox.collidepoint(game.mouse.get_pos()):
                     shotTimer=15
                     for particle in particles:
