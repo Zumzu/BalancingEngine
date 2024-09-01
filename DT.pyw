@@ -46,6 +46,7 @@ CYBERCOLOR=(144,176,185)
 CYBERWOUNDCOLOR=(0,145,185)
 
 STUNYELLOW=(255,244,55)
+DARKYELLOW=(198,187,0)
 
 WOUNDCOLOR=(169,18,1)
 DARKWOUNDCOLOR=(130,13,0)
@@ -77,6 +78,7 @@ monospacedTiny=game.font.SysFont('consolas',12)
 
 impactHuge=game.font.SysFont('impact',70)
 impactLarge=game.font.SysFont('impact',30)
+impactMedium=game.font.SysFont('impact',22)
 impactTiny=game.font.SysFont('impact',13)
 
 allNegativeFont=game.font.SysFont('impact',33)
@@ -317,10 +319,22 @@ def drawHudElements():
         totalSpMax+=unit.armour.spMax[i]
 
     if totalSpMax!=0:
-        if totalSp/totalSpMax<0.78:
-            screen.blit(shirt2Img,(41,477))
+        disparity=totalSpMax-totalSp
+        if totalSp/totalSpMax<0.8:
+            screen.blit(shirt2Img,(41,475))
+            if disparity<10:
+                shirtText=impactLarge.render(f'-{disparity}',True,DARKWOUNDCOLOR)
+            else:
+                shirtText=impactMedium.render(f'-{disparity}',True,DARKWOUNDCOLOR)
+            screen.blit(shirtText,shirtText.get_rect(center=(123,516)))
+
         elif totalSp/totalSpMax<0.9:
-            screen.blit(shirtImg,(41,477))
+            if disparity<10:
+                shirtText=impactLarge.render(f'-{disparity}',True,DARKGREY)
+            else:
+                shirtText=impactMedium.render(f'-{disparity}',True,DARKGREY)
+            screen.blit(shirtImg,(41,475))
+            screen.blit(shirtText,shirtText.get_rect(center=(123,516)))
     
     if barrierActive:
         x=321+randint(-shieldWiggle//8,shieldWiggle//8)
