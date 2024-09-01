@@ -23,11 +23,9 @@ from random import randint,uniform,random
 #  TODO
 #Tabss - Rename reorder
 #Graveyard
-#Explosion and fire symbols in log
+#Explosion, luck, and fire symbols in log
 #Ignore wound levels
 #Skull Cusioning
-#Luck
-#More Hud Symbols - All negative, Stun negative
 #Push melee/gun/armour list to firestore eventually
 #SO much refactoring to a real code format
 
@@ -867,6 +865,7 @@ def populateSPInputs():
         spInput.value=str(unit.armour.sp[i])
         spInputs.append(spInput)
 
+luckImg=game.image.load('DT/HUD/luckIconSmol.png').convert_alpha()
 
 def drawSP(startX,startY,sp,maxSP):
     for i in range(6):
@@ -892,6 +891,9 @@ def drawSP(startX,startY,sp,maxSP):
             game.draw.polygon(screen,(255,182,0),((x+3,y+3),(x+12,y+3),(x+3,y+12)))
         else:
             game.draw.polygon(screen,(230,60,13),((x+3,y+3),(x+12,y+3),(x+3,y+12)))
+
+        if luckActive:
+            screen.blit(luckImg,(62,548))
 
 def generateSPHitboxes(startX,startY):
     spHitboxes=[]
