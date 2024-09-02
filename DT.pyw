@@ -1348,7 +1348,13 @@ def loadFromDict():
     tabs[tabIndex].loadState()
 
 def duplicateTabAt(index:int):
-    tabs.insert(index+1,deepcopy(tabs[tabIndex]))
+    newTab=deepcopy(tabs[index])
+    lastChar=newTab.loadLog.desc[-1]
+    if lastChar.isnumeric():
+        newTab.loadLog.desc=newTab.loadLog.desc[:-1]+str(int(lastChar)+1)
+    else:
+        newTab.loadLog.desc+=' 1'
+    tabs.insert(index+1,newTab)
 
 def deleteTabAt(index:int):
     global tabIndex
