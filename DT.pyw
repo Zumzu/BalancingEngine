@@ -21,8 +21,8 @@ from random import randint,uniform,random
 #(An older iteration of this was in unity and the overhead was UNREAL)
 
 #  TODO
-#Tabss - Rename reorder
-#Graveyard
+#Tabss - reorder
+#Graveyard (this will fix a bug in tab auto naming logic too)
 #Explosion, luck, and fire symbols in log
 #Ignore wound levels
 #Skull Cusioning
@@ -1044,6 +1044,13 @@ class Log:
         self.hitbox=undoImg.get_rect(center=(x+400,y+self.height//2))
         screen.blit(undoImg,self.hitbox)
 
+loadLogInput=pygame_textinput.TextInputVisualizer()
+loadLogInput=pygame_textinput.TextInputVisualizer()
+loadLogInput.font_object=monospacedMediumLarge
+loadLogInput.manager.validator=(lambda x: len(x)<=21 and str(x).isprintable())
+loadLogSelected=False
+loadLogHitbox=game.Rect(930,100,450,56)
+
 class LoadLog:
     def __init__(self,unit:Unit,desc:str) -> None:
         self.hitbox=undoImg.get_rect(center=(1350,127))
@@ -1051,7 +1058,7 @@ class LoadLog:
         self.desc=desc
 
     def draw(self):
-        screen.blit(monospacedMediumLarge.render(f"{self.desc.title()}",True,BLACK),(950,107))
+        screen.blit(loadLogInput.surface,(950,107))
         screen.blit(monospacedSmall.render(f"[{self.unit.armour.sp[0]}] [{self.unit.armour.sp[1]}] [{self.unit.armour.sp[2]}|{self.unit.armour.sp[3]}] [{self.unit.armour.sp[4]}|{self.unit.armour.sp[5]}], BODY-{self.unit.body}, COOL-{self.unit.cool}",True,BLACK),(950,134))
         screen.blit(undoImg,self.hitbox)
 
@@ -1100,6 +1107,8 @@ class Tab:
         loadLog=self.loadLog
         logs=self.logs 
         unit=deepcopy(self.currentUnit)
+        loadLogInput.value=loadLog.desc.capitalize()
+        loadLogInput.manager.cursor_pos=21
 
 deleteImg=game.image.load('DT/delete.png').convert_alpha()
 deleteImgHighlight=game.image.load('DT/delete.png').convert_alpha()
@@ -1351,9 +1360,21 @@ def duplicateTabAt(index:int):
     newTab=deepcopy(tabs[index])
     lastChar=newTab.loadLog.desc[-1]
     if lastChar.isnumeric():
-        newTab.loadLog.desc=newTab.loadLog.desc[:-1]+str(int(lastChar)+1)
+        count=1
+        newName=newTab.loadLog.desc[:-2]
+        for tab in tabs:
+            if tab.loadLog.desc[:-2]==newName:
+                count+=1
+        newTab.loadLog.desc=newTab.loadLog.desc[:-1]+str(count)
+        for i in reversed(range(len(tabs))):
+            if tabs[i].loadLog.desc[:-2]==newName:
+                index=i
+                break
     else:
-        newTab.loadLog.desc+=' 1'
+        tabs[index].loadLog.desc+=' 1'
+        newTab.loadLog.desc+=' 2'
+        loadLogInput.value=loadLog.desc.capitalize()
+        loadLogInput.manager.cursor_pos=20
     tabs.insert(index+1,newTab)
 
 def deleteTabAt(index:int):
@@ -1362,7 +1383,7 @@ def deleteTabAt(index:int):
     if tabIndex==index:
         tabIndex=0
         if tabs==[]:
-            tabs.append(Tab(LoadLog(Unit(None,findArmour([14,14,14,14,10,10]),0,7,7,cyber=[0,0,0,0,0,0]),'Default'),[]))
+            tabs.append(Tab(LoadLog(Unit(None,findArmour([14,14,14,14,10,10]),0,7,7,cyber=[0,0,0,0,0,0]),'Unnamed'),[]))
         tabs[tabIndex].loadState()
     elif tabIndex>index:
         tabIndex-=1
@@ -1497,7 +1518,9 @@ weapon=findGun("streetmaster")
 unit=Unit(None,findArmour([14,14,14,14,10,10]),0,7,7,cyber=[0,0,0,0,0,0]) # manual load
 
 logs:list[Log]=[]
-loadLog:LoadLog=LoadLog(unit,"Default")
+loadLog:LoadLog=LoadLog(unit,"Unnamed")
+loadLogInput.value=loadLog.desc.capitalize()
+loadLogInput.manager.cursor_pos=20
 tabs:list[Tab]=[Tab(loadLog,logs)]
 
 populateBody()
@@ -1523,14 +1546,16 @@ while True:
             multiplierSelected=multiplierHitbox.collidepoint(game.mouse.get_pos())
             bodySelected=bodyHitbox.collidepoint(game.mouse.get_pos())
             coolSelected=coolHitbox.collidepoint(game.mouse.get_pos())
+            loadLogSelected=loadLogHitbox.collidepoint(game.mouse.get_pos())
+            for i in range(6):
+                spInputsSelected[i]=spHitboxes[i].collidepoint(game.mouse.get_pos())
+
             for i in range(51):
                 if woundTrackHitBoxes[i].collidepoint(game.mouse.get_pos()):
                     unit.wounds=i
+
             if pewHitbox.collidepoint(game.mouse.get_pos()):
                 shoot()
-
-            for i in range(6):
-                spInputsSelected[i]=spHitboxes[i].collidepoint(game.mouse.get_pos())
 
             if stunHudHitbox.collidepoint(game.mouse.get_pos()):
                 unit.stunned=not unit.stunned
@@ -1661,6 +1686,7 @@ while True:
                 spInputsSelected[i]=False
             bodySelected=False
             coolSelected=False
+            loadLogSelected=False
 
             if loadSelected:
                 for unitDict in unitDicts:
@@ -1684,6 +1710,12 @@ while True:
                     spInputsSelected[(i+1)%6]=True
                     spInputs[(i+1)%6].value=''
                     break
+    
+    if loadLogSelected:
+        loadLogInput.update(events)
+        loadLog.desc=loadLogInput.value
+    else:
+        loadLogInput.cursor_visible=False
 
     if loadSelected:
         loadInput.update(events)
