@@ -1066,7 +1066,6 @@ logHitbox=game.Rect(930,100,450,510)
 logTextLabel=monospacedHuge.render("History",True,BLACK)
 def drawLog():
     screen.blit(logTextLabel,logTextLabel.get_rect(center=(930+450//2,80)))
-    drawTabs()
     frame(930,100,450,510,LIGHTGREY)
     offset=0
     for i in range(logIndex,len(logs)):
@@ -1134,7 +1133,7 @@ def drawTabs():
 
         name=tabs[i].loadLog.desc.title()
         if len(name)>15:
-            name=name[:12]+'...'
+            name=name[:15]+'…'
         screen.blit(monospacedSmall.render(name,True,BLACK),(x+6,y+6))
 
         critWounded=[False]*6
@@ -1173,6 +1172,12 @@ def drawTabs():
         wounds=tabs[i].currentUnit.wounds
         if wounds>0:
             game.draw.line(screen,WOUNDCOLOR,(x+3,y+46),(x+3+min(50,max(0,wounds))/50*169,y+46),4)
+
+addTabHitbox=game.Rect(894,111,39,36)
+def drawAddTab():
+    frame(894,111,39,35,WHITE if addTabHitbox.collidepoint(game.mouse.get_pos()) else LIGHTGREY)
+    game.draw.line(screen, BLACK, (906,128), (918,128), 3)
+    game.draw.line(screen, BLACK, (912,122), (912,134), 3)
 
 debugImg=game.image.load('DT/smolParticle.png').convert_alpha()
 fill(debugImg,(255,0,255))
@@ -1383,10 +1388,13 @@ def deleteTabAt(index:int):
     if tabIndex==index:
         tabIndex=0
         if tabs==[]:
-            tabs.append(Tab(LoadLog(Unit(None,findArmour([14,14,14,14,10,10]),0,7,7,cyber=[0,0,0,0,0,0]),'Unnamed'),[]))
+            addUnnamedTab()
         tabs[tabIndex].loadState()
     elif tabIndex>index:
         tabIndex-=1
+
+def addUnnamedTab():
+    tabs.append(Tab(LoadLog(Unit(None,findArmour([14,14,14,14,10,10]),0,7,7,cyber=[0,0,0,0,0,0]),'Unnamed'),[]))
 
 def processDamage():
     dmg=0
@@ -1636,6 +1644,9 @@ while True:
                     deleteTabAt(i)
                     break
 
+            if addTabHitbox.collidepoint(game.mouse.get_pos()):
+                addUnnamedTab()
+
         if event.type == game.MOUSEBUTTONDOWN and game.mouse.get_pressed()[2]:
             for i in range(6):
                 if spHitboxes[i].collidepoint(game.mouse.get_pos()):
@@ -1785,6 +1796,9 @@ while True:
     drawBar()
     drawLuck()
     drawDeflection()
+
+    drawTabs()
+    drawAddTab()
     drawLog()
     loadBlit()
 
