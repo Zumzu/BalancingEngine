@@ -607,7 +607,7 @@ loadInput.manager.validator=(lambda x: len(x)<=21 and str(x).isprintable())
 loadSelected=False
 loadHitbox=game.Rect(550,42,246,36)
 loadDict=None
-def loadBlit():
+def drawLoadBar():
     global loadDict
     loadDict=None
 
@@ -648,7 +648,7 @@ bodyInput.font_object=monospacedHuge
 bodyInput.manager.validator=(lambda x: len(x)<=2 and ((str(x).isnumeric() and int(x)<=20 and int(x)>0)or x==''))
 bodySelected=False
 bodyHitbox=game.Rect(471,557,63,63)
-def bodyBlit():
+def drawBody():
     screen.blit(bodyTextLabel,(539,563))
     screen.blit(btmTextLabel,(540,596))
     btmValue=monospacedMedium.render(f"-{str(unit.btm)}",True,BLACK)
@@ -667,7 +667,7 @@ coolInput.font_object=monospacedHuge
 coolInput.manager.validator=(lambda x: len(x)<=2 and ((str(x).isnumeric() and int(x)<=20 and int(x)>0)or x==''))
 coolSelected=False
 coolHitbox=game.Rect(471,488,63,63)
-def coolBlit():
+def drawCool():
     screen.blit(coolTextLabel,(539,505))
     frame(471,488,63,63,BASEGREY)
     coolInput.font_color=BLACK if unit.cool>unit.body else DARKGREY
@@ -690,7 +690,7 @@ damageInput.font_object=monospacedLarge
 damageInput.manager.validator=(lambda x: x=='' or (len(x)<=6 and (str(x[-1]).isnumeric() or str(x[-1]).lower()=='d') or x[-1]=='+' or x[-1]=='-'))
 damageSelected=False
 damageHitbox=game.Rect(DAMAGEX+6,DAMAGEY+33,116,46)    
-def damageBlit():
+def drawDamage():
     drawBullets(DAMAGEX+117,DAMAGEY+3)
     screen.blit(damageTextLabel,(DAMAGEX+8,DAMAGEY+3))
     frame(DAMAGEX+6,DAMAGEY+33,116,46,LIGHTGREY)
@@ -707,7 +707,7 @@ multiplierInput.font_object=monospacedLarge
 multiplierInput.manager.validator=(lambda x: len(x)<=2 and (str(x).isnumeric() or x==''))
 multiplierSelected=False
 multiplierHitbox=game.Rect(DAMAGEX+150,DAMAGEY+33,40,46)
-def multiplierBlit():
+def drawMultiplier():
     screen.blit(multiplierTextLabel,(DAMAGEX+128,DAMAGEY+43))
     frame(DAMAGEX+150,DAMAGEY+33,47,46,LIGHTGREY)
     screen.blit(multiplierInput.surface,(DAMAGEX+157,DAMAGEY+42))
@@ -717,7 +717,7 @@ def multiplierBlit():
 pewTextLabel=monospacedMedium.render("PEW!",True,(255,255,255))
 pewPewTextLabel=monospacedMedium.render("PEW PEW!",True,(255,255,255))
 pewHitbox=game.Rect(DAMAGEX+214,DAMAGEY+38,100,36)
-def pewBlit():
+def drawPew():
     buttonFrame(DAMAGEX+214,DAMAGEY+38,110,36,pewHitbox.collidepoint(game.mouse.get_pos()))
     if multiplierInput.value=='' or multiplierInput.value=='1':
         screen.blit(pewTextLabel,(DAMAGEX+249,DAMAGEY+47))
@@ -760,7 +760,7 @@ for text in woundTrackText:
 medicalIconImage=game.image.load('DT/medical.png').convert_alpha()
 zeroIconImage=game.image.load('DT/ZeroIco.png')
 zeroIconImage=game.transform.scale(zeroIconImage,(26,26)).convert_alpha()
-def drawWoundTrack(startX:int,startY:int,endX:int,buffer:int,wounds:int,greyWounds:int):
+def drawWoundTrack(startX:int,startY:int,endX:int,buffer:int,wounds:int,greyWounds:int,blueWounds:int):
     wounds=max(0,min(50,wounds))
     boxSize=(endX-startX-buffer*10)/50
     screen.blit(zeroIconImage,(startX-boxSize+buffer//3,startY-3))
@@ -773,42 +773,55 @@ def drawWoundTrack(startX:int,startY:int,endX:int,buffer:int,wounds:int,greyWoun
         if i==5:
             offsetX=-24.5*boxSize
             offsetY=50
-            
-        rect=woundTrackLabels[i].get_rect(center=(startX+(i+0.5)*5*boxSize+offsetX,startY+offsetY-7))
-        screen.blit(woundTrackLabels[i],rect)
-        drawWoundSet(startX+i*5*boxSize+offsetX,startY+offsetY,boxSize,wounds,greyWounds)
-        if wounds<5:
-            greyWounds-=(5-wounds)
-        wounds=max(0,wounds-5)
+        
+        screen.blit(woundTrackLabels[i],woundTrackLabels[i].get_rect(center=(startX+(i+0.5)*5*boxSize+offsetX,startY+offsetY-7)))
+        wounds,greyWounds,blueWounds=drawWoundSet(startX+i*5*boxSize+offsetX,startY+offsetY,boxSize,wounds,greyWounds,blueWounds)
 
-def drawWoundSet(startX:int,startY:int,boxSize:float,wounds:int,greyWounds:int):
+def drawWoundSet(startX:int,startY:int,boxSize:float,wounds:int,greyWounds:int,blueWounds:int):
     game.draw.line(screen,BLACK,(startX,startY),(startX+boxSize*5,startY),2)
     game.draw.line(screen,BLACK,(startX,startY+boxSize),(startX+boxSize*5,startY+boxSize),2)
     for i in range(6):
         game.draw.line(screen,BLACK,(startX+boxSize*i,startY),(startX+boxSize*i,startY+boxSize),2)
+
     for i in range(5):
-        if i<wounds:
-            game.draw.line(screen,WOUNDCOLOR,(startX+boxSize*i+6,startY+3),(startX+boxSize*i+int(boxSize)-5,startY+boxSize-2),8)
-            game.draw.line(screen,WOUNDCOLOR,(startX+boxSize*i+6,startY+int(boxSize)-2),(startX+boxSize*i+int(boxSize)-5,startY+3),8)
-        elif i<wounds+greyWounds:
-            game.draw.line(screen,GREYWOUNDCOLOR,(startX+boxSize*i+6,startY+3),(startX+boxSize*i+int(boxSize)-5,startY+boxSize-2),8)
-            game.draw.line(screen,GREYWOUNDCOLOR,(startX+boxSize*i+6,startY+int(boxSize)-2),(startX+boxSize*i+int(boxSize)-5,startY+3),8)
+        if wounds>0:
+            color=WOUNDCOLOR
+            wounds-=1
+        elif blueWounds>0:
+            color=BLACK
+            blueWounds-=1
+        elif greyWounds>0:
+            color=GREYWOUNDCOLOR
+            greyWounds-=1
+        else:
+            break
+        game.draw.line(screen,color,(startX+boxSize*i+6,startY+3),(startX+boxSize*i+int(boxSize)-5,startY+boxSize-2),8)
+        game.draw.line(screen,color,(startX+boxSize*i+6,startY+int(boxSize)-2),(startX+boxSize*i+int(boxSize)-5,startY+3),8)
+        if color==BLACK:
+            game.draw.line(screen,BASEGREY,(startX+boxSize*i+6,startY+3),(startX+boxSize*i+int(boxSize)-5,startY+boxSize-2),6)
+            game.draw.line(screen,BASEGREY,(startX+boxSize*i+6,startY+int(boxSize)-2),(startX+boxSize*i+int(boxSize)-5,startY+3),6)
+
+    return (wounds,greyWounds,blueWounds)
 
 woundsHitbox=game.Rect(30,645,WIDTH//2-15,HEIGHT-675)
 deadText=impactHuge.render("D  E  A  D",True,WOUNDCOLOR)
 zeroedText=impactHuge.render("Z E R O E D",True,WOUNDCOLOR)
-def drawWounds(wounds):
+def drawWounds():
+    wounds=max(0,unit.wounds-unit.ignoreWounds)
+    blueWounds=min(unit.wounds,unit.ignoreWounds)
     greyWounds=0
     for i in range(51):
         if woundTrackHitBoxes[i].collidepoint(game.mouse.get_pos()):
-            if i>wounds:
-                greyWounds=i-wounds
-            elif i<wounds:
-                greyWounds=wounds-i
+            if i>(wounds+blueWounds):
+                greyWounds=i-(wounds+blueWounds)
+            elif i<(wounds+blueWounds):
+                greyWounds=(wounds+blueWounds)-i
+                if wounds<greyWounds:
+                    blueWounds-=greyWounds-wounds
                 wounds-=greyWounds
             break
     frame(30,645,WIDTH//2-15,HEIGHT-675,BASEGREY)
-    drawWoundTrack(64,670,WIDTH-150,4,wounds,greyWounds)
+    drawWoundTrack(64,670,WIDTH-150,4,wounds,greyWounds,blueWounds)
     if wounds>=50 and not woundsHitbox.collidepoint(game.mouse.get_pos()):
         s=game.Surface((WIDTH//2-15,HEIGHT-675),game.SRCALPHA)
         s.fill((30,30,30,200))
@@ -925,6 +938,21 @@ def drawLuck():
         screen.blit(luckIconOn,(481,358))
     else:
         screen.blit(luckIconOff,(481,358))
+
+ignoreOffImg=game.image.load('DT/ignoreOff.png').convert_alpha()
+ignoreOnImg=game.image.load('DT/ignoreOn.png').convert_alpha()
+ignoreHitbox=game.Rect(471,166,63,63)
+def drawIgnore():
+    frame(471,166,63,63,BASEGREY)
+    if unit.ignoreWounds==0:
+        screen.blit(ignoreOffImg,(478,173))
+        return
+    
+    screen.blit(ignoreOnImg,(478,173))
+    ignoreText=f"{unit.ignoreWounds//5}"
+    ignoreLabel=monospacedMedium.render(ignoreText,True,BLACK)
+    screen.blit(ignoreLabel,(516,206))
+
 
 luckRerollHitbox=game.Rect(290,77,65,30)
 luckDontHitbox=game.Rect(360,77,55,30)
@@ -1534,7 +1562,7 @@ tabs:list[Tab]=[Tab(loadLog,logs)]
 populateBody()
 populateSPInputs()
 
-
+##################################################################################################################################################
 while True: 
     if shotTimer==0 and shotQueue!=[]:
         runShot()
@@ -1627,6 +1655,12 @@ while True:
             if deflectionHitbox.collidepoint(game.mouse.get_pos()):
                 unit.deflection=not unit.deflection
 
+            if ignoreHitbox.collidepoint(game.mouse.get_pos()):
+                if unit.ignoreWounds==0:
+                    unit.ignoreWounds=10
+                else:
+                    unit.ignoreWounds=0
+
             if loadDict is not None:
                 loadFromDict()
                 loadInput.value=''
@@ -1658,6 +1692,8 @@ while True:
                         unit.cyber[i]=CyberLimb(20)
                     elif unit.cyber[i].sdp==20:
                         unit.cyber[i]=CyberLimb(30)
+                    elif unit.cyber[i].sdp==30:
+                        unit.cyber[i]=CyberLimb(45)
                     else:
                         unit.cyber[i]=None
                 
@@ -1676,6 +1712,9 @@ while True:
                 unit.body=max(min(10,unit.body+event.y),3)
                 unit.btm=bodyToBTM(unit.body)
 
+            if ignoreHitbox.collidepoint(game.mouse.get_pos()):
+                unit.ignoreWounds=max(min(45,unit.ignoreWounds+event.y*5),0)
+
             for i in range(6):
                 if spHitboxes[i].collidepoint(game.mouse.get_pos()):
                     unit.armour.sp[i]=max(min(unit.armour.spMax[i],unit.armour.sp[i]+event.y),0)
@@ -1689,6 +1728,7 @@ while True:
             for i in range(6):
                 if sdpHitboxes[i].collidepoint(game.mouse.get_pos()):
                     unit.cyber[i].setSDP(max(min(unit.cyber[i].maxSdp,unit.cyber[i].sdp+event.y),0))
+
 
         if event.type == game.KEYDOWN and event.key == game.K_RETURN:
             if damageSelected or multiplierSelected:
@@ -1791,23 +1831,24 @@ while True:
     drawDude()
     drawSP(41,557,unit.armour.sp,unit.armour.spMax)
 
-    bodyBlit()
-    coolBlit()
+    drawBody()
+    drawCool()
     drawBar()
     drawLuck()
     drawDeflection()
+    drawIgnore()
 
     drawTabs()
     drawAddTab()
     drawLog()
-    loadBlit()
+    drawLoadBar()
 
-    drawWounds(unit.wounds)
+    drawWounds()
 
     frame(WIDTH//2+45,645,WIDTH//2-75,HEIGHT-675,BASEGREY)
-    damageBlit()
-    multiplierBlit()
-    pewBlit()
+    drawDamage()
+    drawMultiplier()
+    drawPew()
     ammoSpinner()
 
     for particle in particles:

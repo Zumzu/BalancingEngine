@@ -352,6 +352,7 @@ class Unit:
         self.barrier=Barrier(0,[True]*6)
 
         self.deflection=False
+        self.ignoreWounds=0
 
     def __str__(self):
         i=0
@@ -532,9 +533,7 @@ class Unit:
         return output
 
     def stunMod(self):
-        if self.wounds<=0:
-            return 0
-        output=floor((self.wounds-1)/5)
+        output=max(floor((self.wounds-self.ignoreWounds-1)/5),0)
         for injury in self.critInjuries:
             output+=injury.allNegative+injury.stunUnconPenalty
         return output
@@ -546,7 +545,7 @@ class Unit:
         return output
     
     def allNegative(self):
-        output=max(floor((self.wounds-1)/5)-3,0)
+        output=max(floor((self.wounds-self.ignoreWounds-1)/5)-3,0)
         for injury in self.critInjuries:
             output+=injury.allNegative
         return output
@@ -556,7 +555,7 @@ class Unit:
             if(d10E()>max(self.body,self.cool)-self.stunMod()):
                 self.stunned=True
 
-        if(self.stunned and self.wounds>15):
+        if(self.stunned and self.wounds-self.ignoreWounds>15):
             if(d10E()>self.body-self.unconMod()):
                 self.uncon=True
                 return True
