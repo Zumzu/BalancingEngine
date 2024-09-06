@@ -6,7 +6,7 @@ from copy import deepcopy
 from os import system
 from math import cos,sin,pi
 
-from Modules.Base import Unit,bodyToBTM,CyberLimb
+from Modules.Base import Unit,Weapon,Ammo,bodyToBTM,CyberLimb
 from Modules.Generator import findGun,findArmour,generateUnitList
 from Modules.Ammo import *
 from Modules.Dice import locationDie
@@ -22,12 +22,16 @@ from random import randint,uniform,random
 
 #  TODO
 #Tabss - reorder
+#Hide
+#load Hover preview
 #Graveyard (this will fix a bug in tab auto naming logic too)
 #Explosion, luck, and fire symbols in log
+#SHOT COUNT
 #Ignore wound levels
 #Skull Cusioning
 #Push melee/gun/armour list to firestore eventually
 #SO much refactoring to a real code format
+#Sound?
 
 
 WIDTH=1429 #actively clean multiple of hexagon backgrounds native resolution
@@ -979,11 +983,13 @@ def drawDeflection():
 
 locationTextNames=["Head","Torso","L.Arm","R.Arm","L.Leg","R.Leg"]
 class Log:
-    def __init__(self,loc:int,dmgTotal:int,dmgRolled:list[int],more:int,oldUnit:Unit,newUnit:Unit) -> None:
+    def __init__(self,loc:int,dmgTotal:int,dmgRolled:list[int],more:int,oldUnit:Unit,newUnit:Unit,ammoType:Ammo,countLabel:str) -> None:
         self.loc=loc
         self.dmgTotal=dmgTotal
         self.dmgRolled=dmgRolled
         self.more=more
+        self.ammoType=ammoType
+        self.countLabel=countLabel
 
         self.through=newUnit.wounds-oldUnit.wounds
         for i in range(6):
@@ -1069,10 +1075,14 @@ class Log:
                 text+=f"+{injury.name}  "
             screen.blit(monospacedMedium.render(text,True,woundColor),(x,y+43))
 
-        self.hitbox=undoImg.get_rect(center=(x+400,y+self.height//2))
+        self.hitbox=undoImg.get_rect(center=(x+400,y+self.height-15))
         screen.blit(undoImg,self.hitbox)
 
-loadLogInput=pygame_textinput.TextInputVisualizer()
+        shotCountText=monospacedTiny.render(self.countLabel,True,DARKGREY)
+        screen.blit(shotCountText,shotCountText.get_rect(center=(x+400,y+5)))
+
+        
+
 loadLogInput=pygame_textinput.TextInputVisualizer()
 loadLogInput.font_object=monospacedMediumLarge
 loadLogInput.manager.validator=(lambda x: len(x)<=21 and str(x).isprintable())
@@ -1495,7 +1505,7 @@ def runShot():
         unit.damage(weapon=weapon,dmg=shotDmg,loc=shotLoc)
         if oldUnit.wounds==unit.wounds and not oldUnit.uncon and unit.uncon:
             unit.uncon=False
-        logs.insert(0,Log(shotLoc,shotDmg,shotRolls,shotMore,oldUnit,unit))
+        logs.insert(0,Log(shotLoc,shotDmg,shotRolls,shotMore,oldUnit,unit,ammoTypes[shotAmmoIndex],f'{len(logs)+1}'))
 
         if oldUnit.barrier.sp>0 and unit.barrier.covers[shotLoc]:
             shieldWiggle=10
@@ -1550,7 +1560,7 @@ except:
 
 
 
-weapon=findGun("streetmaster")
+weapon:Weapon=findGun("streetmaster")
 unit=Unit(None,findArmour([14,14,14,14,10,10]),0,7,7,cyber=[0,0,0,0,0,0]) # manual load
 
 logs:list[Log]=[]
