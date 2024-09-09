@@ -1330,13 +1330,37 @@ class Particle:
                 raise '@@ TRACE ERROR @@'
             self.lifetime=int(2.5*30)
         
+        elif self.type=='plinko':
+            self.surface=bloodImg
+            self.lifetime=10000
+            self.dx=uniform(-6,6)
+            self.dy=uniform(-10,2)
+
         else:
             raise "@@ BAD PARTICLE TYPE @@"
 
     def update(self):
-        if self.lifetime<=0:
-            particles.remove(self)
-        self.lifetime-=1
+        if self.type=='plinko':
+            pass
+            if self.y>HEIGHT:
+                particles.remove(self)
+        else:
+            if self.lifetime<=0:
+                particles.remove(self)
+            self.lifetime-=1
+
+        if self.type=='plinko': #DUMB PLINKO PARTICLE PHYSICS
+            if self.y>woundsHitbox.bottom-3 and self.x>woundsHitbox.left and self.x<woundsHitbox.right:
+                self.y=woundsHitbox.bottom-3
+                self.dy=-self.dy/1.6
+                self.dx*=1.1
+
+            if self.x<woundsHitbox.left and self.y<woundsHitbox.top:
+                self.x=woundsHitbox.left
+                self.dx*=-1
+            elif self.x>woundsHitbox.right and self.y<woundsHitbox.top:
+                self.x=woundsHitbox.right
+                self.dx*=-1
 
         self.rect=self.surface.get_rect(center=(self.x,self.y))
         if 'trace' in self.type:
@@ -1354,7 +1378,7 @@ class Particle:
         self.dx/=self.damp
         self.dy/=self.damp
 
-        if self.type=='blood':
+        if self.type=='blood' or self.type=='plinko':
             self.dy+=1
         elif self.type=='cross':
             self.ry=max(self.ry/1.09,0.5)
@@ -1556,7 +1580,11 @@ def runShot():
                 particles.append(Particle((361+randint(-20,20),429+randint(-20,20)),'tink'))
         elif logs[0].through!=0:
             for _ in range(logs[0].through*2):
-                particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'blood'))
+                if not hideActive:
+                    particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'blood'))
+                else:
+                    particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'plinko'))
+                    particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'plinko'))
             for _ in range(logs[0].through*-2):
                 particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'spark'))
         else:
