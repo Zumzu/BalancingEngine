@@ -71,6 +71,7 @@ screen = game.display.set_mode((WIDTH,HEIGHT))
 background=background.convert_alpha()
 game.display.set_caption("Damage Tracker Mk2")
 game.display.set_icon(game.image.load('DT/EngineIco.png'))
+monospacedMassive=game.font.SysFont('consolas',55)
 monospacedHuge=game.font.SysFont('consolas',40)
 monospacedLarge=game.font.SysFont('consolas',30)
 monospacedMediumLarge=game.font.SysFont('consolas',23)
@@ -589,7 +590,7 @@ def drawSDP(loc:int,x:int,y:int,flip:bool=False):
     if unit.cyber[loc].broken:
         sdpText=monospacedMediumLarge.render(str(unit.cyber[loc].sdp),True,WOUNDCOLOR)
     else:
-        sdpText=monospacedMediumLarge.render(str(unit.cyber[loc].sdp),True,BLACK)
+        sdpText=monospacedMediumLarge.render(str(unit.cyber[loc].sdp) if not hideActive else '?',True,BLACK)
 
     if flip:
         game.draw.line(screen, BLACK, (x,y), (x-28,y-28), 2)
@@ -643,7 +644,10 @@ def drawUnitPreview(x:int,y:int,unitDict:dict):
         
     screen.blit(monospacedMedium.render(unitDict['name'].title(),True,BLACK),(x+4,y+6))
     sp=unitDict['sp']
-    screen.blit(monospacedTiny.render(f"[{sp[0]},{sp[1]},{sp[2]},{sp[3]},{sp[4]},{sp[5]}] Body:{unitDict['body']} Cool:{unitDict['cool']}",True,BLACK),(x+3,y+25))
+    if not unitDict['hidden']:
+        screen.blit(monospacedTiny.render(f"[{sp[0]},{sp[1]},{sp[2]},{sp[3]},{sp[4]},{sp[5]}] Body:{unitDict['body']} Cool:{unitDict['cool']}",True,BLACK),(x+3,y+25))
+    else:
+        screen.blit(monospacedTiny.render("[?,?,?,?,?,?] Body: ? Cool: ?",True,BLACK),(x+3,y+25))
 
 bodyTextLabel=monospacedLarge.render("Body",True,BLACK)
 btmTextLabel=monospacedMedium.render("BTM:",True,BLACK)
@@ -655,13 +659,16 @@ bodyHitbox=game.Rect(471,557,63,63)
 def drawBody():
     screen.blit(bodyTextLabel,(539,563))
     screen.blit(btmTextLabel,(540,596))
-    btmValue=monospacedMedium.render(f"-{str(unit.btm)}",True,BLACK)
+    btmValue=monospacedMedium.render(f"-{str(unit.btm)}",True,BLACK) if not hideActive else monospacedMedium.render("-?",True,BLACK)
     screen.blit(btmValue,(591,596))
     frame(471,557,63,63,BASEGREY)
-    if len(bodyInput.value)==2:
-        screen.blit(bodyInput.surface,(479,570))
+    if not hideActive:
+        if len(bodyInput.value)==2:
+            screen.blit(bodyInput.surface,(479,570))
+        else:
+            screen.blit(bodyInput.surface,(492,570))
     else:
-        screen.blit(bodyInput.surface,(492,570))
+        screen.blit(monospacedHuge.render("?",True,BLACK),(492,571))
     
 
 
@@ -675,10 +682,13 @@ def drawCool():
     screen.blit(coolTextLabel,(539,505))
     frame(471,488,63,63,BASEGREY)
     coolInput.font_color=BLACK if unit.cool>unit.body else DARKGREY
-    if len(coolInput.value)==2:
-        screen.blit(coolInput.surface,(479,501))
+    if not hideActive:
+        if len(coolInput.value)==2:
+            screen.blit(coolInput.surface,(479,501))
+        else:
+            screen.blit(coolInput.surface,(492,501))
     else:
-        screen.blit(coolInput.surface,(492,501))
+        screen.blit(monospacedHuge.render("?",True,BLACK),(492,502))
 
 def populateBody():
     bodyInput.value=str(unit.body)
@@ -825,7 +835,8 @@ def drawWounds():
                 wounds-=greyWounds
             break
     frame(30,645,WIDTH//2-15,HEIGHT-675,BASEGREY)
-    drawWoundTrack(64,670,WIDTH-150,4,wounds,greyWounds,blueWounds)
+    if not hideActive:
+        drawWoundTrack(64,670,WIDTH-150,4,wounds,greyWounds,blueWounds)
     if wounds>=50 and not woundsHitbox.collidepoint(game.mouse.get_pos()):
         s=game.Surface((WIDTH//2-15,HEIGHT-675),game.SRCALPHA)
         s.fill((30,30,30,200))
@@ -898,11 +909,13 @@ def drawSP(startX,startY,sp,maxSP):
         textColor=spGradient[max(min(maxSP[i]-sp[i],spGradient.__len__()-1),0)]
         textColor=(textColor.get_red()*255,textColor.get_green()*255,textColor.get_blue()*255)
         spInputs[i].font_color=textColor
-        
-        if len(spInputs[i].value)==2:
-            screen.blit(spInputs[i].surface,(x+10,y+13))
+        if not hideActive:
+            if len(spInputs[i].value)==2:
+                screen.blit(spInputs[i].surface,(x+10,y+13))
+            else:
+                screen.blit(spInputs[i].surface,(x+21,y+13))
         else:
-            screen.blit(spInputs[i].surface,(x+21,y+13))
+            screen.blit(monospacedMassive.render('?',True,textColor),(x+17,y+9))
 
         if unit.armour.typeAt(i)=='soft':
             game.draw.polygon(screen,(255,182,0),((x+3,y+3),(x+12,y+3),(x+3,y+12)))
@@ -943,20 +956,17 @@ def drawLuck():
     else:
         screen.blit(luckIconOff,(481,358))
 
-ignoreOffImg=game.image.load('DT/ignoreOff.png').convert_alpha()
-ignoreOnImg=game.image.load('DT/ignoreOn.png').convert_alpha()
-ignoreHitbox=game.Rect(471,166,63,63)
-def drawIgnore():
-    frame(471,166,63,63,BASEGREY)
-    if unit.ignoreWounds==0:
-        screen.blit(ignoreOffImg,(478,173))
-        return
-    
-    screen.blit(ignoreOnImg,(478,173))
-    ignoreText=f"{unit.ignoreWounds//5}"
-    ignoreLabel=monospacedMedium.render(ignoreText,True,BLACK)
-    screen.blit(ignoreLabel,(516,206))
+hideActive=False
+hideIconOn=game.image.load('DT/hideIconOn.png').convert_alpha()
+hideIconOff=game.image.load('DT/hideIconOff.png').convert_alpha()
 
+hideToggleHitbox=game.Rect(471,281,63,63)
+def drawHide():
+    frame(471,281,63,63,BASEGREY)
+    if hideActive:
+        screen.blit(hideIconOn,(481,289))
+    else:
+        screen.blit(hideIconOff,(481,289))
 
 luckRerollHitbox=game.Rect(290,77,65,30)
 luckDontHitbox=game.Rect(360,77,55,30)
@@ -971,14 +981,27 @@ def drawReroll():
 
 deflectionIconOn=game.image.load('DT/deflectionIconOn.png').convert_alpha()
 deflectionIconOff=game.image.load('DT/deflectionIconOff.png').convert_alpha()
-
-deflectionHitbox=game.Rect(471,236,63,63)
+deflectionHitbox=game.Rect(540,419,63,63)
 def drawDeflection():
-    frame(471,236,63,63,BASEGREY)
+    frame(540,419,63,63,BASEGREY)
     if unit.deflection:
-        screen.blit(deflectionIconOn,(481,244))
+        screen.blit(deflectionIconOn,(550,427))
     else:
-        screen.blit(deflectionIconOff,(481,244))
+        screen.blit(deflectionIconOff,(550,427))
+
+ignoreOffImg=game.image.load('DT/ignoreOff.png').convert_alpha()
+ignoreOnImg=game.image.load('DT/ignoreOn.png').convert_alpha()
+ignoreHitbox=game.Rect(540,350,63,63)
+def drawIgnore():
+    frame(540,350,63,63,BASEGREY)
+    if unit.ignoreWounds==0:
+        screen.blit(ignoreOffImg,(547,357))
+        return
+    
+    screen.blit(ignoreOnImg,(547,357))
+    ignoreText=f"{unit.ignoreWounds//5}"
+    ignoreLabel=monospacedMedium.render(ignoreText,True,BLACK)
+    screen.blit(ignoreLabel,(585,390))
     
 
 locationTextNames=["Head","Torso","L.Arm","R.Arm","L.Leg","R.Leg"]
@@ -1049,13 +1072,13 @@ class Log:
             offset+=60
             
             if self.through>0:
-                screen.blit(monospacedMediumLarge.render(f"{abs(self.through)}",True,woundColor),(x+offset,y+21))
-                offset+=len(str(abs(self.through)))*14+4
+                screen.blit(monospacedMediumLarge.render(f"{abs(self.through) if not hideActive else '?'}",True,woundColor),(x+offset,y+21))
+                offset+=(len(str(abs(self.through)))*14+4) if not hideActive else 18
                 screen.blit(monospacedMedium.render(f"wound{'s' if self.through>1 else ''}",True,black),(x+offset,y+23))
                 offset+=72
             else:
-                screen.blit(monospacedMediumLarge.render(f"{abs(self.through)}",True,cyberColor),(x+offset,y+21))
-                offset+=len(str(abs(self.through)))*14+4
+                screen.blit(monospacedMediumLarge.render(f"{abs(self.through) if not hideActive else '?'}",True,cyberColor),(x+offset,y+21))
+                offset+=(len(str(abs(self.through)))*14+4) if not hideActive else 18
                 screen.blit(monospacedMedium.render(f"SDP damage",True,black),(x+offset,y+23))
                 offset+=125
 
@@ -1097,7 +1120,10 @@ class LoadLog:
 
     def draw(self):
         screen.blit(loadLogInput.surface,(950,107))
-        screen.blit(monospacedSmall.render(f"[{self.unit.armour.sp[0]}] [{self.unit.armour.sp[1]}] [{self.unit.armour.sp[2]}|{self.unit.armour.sp[3]}] [{self.unit.armour.sp[4]}|{self.unit.armour.sp[5]}], BODY-{self.unit.body}, COOL-{self.unit.cool}",True,BLACK),(950,134))
+        if not hideActive:
+            screen.blit(monospacedSmall.render(f"[{self.unit.armour.sp[0]}] [{self.unit.armour.sp[1]}] [{self.unit.armour.sp[2]}|{self.unit.armour.sp[3]}] [{self.unit.armour.sp[4]}|{self.unit.armour.sp[5]}], BODY-{self.unit.body}, COOL-{self.unit.cool}",True,BLACK),(950,134))
+        else:
+            screen.blit(monospacedSmall.render(f"[?] [?] [?|?] [?|?], BODY-?, COOL-?",True,BLACK),(950,134))
         screen.blit(undoImg,self.hitbox)
 
 logHitbox=game.Rect(930,100,450,510)
@@ -1134,18 +1160,27 @@ class Tab:
         else:
             self.currentUnit=deepcopy(logs[0].unit)
 
+        self.hidden=False
+        self.luck=False
+
     def saveState(self):
         self.loadLog=loadLog
         self.logs=logs
         self.currentUnit=deepcopy(unit)
 
+        self.hidden=hideActive
+        self.luck=luckActive
+
     def loadState(self):
-        global loadLog,logs,unit
+        global loadLog,logs,unit,hideActive,luckActive
         loadLog=self.loadLog
         logs=self.logs 
         unit=deepcopy(self.currentUnit)
         loadLogInput.value=loadLog.desc.capitalize()
         loadLogInput.manager.cursor_pos=21
+
+        hideActive=self.hidden
+        luckActive=self.luck
 
 deleteImg=game.image.load('DT/delete.png').convert_alpha()
 deleteImgHighlight=game.image.load('DT/delete.png').convert_alpha()
@@ -1394,7 +1429,10 @@ def loadFromDict():
 
     newLoadLog=LoadLog(newUnit,loadDict['name'])
     
-    tabs.append(Tab(newLoadLog,[]))
+    newTab=Tab(newLoadLog,[])
+    newTab.hidden=loadDict['hidden']
+    tabs.append(newTab)
+
     global tabIndex
     tabIndex=len(tabs)-1
     tabs[tabIndex].loadState()
@@ -1644,6 +1682,9 @@ while True:
             if luckToggleHitbox.collidepoint(game.mouse.get_pos()):
                 luckActive=not luckActive
 
+            if hideToggleHitbox.collidepoint(game.mouse.get_pos()):
+                hideActive=not hideActive
+
             if shotTimer>5000:
                 if luckRerollHitbox.collidepoint(game.mouse.get_pos()):
                     particles=[]
@@ -1845,6 +1886,7 @@ while True:
     drawCool()
     drawBar()
     drawLuck()
+    drawHide()
     drawDeflection()
     drawIgnore()
 
