@@ -5,6 +5,7 @@ from colour import Color
 from copy import deepcopy
 from os import system
 from math import cos,sin,pi
+from numpy import dot
 
 from Modules.Base import Unit,Weapon,Ammo,bodyToBTM,CyberLimb
 from Modules.Generator import findGun,findArmour,generateUnitList
@@ -1349,19 +1350,6 @@ class Particle:
                 particles.remove(self)
             self.lifetime-=1
 
-        if self.type=='plinko': #DUMB PLINKO PARTICLE PHYSICS
-            if self.y>woundsHitbox.bottom-3 and self.x>woundsHitbox.left and self.x<woundsHitbox.right:
-                self.y=woundsHitbox.bottom-3
-                self.dy=-self.dy/1.6
-                self.dx*=1.1
-
-            if self.x<woundsHitbox.left and self.y<woundsHitbox.top:
-                self.x=woundsHitbox.left
-                self.dx*=-1
-            elif self.x>woundsHitbox.right and self.y<woundsHitbox.top:
-                self.x=woundsHitbox.right
-                self.dx*=-1
-
         self.rect=self.surface.get_rect(center=(self.x,self.y))
         if 'trace' in self.type:
             self.surface.set_alpha(int(min(200,self.lifetime*15)))
@@ -1372,11 +1360,28 @@ class Particle:
         else:
             blitSurface=self.surface
         screen.blit(blitSurface,self.rect)
+
+        px=self.x
+        py=self.y
+
         self.x+=self.dx
         self.y+=self.dy
         self.r+=self.ry
         self.dx/=self.damp
         self.dy/=self.damp
+
+        if self.type=='plinko': #DUMB PLINKO PARTICLE PHYSICS
+            if self.y>woundsHitbox.bottom-5 and self.x>woundsHitbox.left and self.x<woundsHitbox.right: #bottom plate
+                self.y=woundsHitbox.bottom-5
+                self.dy=-self.dy/1.4
+                self.dx*=1.02
+
+            if self.x<woundsHitbox.left and self.y<woundsHitbox.top: #left wall
+                self.x=woundsHitbox.left
+                self.dx*=-1
+            elif self.x>woundsHitbox.right and self.y<woundsHitbox.top: #right wall
+                self.x=woundsHitbox.right
+                self.dx*=-1
 
         if self.type=='blood' or self.type=='plinko':
             self.dy+=1
