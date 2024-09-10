@@ -352,6 +352,7 @@ class Unit:
         self.barrier=Barrier(0,[True]*6)
 
         self.deflection=False
+        self.skullCushioning=False
         self.ignoreWounds=0
 
     def __str__(self):
@@ -424,8 +425,13 @@ class Unit:
         
         if weapon is not None:
             dmg+=weapon.bonusDamage(self,loc)
-            dmg=self.barrier.apply(loc,dmg, weapon.pierceBar())
-            dmg=self.armour.apply(loc,dmg, weapon.preferred(self,loc), weapon.pierceSP())
+            dmg=self.barrier.apply(loc,dmg,weapon.pierceBar())
+            if self.armour.typeAt(loc)=='hard' and self.skullCushioning:
+                pref=False
+            else:
+                pref=weapon.preferred(self,loc)
+
+            dmg=self.armour.apply(loc,dmg,pref,weapon.pierceSP())
         else:
             dmg=self.barrier.apply(loc,dmg,0)
             dmg=self.armour.apply(loc,dmg,False,0)
@@ -448,11 +454,11 @@ class Unit:
                 if 'incomplete' in injury.name.lower() and injury.loc==loc:
                     injury.breakIncomplete()
 
-            if loc==0 and dmg>=8:
+            if loc==0 and dmg>=(8 if not self.skullCushioning else 12):
                 self.uncon=True
                 self.dead=True
                 self.critInjuries.append(critInjuryRoll(loc))
-            elif loc!=1 and dmg>=8:
+            elif loc!=1 and loc!=0 and dmg>=8:
                 if dmg>=16:
                     self.critInjuries.append(doubleCritInjuryRoll(loc))
                 else:

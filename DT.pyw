@@ -969,6 +969,18 @@ def drawHide():
     else:
         screen.blit(hideIconOff,(481,289))
 
+
+skullIconOn=game.image.load('DT/skullIconOn.png').convert_alpha()
+skullIconOff=game.image.load('DT/skullIconOff.png').convert_alpha()
+
+skullToggleHitbox=game.Rect(540,281,63,63)
+def drawSkull():
+    frame(540,281,63,63,BASEGREY)
+    if unit.skullCushioning:
+        screen.blit(skullIconOn,(548,289))
+    else:
+        screen.blit(skullIconOff,(548,289))
+
 luckRerollHitbox=game.Rect(290,77,65,30)
 luckDontHitbox=game.Rect(360,77,55,30)
 def drawReroll():
@@ -1718,6 +1730,9 @@ while True:
             if hideToggleHitbox.collidepoint(game.mouse.get_pos()):
                 hideActive=not hideActive
 
+            if skullToggleHitbox.collidepoint(game.mouse.get_pos()):
+                unit.skullCushioning=not unit.skullCushioning
+
             if shotTimer>5000:
                 if luckRerollHitbox.collidepoint(game.mouse.get_pos()):
                     particles=[]
@@ -1922,6 +1937,7 @@ while True:
     drawHide()
     drawDeflection()
     drawIgnore()
+    drawSkull()
 
     drawTabs()
     drawAddTab()
