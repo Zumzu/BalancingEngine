@@ -23,13 +23,9 @@ from random import randint,uniform,random
 
 #  TODO
 #Tabss - reorder
-#Hide
 #load Hover preview
 #Graveyard (this will fix a bug in tab auto naming logic too)
 #Explosion, luck, and fire symbols in log
-#SHOT COUNT
-#Ignore wound levels
-#Skull Cusioning
 #Push melee/gun/armour list to firestore eventually
 #SO much refactoring to a real code format
 #Sound?
@@ -362,10 +358,6 @@ def drawHudElements():
 
         barText=monospacedHuge.render(str(unit.barrier.sp),True,BLACK)
         screen.blit(barText,barText.get_rect(center=(x+40,y+47)))
-    else:
-        if unit.barrier.sp!=0:
-            unit.barrier.sp=0
-            unit.barrier.covers=[True]*6
 
     if unit.wounds>=15:
         warningBlinkTimer-=1
@@ -1175,6 +1167,7 @@ class Tab:
 
         self.hidden=False
         self.luck=False
+        self.barrier=False
 
     def saveState(self):
         self.loadLog=loadLog
@@ -1183,9 +1176,10 @@ class Tab:
 
         self.hidden=hideActive
         self.luck=luckActive
+        self.barrier=barrierActive
 
     def loadState(self):
-        global loadLog,logs,unit,hideActive,luckActive
+        global loadLog,logs,unit,hideActive,luckActive,barrierActive,particles
         loadLog=self.loadLog
         logs=self.logs 
         unit=deepcopy(self.currentUnit)
@@ -1194,6 +1188,9 @@ class Tab:
 
         hideActive=self.hidden
         luckActive=self.luck
+        barrierActive=self.barrier
+
+        particles=[]
 
 deleteImg=game.image.load('DT/delete.png').convert_alpha()
 deleteImgHighlight=game.image.load('DT/delete.png').convert_alpha()
@@ -1459,9 +1456,15 @@ def drawTraces(x,y,dx,dy):
 ############### MECHANICAL BELOW
 
 def loadFromDict():
+    versionFloat=float(loadDict['version'])
+
     newUnit=Unit(weapon,findArmour([10,10,10,10,8,8]),0,loadDict['body'],loadDict['cool'],cyber=loadDict['cyber'])
     newUnit.armour.sp=deepcopy(loadDict['sp'])
     newUnit.armour.spMax=deepcopy(loadDict['sp'])
+    if versionFloat>=1.2:
+        newUnit.ignoreWounds=loadDict['ignore']*5
+        newUnit.deflection=loadDict['deflection']
+        newUnit.skullCushioning=loadDict['skull']
     
     hardness=[]
     for isHard in loadDict['hard']:
@@ -1471,7 +1474,11 @@ def loadFromDict():
     newLoadLog=LoadLog(newUnit,loadDict['name'])
     
     newTab=Tab(newLoadLog,[])
+
     newTab.hidden=loadDict['hidden']
+    if versionFloat>=1.2:
+        newTab.luck=loadDict['luck']
+
     tabs.append(newTab)
 
     global tabIndex
@@ -1722,6 +1729,7 @@ while True:
 
             if barToggleHitbox.collidepoint(game.mouse.get_pos()):
                 barrierActive=not barrierActive
+                unit.barrier.sp=0
                 unit.barrier.covers=[True]*6
 
             if luckToggleHitbox.collidepoint(game.mouse.get_pos()):
