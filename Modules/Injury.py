@@ -36,13 +36,13 @@ legCritInjuries=[
     CritInjury(-1,2,"Dismembered Leg","Your leg is unrecoverable, Your MA is limited to 2, DV:15 athletics/agility or fall prone immediately, Moving is incredibly painful, Not removed upon a successful surgery check"),
     CritInjury(-1,1,"Broken Leg","Your MA is limited to 2, DV:15 athletics/agility or fall prone immediately, Moving is incredibly painful"),
     CritInjury(-1,1,"Punctured Artery","You begin bleeding out, You bleedout twice as fast",bleedMultiplier=2),
-    CritInjury(-1,1,"Torn Tendon","Extreme pain, Treat all stats as 1 less, You cannot succeed athletics/agility checks or sprint",allNegative=1),
+    CritInjury(-1,1,"Torn Tendon","Extreme pain, Treat all stats as 1 less, You cannot succeed athletics/agility checks, You cannot sprint or dash attack",allNegative=1),
     CritInjury(-1,1,"Foreign Object","Whenever you take an action using this leg, take 2 damage direct to body, (this ignores btm and triggeres a stun check)"),
     CritInjury(-1,0,"Incomplete Fracture","DV:15 athletics/agility or fall prone immediately, If this leg is dealt more damage it becomes a broken leg")
 ]
 
 armCritInjuries=[
-    CritInjury(-1,2,"Dismembered Arm","Your arm is unrecoverable, You drop whatever this hand is holding, -5 to all actions using this arm, Moving it is incredibly painful, Not removed upon a successful surgery check",attackPenalty=5),
+    CritInjury(-1,2,"Dismembered Arm","Your arm is unrecoverable, It cannot be used whatsoever, Moving it is incredibly painful, Not removed upon a successful surgery check",attackPenalty=5),
     CritInjury(-1,2,"Dismembered Hand","Your hand is unrecoverable, It cannot be used whatsoever, Not removed upon a successful surgery check",attackPenalty=5),
     CritInjury(-1,1,"Broken Arm","You drop whatever this hand is holding, -5 to all actions using this arm, Moving it is incredibly painful",attackPenalty=5),
     CritInjury(-1,1,"Punctured Artery","You begin bleeding out, You bleedout twice as fast",bleedMultiplier=2),
@@ -57,7 +57,7 @@ torsoCritInjuries=[
     CritInjury(-1,2,"Broken Ribs","Searing pain, Treat all stats as 3 less, You retain -1 body for a week",allNegative=3),
     CritInjury(-1,1,"Foreign Object","Whenever you take an action, Take 2 damage direct to body, (this ignores btm and triggeres a stun check)"),
     CritInjury(-1,1,"Pierced Liver","Stun and uncon checks are 3 harder, You cannot pass resist drugs/torture or athletics/agility checks, Violently painful",stunUnconPenalty=3),
-    CritInjury(-1,1,"Collapsed Lung","Attack checks are 2 harder, After you attempt a strenuous action make a stun check, (such a sprinting or multiaction)",attackPenalty=2)
+    CritInjury(-1,1,"Collapsed Lung","Attack checks are 2 harder, After you attempt a strenuous action make a stun check, (such a sprinting, dash attack, or multiaction)",attackPenalty=2)
 ]
 
 headCritInjury=CritInjury(-1,2,"Headshot","you fucking die lmao, skill issue headass fr fr, shoulda bought a better helmet")
