@@ -642,8 +642,7 @@ def drawUnitPreview(x:int,y:int,unitDict:dict):
     else:
         screen.blit(monospacedTiny.render("[?,?,?,?,?,?] Body: ? Cool: ?",True,BLACK),(x+3,y+25))
 
-bodyTextLabel=monospacedLarge.render("Body",True,BLACK)
-btmTextLabel=monospacedMedium.render("BTM:",True,BLACK)
+bodyTextLabel=monospacedMediumLarge.render("Body",True,BLACK)
 bodyInput=pygame_textinput.TextInputVisualizer()
 bodyInput.font_object=monospacedHuge
 bodyInput.manager.validator=(lambda x: len(x)<=2 and ((str(x).isnumeric() and int(x)<=20 and int(x)>0)or x==''))
@@ -651,28 +650,31 @@ bodySelected=False
 bodyHitbox=game.Rect(471,557,63,63)
 def drawBody():
     screen.blit(bodyTextLabel,(539,563))
-    screen.blit(btmTextLabel,(540,596))
-    btmValue=monospacedMedium.render(f"-{str(unit.btm)}",True,BLACK) if not hideActive else monospacedMedium.render("-?",True,BLACK)
-    screen.blit(btmValue,(591,596))
+    btmTextLabel=monospacedLarge.render(f"Uncon:{11-unit.body}",True,BLACK) if not hideActive else monospacedMedium.render("Uncon:?",True,BLACK)
+    screen.blit(btmTextLabel,(540,585))
     frame(471,557,63,63,BASEGREY)
+    btmTextLabel=monospacedSmall.render(f"BTM:-{str(unit.btm)}",True,BLACK) if not hideActive else monospacedMedium.render("BTM:-?",True,BLACK)
+    screen.blit(btmTextLabel,(478,602))
     if not hideActive:
         if len(bodyInput.value)==2:
-            screen.blit(bodyInput.surface,(479,570))
+            screen.blit(bodyInput.surface,(479,567))
         else:
-            screen.blit(bodyInput.surface,(492,570))
+            screen.blit(bodyInput.surface,(492,567))
     else:
-        screen.blit(monospacedHuge.render("?",True,BLACK),(492,571))
+        screen.blit(monospacedHuge.render("?",True,BLACK),(492,568))
     
 
 
-coolTextLabel=monospacedLarge.render("Cool",True,BLACK)
+coolTextLabel=monospacedMediumLarge.render("Cool",True,BLACK)
 coolInput=pygame_textinput.TextInputVisualizer()
 coolInput.font_object=monospacedHuge
 coolInput.manager.validator=(lambda x: len(x)<=2 and ((str(x).isnumeric() and int(x)<=20 and int(x)>0)or x==''))
 coolSelected=False
 coolHitbox=game.Rect(471,488,63,63)
 def drawCool():
-    screen.blit(coolTextLabel,(539,505))
+    screen.blit(coolTextLabel,(539,495))
+    btmTextLabel=monospacedLarge.render(f"Stun:{11-max(unit.body,unit.cool)}",True,BLACK) if not hideActive else monospacedMedium.render("Stun:?",True,BLACK)
+    screen.blit(btmTextLabel,(540,517))
     frame(471,488,63,63,BASEGREY)
     coolInput.font_color=BLACK if unit.cool>unit.body else DARKGREY
     if not hideActive:
