@@ -22,10 +22,10 @@ from random import randint,uniform,random
 #(An older iteration of this was in unity and the overhead was UNREAL)
 
 #  TODO
-#Tabss - reorder
+#Tabss - reorder, scrollable
+#Hero tabs
 #load Hover preview
 #Graveyard (this will fix a bug in tab auto naming logic too)
-#Explosion, luck, and fire symbols in log
 #Push melee/gun/armour list to firestore eventually
 #SO much refactoring to a real code format
 #Sound?
@@ -1117,7 +1117,7 @@ loadLogInput=pygame_textinput.TextInputVisualizer()
 loadLogInput.font_object=monospacedMediumLarge
 loadLogInput.manager.validator=(lambda x: len(x)<=21 and str(x).isprintable())
 loadLogSelected=False
-loadLogHitbox=game.Rect(930,100,450,56)
+loadLogHitbox=game.Rect(930,100,400,56)
 
 class LoadLog:
     def __init__(self,unit:Unit,desc:str) -> None:
