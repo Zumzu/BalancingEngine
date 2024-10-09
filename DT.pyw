@@ -21,9 +21,14 @@ from random import randint,uniform,random
 #The choice of pygame was largely with the intention of making a portable, relatively lightweight UI that supports things like particles and animation so long as I write them myself
 #(An older iteration of this was in unity and the overhead was UNREAL)
 
-#  TODO
-#Tabss - reorder, scrollable
-#Hero tabs
+#  TODO Soon
+#Tabss - scrollable, mark heros
+#Lethality Intensifier
+#World Lethality
+#Gun Shield
+#
+
+#  TODO Later
 #load Hover preview
 #Graveyard (this will fix a bug in tab auto naming logic too)
 #Push melee/gun/armour list to firestore eventually
@@ -970,7 +975,7 @@ skullIconOff=game.image.load('DT/skullIconOff.png').convert_alpha()
 skullToggleHitbox=game.Rect(540,281,63,63)
 def drawSkull():
     frame(540,281,63,63,BASEGREY)
-    if unit.skullCushioning:
+    if unit.injuryThreshold[0]>=12:
         screen.blit(skullIconOn,(548,289))
     else:
         screen.blit(skullIconOff,(548,289))
@@ -1466,7 +1471,7 @@ def loadFromDict():
     if versionFloat>=1.2:
         newUnit.ignoreWounds=loadDict['ignore']*5
         newUnit.deflection=loadDict['deflection']
-        newUnit.skullCushioning=loadDict['skull']
+        newUnit.injuryThreshold[0]=12 if loadDict['skull'] else 8
     
     hardness=[]
     for isHard in loadDict['hard']:
@@ -1741,7 +1746,7 @@ while True:
                 hideActive=not hideActive
 
             if skullToggleHitbox.collidepoint(game.mouse.get_pos()):
-                unit.skullCushioning=not unit.skullCushioning
+                unit.injuryThreshold[0]=12 if unit.injuryThreshold[0]!=12 else 8
 
             if shotTimer>5000:
                 if luckRerollHitbox.collidepoint(game.mouse.get_pos()):

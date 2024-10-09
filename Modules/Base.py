@@ -323,7 +323,7 @@ class Barrier:
     
 
 class Unit:
-    def __init__(self,weapon:Weapon,armour:ArmourSet,ws:int,body:int,cool:int=-1,dodge:int=-1,cyber:list[int]=[0,0,0,0,0,0]):
+    def __init__(self,weapon:Weapon,armour:ArmourSet,ws:int,body:int,cool:int=-1,dodge:int=-1,cyber:list[int]=[0,0,0,0,0,0],threshold:list[int]=[8,15,8,8,8,8]):
         self.weapon=deepcopy(weapon)
         self.armour=deepcopy(armour)
         self.ws=ws
@@ -350,9 +350,9 @@ class Unit:
 
         self.critInjuries=[]
         self.barrier=Barrier(0,[True]*6)
+        self.injuryThreshold=threshold
 
         self.deflection=False
-        self.skullCushioning=False
         self.ignoreWounds=0
 
     def __str__(self):
@@ -426,7 +426,7 @@ class Unit:
         if weapon is not None:
             dmg+=weapon.bonusDamage(self,loc)
             dmg=self.barrier.apply(loc,dmg,weapon.pierceBar())
-            if self.armour.typeAt(loc)=='hard' and self.skullCushioning:
+            if self.armour.typeAt(loc)=='hard' and self.injuryThreshold[0]>=12:
                 pref=False
             else:
                 pref=weapon.preferred(self,loc)
@@ -453,22 +453,20 @@ class Unit:
             for injury in self.critInjuries:
                 if 'incomplete' in injury.name.lower() and injury.loc==loc:
                     injury.breakIncomplete()
-
-            if loc==0 and dmg>=(8 if not self.skullCushioning else 12):
-                self.uncon=True
-                self.dead=True
-                self.critInjuries.append(critInjuryRoll(loc))
-            elif loc!=1 and loc!=0 and dmg>=8:
-                if dmg>=16:
-                    self.critInjuries.append(doubleCritInjuryRoll(loc))
-                else:
-                    self.critInjuries.append(critInjuryRoll(loc))
-            elif loc==1 and dmg>=15:
+            
+            if dmg>=self.injuryThreshold[loc]*2:
+                self.critInjuries.append(doubleCritInjuryRoll(loc))
+            elif dmg>=self.injuryThreshold[loc]:
                 self.critInjuries.append(critInjuryRoll(loc))
 
             for injury in self.critInjuries:
-                if 'spinal' in injury.name.lower():
+                if 'spinal' in injury.name.lower() or 'bonk' in injury.name.lower():
+                    self.stun=True
                     self.uncon=True
+                elif 'headshot' in injury.name.lower():
+                    self.stun=True
+                    self.uncon=True
+                    self.dead=True
             
             if self.wounds>=WOUND_CAP:
                 self.uncon=True

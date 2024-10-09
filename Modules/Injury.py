@@ -60,12 +60,13 @@ torsoCritInjuries=[
     CritInjury(-1,1,"Collapsed Lung","Attack checks are 2 harder, After you attempt a strenuous action make a stun check, (such a sprinting, dash attack, or multiaction)",attackPenalty=2)
 ]
 
-headCritInjury=CritInjury(-1,2,"Headshot","you fucking die lmao, skill issue headass fr fr, shoulda bought a better helmet")
+headshotCritInjury=CritInjury(-1,2,"Headshot","you fucking die lmao, skill issue headass fr fr, shoulda bought a better helmet")
+bonkCritInjury=CritInjury(-1,2,"Bonk","you dont quite die lmao, good hemlet btw good purchase")
 
 
 def critInjuryRoll(loc:int):
     if loc==0:
-        output=deepcopy(headCritInjury)
+        output=deepcopy(bonkCritInjury)
     elif loc==1:
         output=deepcopy(torsoCritInjuries[choice([0,1,1,2,2,3,3,4,4,5])])
     elif loc==2 or loc==3:
@@ -80,7 +81,7 @@ def critInjuryRoll(loc:int):
 
 def doubleCritInjuryRoll(loc:int):
     if loc==0:
-        output=deepcopy(headCritInjury)
+        output=deepcopy(headshotCritInjury)
     elif loc==1:
         output=deepcopy(torsoCritInjuries[0])
     elif loc==2 or loc==3:
