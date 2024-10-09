@@ -22,6 +22,7 @@ from random import randint,uniform,random
 #(An older iteration of this was in unity and the overhead was UNREAL)
 
 #  TODO Soon
+#Connect Crit Injury Threshold to DB
 #Tabss - scrollable, mark heros
 #Lethality Intensifier
 #World Lethality
@@ -608,7 +609,7 @@ loadInput=pygame_textinput.TextInputVisualizer()
 loadInput.font_object=monospacedMedium
 loadInput.manager.validator=(lambda x: len(x)<=21 and str(x).isprintable())
 loadSelected=False
-loadHitbox=game.Rect(550,42,246,36)
+loadHitbox=game.Rect(1032,52,246,36)
 loadDict=None
 def drawLoadBar():
     global loadDict
@@ -617,19 +618,19 @@ def drawLoadBar():
     index=0
     if loadSelected:
         if unitDicts==[]:
-            frame(550,78,246,40,LIGHTGREY)
-            screen.blit(monospacedLarge.render('Firestore Err.',True,WOUNDCOLOR),(554,84))
+            frame(1032,88,246,40,LIGHTGREY)
+            screen.blit(monospacedLarge.render('Firestore Err.',True,WOUNDCOLOR),(1036,94))
         else:
             for unitDict in unitDicts:
                 if loadInput.value.lower() in unitDict['name'].lower():
-                    drawUnitPreview(550,78+index*40,unitDict)
+                    drawUnitPreview(1032,88+index*40,unitDict)
                     index+=1
-                    if index>=3:
+                    if index>=12:
                         break
 
-    screen.blit(loadTextLabel,(473,45))
-    frame(550,42,246,36,LIGHTGREY)
-    screen.blit(loadInput.surface,(556,50))
+    screen.blit(loadTextLabel,(955,55))
+    frame(1032,52,246,36,LIGHTGREY)
+    screen.blit(loadInput.surface,(1038,60))
 
 def drawUnitPreview(x:int,y:int,unitDict:dict):
     global loadDict
@@ -1142,9 +1143,7 @@ class LoadLog:
         screen.blit(undoImg,self.hitbox)
 
 logHitbox=game.Rect(930,100,450,510)
-logTextLabel=monospacedHuge.render("History",True,BLACK)
 def drawLog():
-    screen.blit(logTextLabel,logTextLabel.get_rect(center=(930+450//2,80)))
     frame(930,100,450,510,LIGHTGREY)
     offset=0
     for i in range(logIndex,len(logs)):
