@@ -36,6 +36,11 @@ def tint(surface,rgb):
             rgba=surface.get_at((i,j))
             surface.set_at((i,j),game.Color(min(255,rgba[0]+rgb[0]),min(255,rgba[1]+rgb[1]),min(255,rgba[2]+rgb[2]),rgba[3]))
 
+def rot_center(image, angle, x, y):
+    rotated_image = game.transform.rotate(image, angle)
+    new_rect = rotated_image.get_rect(center = image.get_rect(center = (x, y)).center)
+
+    return rotated_image, new_rect
 
 # Batch generators below
 

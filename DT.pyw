@@ -13,7 +13,9 @@ from Modules.Ammo import *
 from Modules.Dice import locationDie
 from random import randint,uniform,random
 
-from DT_Tools.ImgTools import fill,fill100,fill255, dudeImgs,smallDudeImgs,shieldImgs
+from DT_Tools.ImgTools import fill,fill100,fill255,rot_center, dudeImgs,smallDudeImgs,shieldImgs
+from DT_Tools.DrawTools import frame,frameSelect,charFrame,buttonFrame
+from DT_Tools.DataProcessors import processDamage
 
 
 #  PREFACE
@@ -116,29 +118,6 @@ def updateArrows(events):
                 pressedArrows[2]=False
             elif event.key == game.K_DOWN:
                 pressedArrows[3]=False
-
-
-def charFrame(x:int,y:int,dx:int,dy:int):
-    game.draw.rect(screen, DARKERGREY, game.Rect(x,y,dx,dy), 4, border_radius=5)
-
-    s=game.Surface((dx-6,dy-6),game.SRCALPHA)
-    s.fill((180,180,180,230))
-    screen.blit(s,(x+3,y+3))
-
-def frame(x:int,y:int,dx:int,dy:int,rgb:tuple):
-    game.draw.rect(screen, DARKERGREY, game.Rect(x,y,dx,dy), border_radius=5)
-    game.draw.rect(screen, rgb, game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
-
-def frameSelect(x:int,y:int,dx:int,dy:int,rgb:tuple):
-    game.draw.rect(screen, BLACK, game.Rect(x,y,dx,dy), border_radius=5)
-    game.draw.rect(screen, rgb, game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
-
-def buttonFrame(x:int,y:int,dx:int,dy:int,hover:bool):
-    game.draw.rect(screen, DARKERGREY, game.Rect(x,y,dx,dy), border_radius=5)
-    if hover:
-        game.draw.rect(screen, (150,150,150), game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
-    else:
-        game.draw.rect(screen, (80,80,80), game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
 
 
 shieldWiggle=0
@@ -507,7 +486,7 @@ def drawInfoBox():
         y-=maxHeight
 
     offset=0
-    frame(x,y,maxWidth,maxHeight,LIGHTGREY)
+    frame(screen,x,y,maxWidth,maxHeight,LIGHTGREY)
     for i in range(len(renderedText)):
         screen.blit(renderedText[i],(x+10,y+10+offset))
         offset+=renderedText[i].get_rect().height
@@ -558,7 +537,7 @@ def drawLoadBar():
     index=0
     if loadSelected:
         if unitDicts==[]:
-            frame(1032,88,246,40,LIGHTGREY)
+            frame(screen,1032,88,246,40,LIGHTGREY)
             screen.blit(monospacedLarge.render('Firestore Err.',True,WOUNDCOLOR),(1036,94))
         else:
             for unitDict in unitDicts:
@@ -569,17 +548,17 @@ def drawLoadBar():
                         break
 
     screen.blit(loadTextLabel,(955,55))
-    frame(1032,52,246,36,LIGHTGREY)
+    frame(screen,1032,52,246,36,LIGHTGREY)
     screen.blit(loadInput.surface,(1038,60))
 
 def drawUnitPreview(x:int,y:int,unitDict:dict):
     global loadDict
     frameRect=game.Rect(x,y,246,40)
     if frameRect.collidepoint(game.mouse.get_pos()):
-        frame(x,y,246,40,TRACEBLUE)
+        frame(screen,x,y,246,40,TRACEBLUE)
         loadDict=unitDict
     else:
-        frame(x,y,246,40,LIGHTGREY)
+        frame(screen,x,y,246,40,LIGHTGREY)
         
     screen.blit(monospacedMedium.render(unitDict['name'].title(),True,BLACK),(x+4,y+6))
     sp=unitDict['sp']
@@ -598,7 +577,7 @@ def drawBody():
     screen.blit(bodyTextLabel,(539,563))
     btmTextLabel=monospacedLarge.render(f"Uncon:{11-unit.body}",True,BLACK) if not hideActive else monospacedMedium.render("Uncon:?",True,BLACK)
     screen.blit(btmTextLabel,(540,585))
-    frame(471,557,63,63,BASEGREY)
+    frame(screen,471,557,63,63,BASEGREY)
     btmTextLabel=monospacedSmall.render(f"BTM:-{str(unit.btm)}",True,BLACK) if not hideActive else monospacedMedium.render("BTM:-?",True,BLACK)
     screen.blit(btmTextLabel,(478,602))
     if not hideActive:
@@ -621,7 +600,7 @@ def drawCool():
     screen.blit(coolTextLabel,(539,495))
     btmTextLabel=monospacedLarge.render(f"Stun:{11-max(unit.body,unit.cool)}",True,BLACK) if not hideActive else monospacedMedium.render("Stun:?",True,BLACK)
     screen.blit(btmTextLabel,(540,517))
-    frame(471,488,63,63,BASEGREY)
+    frame(screen,471,488,63,63,BASEGREY)
     coolInput.font_color=BLACK if unit.cool>unit.body else DARKGREY
     if not hideActive:
         if len(coolInput.value)==2:
@@ -648,7 +627,7 @@ damageHitbox=game.Rect(DAMAGEX+6,DAMAGEY+33,116,46)
 def drawDamage():
     drawBullets(DAMAGEX+117,DAMAGEY+3)
     screen.blit(damageTextLabel,(DAMAGEX+8,DAMAGEY+3))
-    frame(DAMAGEX+6,DAMAGEY+33,116,46,LIGHTGREY)
+    frame(screen,DAMAGEX+6,DAMAGEY+33,116,46,LIGHTGREY)
     screen.blit(damageInput.surface,(DAMAGEX+12,DAMAGEY+42))
 
 def drawBullets(x,y):
@@ -664,7 +643,7 @@ multiplierSelected=False
 multiplierHitbox=game.Rect(DAMAGEX+150,DAMAGEY+33,40,46)
 def drawMultiplier():
     screen.blit(multiplierTextLabel,(DAMAGEX+128,DAMAGEY+43))
-    frame(DAMAGEX+150,DAMAGEY+33,47,46,LIGHTGREY)
+    frame(screen,DAMAGEX+150,DAMAGEY+33,47,46,LIGHTGREY)
     screen.blit(multiplierInput.surface,(DAMAGEX+157,DAMAGEY+42))
     if multiplierInput.value=='':
         screen.blit(multiplierEmptyFieldLabel,(DAMAGEX+157,DAMAGEY+42))
@@ -673,7 +652,7 @@ pewTextLabel=monospacedMedium.render("PEW!",True,(255,255,255))
 pewPewTextLabel=monospacedMedium.render("PEW PEW!",True,(255,255,255))
 pewHitbox=game.Rect(DAMAGEX+214,DAMAGEY+38,100,36)
 def drawPew():
-    buttonFrame(DAMAGEX+214,DAMAGEY+38,110,36,pewHitbox.collidepoint(game.mouse.get_pos()))
+    buttonFrame(screen,DAMAGEX+214,DAMAGEY+38,110,36,pewHitbox.collidepoint(game.mouse.get_pos()))
     if multiplierInput.value=='' or multiplierInput.value=='1':
         screen.blit(pewTextLabel,(DAMAGEX+249,DAMAGEY+47))
     else:
@@ -685,7 +664,7 @@ ammoFaintTextCache={}
 ammoHitbox=game.Rect(1135,647,252,100)
 ammoInnerHitbox=game.Rect(1135,683,252,40)
 def ammoSpinner():
-    frame(1135,683,252,40,LIGHTGREY)
+    frame(screen,1135,683,252,40,LIGHTGREY)
     if ammoIndex>0:
         if str(ammoIndex-1) not in ammoFaintTextCache:
             ammoFaintTextCache[ammoIndex]=monospacedMedium.render(ammoTypes[ammoIndex-1].name,True,DARKGREY)
@@ -761,6 +740,7 @@ def drawWoundSet(startX:int,startY:int,boxSize:float,wounds:int,greyWounds:int,b
 woundsHitbox=game.Rect(30,645,WIDTH//2-15,HEIGHT-675)
 deadText=impactHuge.render("D  E  A  D",True,WOUNDCOLOR)
 zeroedText=impactHuge.render("Z E R O E D",True,WOUNDCOLOR)
+hiddenText=impactHuge.render("H I D D E N",True,DARKERGREY)
 def drawWounds():
     wounds=max(0,unit.wounds-unit.ignoreWounds)
     blueWounds=min(unit.wounds,unit.ignoreWounds)
@@ -775,9 +755,12 @@ def drawWounds():
                     blueWounds-=greyWounds-wounds
                 wounds-=greyWounds
             break
-    frame(30,645,WIDTH//2-15,HEIGHT-675,BASEGREY)
+    frame(screen,30,645,WIDTH//2-15,HEIGHT-675,BASEGREY)
     if not hideActive:
         drawWoundTrack(64,670,WIDTH-150,4,wounds,greyWounds,blueWounds)
+    else:
+        screen.blit(hiddenText,hiddenText.get_rect(center=(394,699)))
+
     if wounds>=50 and not woundsHitbox.collidepoint(game.mouse.get_pos()):
         s=game.Surface((WIDTH//2-15,HEIGHT-675),game.SRCALPHA)
         s.fill((30,30,30,200))
@@ -846,7 +829,7 @@ def drawSP(startX,startY,sp,maxSP):
         elif i==4 or i==5:
             frameColor=(80,80,80)
 
-        frame(x,y,63,63,frameColor)
+        frame(screen,x,y,63,63,frameColor)
         textColor=spGradient[max(min(maxSP[i]-sp[i],spGradient.__len__()-1),0)]
         textColor=(textColor.get_red()*255,textColor.get_green()*255,textColor.get_blue()*255)
         spInputs[i].font_color=textColor
@@ -876,10 +859,9 @@ spHitboxes=generateSPHitboxes(41,557)
 
 barrierIconOn=game.image.load('DT_Images/Toggles/shieldIconOn.png').convert_alpha()
 barrierIconOff=game.image.load('DT_Images/Toggles/shieldIconOff.png').convert_alpha()
-
 barToggleHitbox=game.Rect(471,419,63,63)
 def drawBar():
-    frame(471,419,63,63,BASEGREY)
+    frame(screen,471,419,63,63,BASEGREY)
     if barrierActive:
         screen.blit(barrierIconOn,(481,427))
     else:
@@ -888,10 +870,9 @@ def drawBar():
 luckActive=False
 luckIconOn=game.image.load('DT_Images/Toggles/luckIconOn.png').convert_alpha()
 luckIconOff=game.image.load('DT_Images/Toggles/luckIconOff.png').convert_alpha()
-
 luckToggleHitbox=game.Rect(471,350,63,63)
 def drawLuck():
-    frame(471,350,63,63,BASEGREY)
+    frame(screen,471,350,63,63,BASEGREY)
     if luckActive:
         screen.blit(luckIconOn,(481,358))
     else:
@@ -900,10 +881,9 @@ def drawLuck():
 hideActive=False
 hideIconOn=game.image.load('DT_Images/Toggles/hideIconOn.png').convert_alpha()
 hideIconOff=game.image.load('DT_Images/Toggles/hideIconOff.png').convert_alpha()
-
 hideToggleHitbox=game.Rect(471,281,63,63)
 def drawHide():
-    frame(471,281,63,63,BASEGREY)
+    frame(screen,471,281,63,63,BASEGREY)
     if hideActive:
         screen.blit(hideIconOn,(481,289))
     else:
@@ -912,10 +892,9 @@ def drawHide():
 
 skullIconOn=game.image.load('DT_Images/Toggles/skullIconOn.png').convert_alpha()
 skullIconOff=game.image.load('DT_Images/Toggles/skullIconOff.png').convert_alpha()
-
 skullToggleHitbox=game.Rect(540,281,63,63)
 def drawSkull():
-    frame(540,281,63,63,BASEGREY)
+    frame(screen,540,281,63,63,BASEGREY)
     if unit.injuryThreshold[0]>=12:
         screen.blit(skullIconOn,(548,289))
     else:
@@ -925,9 +904,9 @@ luckRerollHitbox=game.Rect(290,77,65,30)
 luckDontHitbox=game.Rect(360,77,55,30)
 def drawReroll():
     if shotTimer>5000:
-        frame(285,72,135,40,LUCKGREEN)
-        frame(290,77,65,30,WHITE if luckRerollHitbox.collidepoint(game.mouse.get_pos()) else LIGHTGREY)
-        frame(360,77,55,30,WHITE if luckDontHitbox.collidepoint(game.mouse.get_pos()) else LIGHTGREY)
+        frame(screen,285,72,135,40,LUCKGREEN)
+        frame(screen,290,77,65,30,WHITE if luckRerollHitbox.collidepoint(game.mouse.get_pos()) else LIGHTGREY)
+        frame(screen,360,77,55,30,WHITE if luckDontHitbox.collidepoint(game.mouse.get_pos()) else LIGHTGREY)
 
         screen.blit(impactMedium.render('Reroll',True,BLACK),(295,77))
         screen.blit(impactMedium.render('Dont',True,BLACK),(365,77))
@@ -936,7 +915,7 @@ deflectionIconOn=game.image.load('DT_Images/Toggles/deflectionIconOn.png').conve
 deflectionIconOff=game.image.load('DT_Images/Toggles/deflectionIconOff.png').convert_alpha()
 deflectionHitbox=game.Rect(540,419,63,63)
 def drawDeflection():
-    frame(540,419,63,63,BASEGREY)
+    frame(screen,540,419,63,63,BASEGREY)
     if unit.deflection:
         screen.blit(deflectionIconOn,(550,427))
     else:
@@ -946,7 +925,7 @@ ignoreOffImg=game.image.load('DT_Images/Toggles/ignoreOff.png').convert_alpha()
 ignoreOnImg=game.image.load('DT_Images/Toggles/ignoreOn.png').convert_alpha()
 ignoreHitbox=game.Rect(540,350,63,63)
 def drawIgnore():
-    frame(540,350,63,63,BASEGREY)
+    frame(screen,540,350,63,63,BASEGREY)
     if unit.ignoreWounds==0:
         screen.blit(ignoreOffImg,(547,357))
         return
@@ -1060,14 +1039,11 @@ class Log:
         shotCountText=monospacedTiny.render(self.countLabel,True,DARKGREY)
         screen.blit(shotCountText,shotCountText.get_rect(center=(x+400,y+5)))
 
-        
-
 loadLogInput=pygame_textinput.TextInputVisualizer()
 loadLogInput.font_object=monospacedMediumLarge
 loadLogInput.manager.validator=(lambda x: len(x)<=21 and str(x).isprintable())
 loadLogSelected=False
 loadLogHitbox=game.Rect(930,100,400,56)
-
 class LoadLog:
     def __init__(self,unit:Unit,desc:str) -> None:
         self.hitbox=undoImg.get_rect(center=(1350,127))
@@ -1084,7 +1060,7 @@ class LoadLog:
 
 logHitbox=game.Rect(930,100,450,510)
 def drawLog():
-    frame(930,100,450,510,LIGHTGREY)
+    frame(screen,930,100,450,510,LIGHTGREY)
     offset=0
     for i in range(logIndex,len(logs)):
         offset+=logs[i].height+15
@@ -1094,7 +1070,7 @@ def drawLog():
         else:
             logs[i].hitbox=None
     
-    frame(930,100,450,56,LIGHTGREY)
+    frame(screen,930,100,450,56,LIGHTGREY)
     loadLog.draw()
 
     if logIndex>0:
@@ -1159,9 +1135,9 @@ def drawTabs():
         tabs[i].deleteHitbox=deleteImg.get_rect(topleft=(x-64,y+12))
         
         if tabIndex==i:
-            frameSelect(x,y,175,52,WHITE if game.Rect(x,y,175,52).collidepoint(game.mouse.get_pos()) else LIGHTGREY)
+            frameSelect(screen,x,y,175,52,WHITE if game.Rect(x,y,175,52).collidepoint(game.mouse.get_pos()) else LIGHTGREY)
         else:
-            frame(x,y,175,52,WHITE if game.Rect(x,y,175,52).collidepoint(game.mouse.get_pos()) else BASEGREY)  
+            frame(screen,x,y,175,52,WHITE if game.Rect(x,y,175,52).collidepoint(game.mouse.get_pos()) else BASEGREY)  
 
         name=tabs[i].loadLog.desc.title()
         if len(name)>15:
@@ -1207,7 +1183,7 @@ def drawTabs():
 
 addTabHitbox=game.Rect(894,111,39,36)
 def drawAddTab():
-    frame(894,111,39,35,WHITE if addTabHitbox.collidepoint(game.mouse.get_pos()) else LIGHTGREY)
+    frame(screen,894,111,39,35,WHITE if addTabHitbox.collidepoint(game.mouse.get_pos()) else LIGHTGREY)
     game.draw.line(screen, BLACK, (906,128), (918,128), 3)
     game.draw.line(screen, BLACK, (912,122), (912,134), 3)
 
@@ -1288,39 +1264,27 @@ class Particle:
             else:
                 raise '@@ TRACE ERROR @@'
             self.lifetime=int(2.5*30)
-        
-        elif self.type=='plinko':
-            self.surface=bloodImg
-            self.lifetime=10000
-            self.dx=uniform(-6,6)
-            self.dy=uniform(-10,2)
 
         else:
             raise "@@ BAD PARTICLE TYPE @@"
 
     def update(self):
-        if self.type=='plinko':
-            pass
-            if self.y>HEIGHT:
-                particles.remove(self)
-        else:
-            if self.lifetime<=0:
-                particles.remove(self)
-            self.lifetime-=1
-
+        if self.lifetime<=0:
+            particles.remove(self)
+        self.lifetime-=1
         self.rect=self.surface.get_rect(center=(self.x,self.y))
+
         if 'trace' in self.type:
             self.surface.set_alpha(int(min(200,self.lifetime*15)))
         else:
             self.surface.set_alpha(int(min(255,self.lifetime*52)))
+
         if self.type=='cross' or self.type=='spark':
             blitSurface,self.rect=rot_center(self.surface,self.r,self.rect[0],self.rect[1])
         else:
             blitSurface=self.surface
-        screen.blit(blitSurface,self.rect)
 
-        px=self.x
-        py=self.y
+        screen.blit(blitSurface,self.rect)
 
         self.x+=self.dx
         self.y+=self.dy
@@ -1328,20 +1292,7 @@ class Particle:
         self.dx/=self.damp
         self.dy/=self.damp
 
-        if self.type=='plinko': #DUMB PLINKO PARTICLE PHYSICS
-            if self.y>woundsHitbox.bottom-5 and self.x>woundsHitbox.left and self.x<woundsHitbox.right: #bottom plate
-                self.y=woundsHitbox.bottom-5
-                self.dy=-self.dy/1.4
-                self.dx*=1.02
-
-            if self.x<woundsHitbox.left and self.y<woundsHitbox.top: #left wall
-                self.x=woundsHitbox.left
-                self.dx*=-1
-            elif self.x>woundsHitbox.right and self.y<woundsHitbox.top: #right wall
-                self.x=woundsHitbox.right
-                self.dx*=-1
-
-        if self.type=='blood' or self.type=='plinko':
+        if self.type=='blood':
             self.dy+=1
         elif self.type=='cross':
             self.ry=max(self.ry/1.09,0.5)
@@ -1384,12 +1335,6 @@ class Trace:
                     particles.append(Particle((self.x,self.y),'traceblue'))
         self.x+=self.dx
         self.y+=self.dy
-
-def rot_center(image, angle, x, y):
-    rotated_image = game.transform.rotate(image, angle)
-    new_rect = rotated_image.get_rect(center = image.get_rect(center = (x, y)).center)
-
-    return rotated_image, new_rect
 
 def drawTraces(x,y,dx,dy):
     global traceTimer
@@ -1469,36 +1414,6 @@ def deleteTabAt(index:int):
 def addUnnamedTab():
     tabs.append(Tab(LoadLog(Unit(None,findArmour([14,14,14,14,10,10]),0,7,7,cyber=[0,0,0,0,0,0]),'Unnamed'),[]))
 
-def processDamage():
-    dmg=0
-    rolled=[]
-    more=0
-    try:
-        input=damageInput.value
-        
-        if '-' in input:
-            input=input.upper().strip().split("-")
-            input[-1]=str(-int(input[-1]))
-        else:
-            input=input.upper().strip().split("+")
-
-        for item in input:
-            if(item.__contains__("D")):
-                multiple,dieType=item.split("D")
-                if(multiple==""):
-                    multiple=1
-                for _ in range(int(multiple)):
-                    result=randint(1,int(dieType))
-                    rolled.append(result)
-                    dmg+=result
-            else:#its just a number
-                more+=int(item)
-                dmg+=int(item)
-      
-    except:
-        raise "@@FAILED DMG EVAL@@"
-
-    return (dmg,rolled,more)
 
 def shoot():
     global shotTimer
@@ -1517,7 +1432,7 @@ def shoot():
         else:
             loc=calledShotLoc
 
-        dmg,rolls,more=processDamage()
+        dmg,rolls,more=processDamage(damageInput.value)
 
         shotQueue.insert(0,(loc,dmg,rolls,more,ammoIndex))
 
@@ -1553,11 +1468,8 @@ def runShot():
                 particles.append(Particle((361+randint(-20,20),429+randint(-20,20)),'tink'))
         elif logs[0].through!=0:
             for _ in range(logs[0].through*2):
-                if not hideActive:
-                    particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'blood'))
-                else:
-                    particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'plinko'))
-                    particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'plinko'))
+                particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'blood'))
+                
             for _ in range(logs[0].through*-2):
                 particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'spark'))
         else:
@@ -1880,8 +1792,8 @@ while True:
         tempY+=1.5
     
     screen.blit(background,(0,0))
-    charFrame(30,30,400,600) # char frame
-    frame(460,30,WIDTH-490,600,BASEGREY) # main frame
+    charFrame(screen,30,30,400,600) # char frame
+    frame(screen,460,30,WIDTH-490,600,BASEGREY) # main frame
     drawHudElements()
     drawTraces(120,68,207,469)
     drawDude()
@@ -1903,7 +1815,7 @@ while True:
 
     drawWounds()
 
-    frame(WIDTH//2+45,645,WIDTH//2-75,HEIGHT-675,BASEGREY)
+    frame(screen,WIDTH//2+45,645,WIDTH//2-75,HEIGHT-675,BASEGREY)
     drawDamage()
     drawMultiplier()
     drawPew()
