@@ -436,7 +436,7 @@ class Unit:
             dmg=self.barrier.apply(loc,dmg,0)
             dmg=self.armour.apply(loc,dmg,False,0)
 
-        if(dmg<=0): # return early if no damage
+        if dmg<=0 or self.injuryThreshold[loc]==0: # return early if no damage
             if weapon is not None:
                 weapon.postEffect(self,loc)
             return False
@@ -454,10 +454,13 @@ class Unit:
                 if 'incomplete' in injury.name.lower() and injury.loc==loc:
                     injury.breakIncomplete()
             
-            if dmg>=self.injuryThreshold[loc]*2:
-                self.critInjuries.append(doubleCritInjuryRoll(loc))
-            elif dmg>=self.injuryThreshold[loc]:
-                self.critInjuries.append(critInjuryRoll(loc))
+            if dmg>=self.injuryThreshold[loc]:
+                if dmg>=self.injuryThreshold[loc]*2:
+                    self.critInjuries.append(doubleCritInjuryRoll(loc))
+                else:
+                    self.critInjuries.append(critInjuryRoll(loc))
+                if self.injuryThreshold[loc]>1:
+                    self.injuryThreshold[loc]-=1
 
             for injury in self.critInjuries:
                 if 'spinal' in injury.name.lower() or 'bonk' in injury.name.lower():
@@ -467,6 +470,8 @@ class Unit:
                     self.stun=True
                     self.uncon=True
                     self.dead=True
+                elif 'dismember' in injury.name.lower():
+                    self.injuryThreshold[injury.loc]=0
             
             if self.wounds>=WOUND_CAP:
                 self.uncon=True

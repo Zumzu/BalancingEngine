@@ -1018,13 +1018,14 @@ def drawIgnore():
 
 locationTextNames=["Head","Torso","L.Arm","R.Arm","L.Leg","R.Leg"]
 class Log:
-    def __init__(self,loc:int,dmgTotal:int,dmgRolled:list[int],more:int,oldUnit:Unit,newUnit:Unit,ammoType:Ammo,countLabel:str) -> None:
+    def __init__(self,loc:int,dmgTotal:int,dmgRolled:list[int],more:int,oldUnit:Unit,newUnit:Unit,ammoType:Ammo,countLabel:str,miss:bool) -> None:
         self.loc=loc
         self.dmgTotal=dmgTotal
         self.dmgRolled=dmgRolled
         self.more=more
         self.ammoType=ammoType
         self.countLabel=countLabel
+        self.miss=miss
 
         self.through=newUnit.wounds-oldUnit.wounds
         for i in range(6):
@@ -1072,7 +1073,9 @@ class Log:
 
         screen.blit(line,(x+offset,y))
         offset=0
-        if not self.degraded and self.through==0:
+        if self.miss:
+            screen.blit(monospacedMedium.render(f"Missed",True,DARKGREY),(x,y+23))
+        elif not self.degraded and self.through==0:
             if self.unit.barrier.sp>0 and self.unit.barrier.covers[self.loc]:
                 screen.blit(monospacedMedium.render(f"Absorbed by barrier",True,DARKGREY),(x,y+23))
             else:
@@ -1595,10 +1598,10 @@ def runShot():
     else:
         weapon.ammotype=ammoTypes[shotAmmoIndex]
         oldUnit=deepcopy(unit)
-        unit.damage(weapon=weapon,dmg=shotDmg,loc=shotLoc)
-        if oldUnit.wounds==unit.wounds and not oldUnit.uncon and unit.uncon:
+        unit.damage(weapon=weapon,dmg=shotDmg,loc=shotLoc) # RUN DAMAGE
+        if oldUnit.wounds==unit.wounds and not oldUnit.uncon and unit.uncon: # for engine cyber generalization
             unit.uncon=False
-        logs.insert(0,Log(shotLoc,shotDmg,shotRolls,shotMore,oldUnit,unit,ammoTypes[shotAmmoIndex],f'{len(logs)+1}'))
+        logs.insert(0,Log(shotLoc,shotDmg,shotRolls,shotMore,oldUnit,unit,ammoTypes[shotAmmoIndex],f'{len(logs)+1}',oldUnit.injuryThreshold[shotLoc]==0))
 
         if oldUnit.barrier.sp>0 and unit.barrier.covers[shotLoc]:
             shieldWiggle=10

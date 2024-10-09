@@ -43,7 +43,7 @@ legCritInjuries=[
 
 armCritInjuries=[
     CritInjury(-1,2,"Dismembered Arm","Your arm is unrecoverable, It cannot be used whatsoever, Moving it is incredibly painful, Not removed upon a successful surgery check",attackPenalty=5),
-    CritInjury(-1,2,"Dismembered Hand","Your hand is unrecoverable, It cannot be used whatsoever, Not removed upon a successful surgery check",attackPenalty=5),
+    CritInjury(-1,2,"Destroyed Hand","Your hand is unrecoverable, It cannot be used whatsoever, Not removed upon a successful surgery check",attackPenalty=5),
     CritInjury(-1,1,"Broken Arm","You drop whatever this hand is holding, -5 to all actions using this arm, Moving it is incredibly painful",attackPenalty=5),
     CritInjury(-1,1,"Punctured Artery","You begin bleeding out, You bleedout twice as fast",bleedMultiplier=2),
     CritInjury(-1,1,"Foreign Object","Immediately after you take an action using this arm, take 2 damage direct to body, (this ignores btm and triggeres a stun check)"),
