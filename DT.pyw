@@ -13,6 +13,8 @@ from Modules.Ammo import *
 from Modules.Dice import locationDie
 from random import randint,uniform,random
 
+from DT_Tools.ImgTools import fill,fill100,fill255, dudeImgs,smallDudeImgs,shieldImgs
+
 
 #  PREFACE
 #OKAY if anyone is reading this code at this point in development, Im aware this is an absolutely awful way of doing front end
@@ -68,12 +70,12 @@ TRACEDELAY=0.2 #measured in seconds
 
 game.init() 
 
-background=game.image.load('DT Images/Misc/Hexagons.png')
+background=game.image.load('DT_Images/Misc/Hexagons.png')
 background=game.transform.scale(background,(WIDTH,HEIGHT))
 screen = game.display.set_mode((WIDTH,HEIGHT)) 
 background=background.convert_alpha()
 game.display.set_caption("Damage Tracker Mk2")
-game.display.set_icon(game.image.load('DT Images/Misc/EngineIco.png'))
+game.display.set_icon(game.image.load('DT_Images/Misc/EngineIco.png'))
 monospacedMassive=game.font.SysFont('consolas',55)
 monospacedHuge=game.font.SysFont('consolas',40)
 monospacedLarge=game.font.SysFont('consolas',30)
@@ -115,41 +117,6 @@ def updateArrows(events):
             elif event.key == game.K_DOWN:
                 pressedArrows[3]=False
 
-def fill(surface,rgb):
-    w,h = surface.get_size()
-    r,g,b = rgb
-    for i in range(w):
-        for j in range(h):
-            surface.set_at((i,j),game.Color(r,g,b,surface.get_at((i,j))[3]))
-
-def fill255(surface,rgb): #alpha from 0-1
-    w,h = surface.get_size()
-    r,g,b = rgb
-    for i in range(w):
-        for j in range(h):
-            a=surface.get_at((i,j))[3]
-            if a==255:
-                surface.set_at((i,j),game.Color(r,g,b,150))
-            else:
-                surface.set_at((i,j),game.Color(r,g,b,0))
-
-def fill100(surface,rgb): #alpha from 0-1
-    w,h = surface.get_size()
-    r,g,b = rgb
-    for i in range(w):
-        for j in range(h):
-            a=surface.get_at((i,j))[3]
-            if a==100:
-                surface.set_at((i,j),game.Color(r,g,b,100))
-            else:
-                surface.set_at((i,j),game.Color(r,g,b,0))
-
-def tint(surface,rgb):
-    w,h = surface.get_size()
-    for i in range(w):
-        for j in range(h):
-            rgba=surface.get_at((i,j))
-            surface.set_at((i,j),game.Color(min(255,rgba[0]+rgb[0]),min(255,rgba[1]+rgb[1]),min(255,rgba[2]+rgb[2]),rgba[3]))
 
 def charFrame(x:int,y:int,dx:int,dy:int):
     game.draw.rect(screen, DARKERGREY, game.Rect(x,y,dx,dy), 4, border_radius=5)
@@ -173,39 +140,12 @@ def buttonFrame(x:int,y:int,dx:int,dy:int,hover:bool):
     else:
         game.draw.rect(screen, (80,80,80), game.Rect(x+3,y+3,dx-6,dy-6), border_radius=1)
 
-def dudeImgs():
-    output=[]
-    output.append(game.image.load('DT Images/Body/Head.png').convert_alpha())
-    output.append(game.image.load('DT Images/Body/Torso.png').convert_alpha())
-    output.append(game.image.load('DT Images/Body/Larm.png').convert_alpha())
-    output.append(game.image.load('DT Images/Body/Rarm.png').convert_alpha())
-    output.append(game.image.load('DT Images/Body/Lleg.png').convert_alpha())
-    output.append(game.image.load('DT Images/Body/Rleg.png').convert_alpha())
-    return output
-
-def smallDudeImgs():
-    output=[]
-    output.append(game.image.load('DT Images/Body/SmallBody/Head.png').convert_alpha())
-    output.append(game.image.load('DT Images/Body/SmallBody/Torso.png').convert_alpha())
-    output.append(game.image.load('DT Images/Body/SmallBody/Larm.png').convert_alpha())
-    output.append(game.image.load('DT Images/Body/SmallBody/Rarm.png').convert_alpha())
-    output.append(game.image.load('DT Images/Body/SmallBody/Lleg.png').convert_alpha())
-    output.append(game.image.load('DT Images/Body/SmallBody/Rleg.png').convert_alpha())
-    return output
-
-def shieldImgs():
-    output=[]
-    output.append(game.image.load('DT Images/HUD/Shield/shieldLarm.png').convert_alpha())
-    output.append(game.image.load('DT Images/HUD/Shield/shieldRarm.png').convert_alpha())
-    output.append(game.image.load('DT Images/HUD/Shield/shieldLleg.png').convert_alpha())
-    output.append(game.image.load('DT Images/HUD/Shield/shieldRleg.png').convert_alpha())
-    return output
 
 shieldWiggle=0
 barrierActive=False
 
-shieldBorder=game.image.load('DT Images/HUD/Shield/shieldBorder.png').convert_alpha()
-shieldBorderDark=game.image.load('DT Images/HUD/Shield/shieldBorder.png').convert_alpha()
+shieldBorder=game.image.load('DT_Images/HUD/Shield/shieldBorder.png').convert_alpha()
+shieldBorderDark=game.image.load('DT_Images/HUD/Shield/shieldBorder.png').convert_alpha()
 fill255(shieldBorderDark,DARKGREY)
 
 shieldParts=shieldImgs()
@@ -255,33 +195,33 @@ woundPoints.append((170,150))
 woundPoints.append((51,334))
 woundPoints.append((135,327))
 
-stunImg=game.image.load('DT Images/HUD/stun.png').convert_alpha()
-stunSmolImg=game.image.load('DT Images/HUD/stunSmol.png').convert_alpha()
-stunTinyImg=game.image.load('DT Images/HUD/stunTiny.png').convert_alpha()
-unconImg=game.image.load('DT Images/HUD/uncon.png').convert_alpha()
-unconSmolImg=game.image.load('DT Images/HUD/unconSmol.png').convert_alpha()
-unconTinyImg=game.image.load('DT Images/HUD/unconTiny.png').convert_alpha()
-deadImg=game.image.load('DT Images/HUD/dead.png').convert_alpha()
-deadSmolImg=game.image.load('DT Images/HUD/deadSmol.png').convert_alpha()
-deadTinyImg=game.image.load('DT Images/HUD/deadTiny.png').convert_alpha()
-zeroedImg=game.image.load('DT Images/HUD/zeroed.png').convert_alpha()
+stunImg=game.image.load('DT_Images/HUD/stun.png').convert_alpha()
+stunSmolImg=game.image.load('DT_Images/HUD/stunSmol.png').convert_alpha()
+stunTinyImg=game.image.load('DT_Images/HUD/stunTiny.png').convert_alpha()
+unconImg=game.image.load('DT_Images/HUD/uncon.png').convert_alpha()
+unconSmolImg=game.image.load('DT_Images/HUD/unconSmol.png').convert_alpha()
+unconTinyImg=game.image.load('DT_Images/HUD/unconTiny.png').convert_alpha()
+deadImg=game.image.load('DT_Images/HUD/dead.png').convert_alpha()
+deadSmolImg=game.image.load('DT_Images/HUD/deadSmol.png').convert_alpha()
+deadTinyImg=game.image.load('DT_Images/HUD/deadTiny.png').convert_alpha()
+zeroedImg=game.image.load('DT_Images/HUD/zeroed.png').convert_alpha()
 
-allNegativeImg=game.image.load('DT Images/HUD/allNegative.png').convert_alpha()
-stunNegativeImg=game.image.load('DT Images/HUD/stunNegative.png').convert_alpha()
-stunNegativeSmolImg=game.image.load('DT Images/HUD/stunNegativeSmol.png').convert_alpha()
+allNegativeImg=game.image.load('DT_Images/HUD/allNegative.png').convert_alpha()
+stunNegativeImg=game.image.load('DT_Images/HUD/stunNegative.png').convert_alpha()
+stunNegativeSmolImg=game.image.load('DT_Images/HUD/stunNegativeSmol.png').convert_alpha()
 
-shirtImg=game.image.load('DT Images/HUD/shirtSmall.png').convert_alpha()
-shirt2Img=game.image.load('DT Images/HUD/shirt2Small.png').convert_alpha()
+shirtImg=game.image.load('DT_Images/HUD/shirtSmall.png').convert_alpha()
+shirt2Img=game.image.load('DT_Images/HUD/shirt2Small.png').convert_alpha()
 
-undoImg=game.image.load('DT Images/Misc/undo.png').convert_alpha()
-bulletImg=game.image.load('DT Images/Misc/bullet.png').convert_alpha()
+undoImg=game.image.load('DT_Images/Misc/undo.png').convert_alpha()
+bulletImg=game.image.load('DT_Images/Misc/bullet.png').convert_alpha()
 
-warningRedImg=game.image.load('DT Images/HUD/warning.png').convert_alpha()
-warningYellowImg=game.image.load('DT Images/HUD/warning.png').convert_alpha()
+warningRedImg=game.image.load('DT_Images/HUD/warning.png').convert_alpha()
+warningYellowImg=game.image.load('DT_Images/HUD/warning.png').convert_alpha()
 fill(warningYellowImg,STUNYELLOW)
 warningBlinkTimer=40
 
-bleedImg=game.image.load('DT Images/HUD/bleed.png').convert_alpha()
+bleedImg=game.image.load('DT_Images/HUD/bleed.png').convert_alpha()
 
 stunHudHitbox=game.Rect(40,40,64,64)
 unconHudHitbox=game.Rect(110,40,64,64)
@@ -772,8 +712,8 @@ woundTrackLabels=[]
 for text in woundTrackText:
     woundTrackLabels.append(monospacedSmall.render(text,True,BLACK))
 
-medicalIconImage=game.image.load('DT Images/Misc/medical.png').convert_alpha()
-zeroIconImage=game.image.load('DT Images/Misc/ZeroIco.png')
+medicalIconImage=game.image.load('DT_Images/Misc/medical.png').convert_alpha()
+zeroIconImage=game.image.load('DT_Images/Misc/ZeroIco.png')
 zeroIconImage=game.transform.scale(zeroIconImage,(26,26)).convert_alpha()
 def drawWoundTrack(startX:int,startY:int,endX:int,buffer:int,wounds:int,greyWounds:int,blueWounds:int):
     wounds=max(0,min(50,wounds))
@@ -894,7 +834,7 @@ def populateSPInputs():
         spInput.value=str(unit.armour.sp[i])
         spInputs.append(spInput)
 
-luckImg=game.image.load('DT Images/HUD/luckIconSmol.png').convert_alpha()
+luckImg=game.image.load('DT_Images/HUD/luckIconSmol.png').convert_alpha()
 
 def drawSP(startX,startY,sp,maxSP):
     for i in range(6):
@@ -934,8 +874,8 @@ def generateSPHitboxes(startX,startY):
 
 spHitboxes=generateSPHitboxes(41,557)
 
-barrierIconOn=game.image.load('DT Images/Toggles/shieldIconOn.png').convert_alpha()
-barrierIconOff=game.image.load('DT Images/Toggles/shieldIconOff.png').convert_alpha()
+barrierIconOn=game.image.load('DT_Images/Toggles/shieldIconOn.png').convert_alpha()
+barrierIconOff=game.image.load('DT_Images/Toggles/shieldIconOff.png').convert_alpha()
 
 barToggleHitbox=game.Rect(471,419,63,63)
 def drawBar():
@@ -946,8 +886,8 @@ def drawBar():
         screen.blit(barrierIconOff,(481,427))
 
 luckActive=False
-luckIconOn=game.image.load('DT Images/Toggles/luckIconOn.png').convert_alpha()
-luckIconOff=game.image.load('DT Images/Toggles/luckIconOff.png').convert_alpha()
+luckIconOn=game.image.load('DT_Images/Toggles/luckIconOn.png').convert_alpha()
+luckIconOff=game.image.load('DT_Images/Toggles/luckIconOff.png').convert_alpha()
 
 luckToggleHitbox=game.Rect(471,350,63,63)
 def drawLuck():
@@ -958,8 +898,8 @@ def drawLuck():
         screen.blit(luckIconOff,(481,358))
 
 hideActive=False
-hideIconOn=game.image.load('DT Images/Toggles/hideIconOn.png').convert_alpha()
-hideIconOff=game.image.load('DT Images/Toggles/hideIconOff.png').convert_alpha()
+hideIconOn=game.image.load('DT_Images/Toggles/hideIconOn.png').convert_alpha()
+hideIconOff=game.image.load('DT_Images/Toggles/hideIconOff.png').convert_alpha()
 
 hideToggleHitbox=game.Rect(471,281,63,63)
 def drawHide():
@@ -970,8 +910,8 @@ def drawHide():
         screen.blit(hideIconOff,(481,289))
 
 
-skullIconOn=game.image.load('DT Images/Toggles/skullIconOn.png').convert_alpha()
-skullIconOff=game.image.load('DT Images/Toggles/skullIconOff.png').convert_alpha()
+skullIconOn=game.image.load('DT_Images/Toggles/skullIconOn.png').convert_alpha()
+skullIconOff=game.image.load('DT_Images/Toggles/skullIconOff.png').convert_alpha()
 
 skullToggleHitbox=game.Rect(540,281,63,63)
 def drawSkull():
@@ -992,8 +932,8 @@ def drawReroll():
         screen.blit(impactMedium.render('Reroll',True,BLACK),(295,77))
         screen.blit(impactMedium.render('Dont',True,BLACK),(365,77))
 
-deflectionIconOn=game.image.load('DT Images/Toggles/deflectionIconOn.png').convert_alpha()
-deflectionIconOff=game.image.load('DT Images/Toggles/deflectionIconOff.png').convert_alpha()
+deflectionIconOn=game.image.load('DT_Images/Toggles/deflectionIconOn.png').convert_alpha()
+deflectionIconOff=game.image.load('DT_Images/Toggles/deflectionIconOff.png').convert_alpha()
 deflectionHitbox=game.Rect(540,419,63,63)
 def drawDeflection():
     frame(540,419,63,63,BASEGREY)
@@ -1002,8 +942,8 @@ def drawDeflection():
     else:
         screen.blit(deflectionIconOff,(550,427))
 
-ignoreOffImg=game.image.load('DT Images/Toggles/ignoreOff.png').convert_alpha()
-ignoreOnImg=game.image.load('DT Images/Toggles/ignoreOn.png').convert_alpha()
+ignoreOffImg=game.image.load('DT_Images/Toggles/ignoreOff.png').convert_alpha()
+ignoreOnImg=game.image.load('DT_Images/Toggles/ignoreOn.png').convert_alpha()
 ignoreHitbox=game.Rect(540,350,63,63)
 def drawIgnore():
     frame(540,350,63,63,BASEGREY)
@@ -1201,12 +1141,12 @@ class Tab:
 
         particles=[]
 
-deleteImg=game.image.load('DT Images/Misc/delete.png').convert_alpha()
-deleteImgHighlight=game.image.load('DT Images/Misc/delete.png').convert_alpha()
+deleteImg=game.image.load('DT_Images/Misc/delete.png').convert_alpha()
+deleteImgHighlight=game.image.load('DT_Images/Misc/delete.png').convert_alpha()
 fill(deleteImgHighlight,WOUNDCOLOR)
 
-duplicateImg=game.image.load('DT Images/Misc/duplicate.png').convert_alpha()
-duplicateImgHighlight=game.image.load('DT Images/Misc/duplicate.png').convert_alpha()
+duplicateImg=game.image.load('DT_Images/Misc/duplicate.png').convert_alpha()
+duplicateImgHighlight=game.image.load('DT_Images/Misc/duplicate.png').convert_alpha()
 fill(duplicateImgHighlight,DARKGREEN)
 
 def drawTabs():
@@ -1271,29 +1211,29 @@ def drawAddTab():
     game.draw.line(screen, BLACK, (906,128), (918,128), 3)
     game.draw.line(screen, BLACK, (912,122), (912,134), 3)
 
-debugImg=game.image.load('DT Images/Particles/smolParticle.png').convert_alpha()
+debugImg=game.image.load('DT_Images/Particles/smolParticle.png').convert_alpha()
 fill(debugImg,(255,0,255))
 
-crossImg=game.image.load('DT Images/Particles/cross.png').convert_alpha()
+crossImg=game.image.load('DT_Images/Particles/cross.png').convert_alpha()
 fill(crossImg,(255,0,0))
 
-traceBlueImg=game.image.load('DT Images/Particles/tinyParticle.png').convert_alpha()
-traceYellowImg=game.image.load('DT Images/Particles/tinyParticle.png').convert_alpha()
-traceRedImg=game.image.load('DT Images/Particles/tinyParticle.png').convert_alpha()
-traceWoundImg=game.image.load('DT Images/Particles/tinyParticle.png').convert_alpha()
+traceBlueImg=game.image.load('DT_Images/Particles/tinyParticle.png').convert_alpha()
+traceYellowImg=game.image.load('DT_Images/Particles/tinyParticle.png').convert_alpha()
+traceRedImg=game.image.load('DT_Images/Particles/tinyParticle.png').convert_alpha()
+traceWoundImg=game.image.load('DT_Images/Particles/tinyParticle.png').convert_alpha()
 fill(traceBlueImg,TRACEBLUE)
 fill(traceYellowImg,TRACEYELLOW)
 fill(traceRedImg,TRACERED)
 fill(traceWoundImg,WOUNDCOLOR)
 
-luckParticleImg=game.image.load('DT Images/Particles/particle.png').convert_alpha()
+luckParticleImg=game.image.load('DT_Images/Particles/particle.png').convert_alpha()
 fill(luckParticleImg,LUCKGREEN)
 
-particleImg=game.image.load('DT Images/Particles/smolParticle.png').convert_alpha()
-bloodImg=game.image.load('DT Images/Particles/smolParticle.png').convert_alpha()
+particleImg=game.image.load('DT_Images/Particles/smolParticle.png').convert_alpha()
+bloodImg=game.image.load('DT_Images/Particles/smolParticle.png').convert_alpha()
 bloodImg.fill(WOUNDCOLOR)
 
-sparkImg=game.image.load('DT Images/Particles/spark.png').convert_alpha()
+sparkImg=game.image.load('DT_Images/Particles/spark.png').convert_alpha()
 sparkImg.fill(TRACEYELLOW)
 
 class Particle:
