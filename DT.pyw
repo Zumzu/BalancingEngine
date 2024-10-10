@@ -1052,7 +1052,7 @@ logHitbox=game.Rect(930,100,450,510)
 def drawLog():
     frame(screen,930,100,450,510,LIGHTGREY)
     offset=0
-    for i in range(logIndex,len(logs)):
+    for i in range(logScrollIndex,len(logs)):
         offset+=logs[i].height+15
         if offset<=490:
             game.draw.line(screen,DARKGREY,(940,595-offset),(1360,595-offset),2)
@@ -1063,7 +1063,7 @@ def drawLog():
     frame(screen,930,100,450,56,LIGHTGREY)
     loadLog.draw()
 
-    if logIndex>0:
+    if logScrollIndex>0:
         game.draw.polygon(screen,BLACK,((1100,580),(1155,600),(1210,580)))
 
 
@@ -1115,61 +1115,76 @@ duplicateImg=game.image.load('DT_Images/Misc/duplicate.png').convert_alpha()
 duplicateImgHighlight=game.image.load('DT_Images/Misc/duplicate.png').convert_alpha()
 fill(duplicateImgHighlight,DARKGREEN)
 
+tabScrollIndex=0
+tabsHitbox=game.Rect(760,105,175,504)
+
 def drawTabs():
-    for i in range(min(len(tabs),8)):
+    for tab in tabs:
+        tab.mainHitbox=None
+    for i in range(8):
+        iOffset=i+tabScrollIndex
+        if iOffset>=len(tabs):
+            break
+        
         x=760
         y=553-i*56
-        tabs[i].mainHitbox=game.Rect(x,y,175,52)
-        tabs[i].outerHitbox=game.Rect(x-80,y,255,52)
-        tabs[i].duplicateHitbox=duplicateImg.get_rect(topleft=(x-32,y+12))
-        tabs[i].deleteHitbox=deleteImg.get_rect(topleft=(x-64,y+12))
+        tabs[iOffset].mainHitbox=game.Rect(x,y,175,52)
+        tabs[iOffset].outerHitbox=game.Rect(x-80,y,255,52)
+        tabs[iOffset].duplicateHitbox=duplicateImg.get_rect(topleft=(x-32,y+12))
+        tabs[iOffset].deleteHitbox=deleteImg.get_rect(topleft=(x-64,y+12))
         
-        if tabIndex==i:
+        if tabIndex==iOffset:
             frameSelect(screen,x,y,175,52,WHITE if game.Rect(x,y,175,52).collidepoint(game.mouse.get_pos()) else LIGHTGREY)
         else:
             frame(screen,x,y,175,52,WHITE if game.Rect(x,y,175,52).collidepoint(game.mouse.get_pos()) else BASEGREY)  
 
-        name=tabs[i].loadLog.desc.title()
+        name=tabs[iOffset].loadLog.desc.title()
         if len(name)>15:
             name=name[:15]+'…'
         screen.blit(monospacedSmall.render(name,True,BLACK),(x+6,y+6))
 
         critWounded=[False]*6
-        for injury in tabs[i].currentUnit.critInjuries:
+        for injury in tabs[iOffset].currentUnit.critInjuries:
             critWounded[injury.loc]=True
 
         for j in range(6):
             if critWounded[j]:
                 screen.blit(smallLimbImgsWounded[j],(x+138,y+4))
-            elif tabs[i].currentUnit.cyber[j] is not None:
-                if tabs[i].currentUnit.cyber[j].damaged:
+            elif tabs[iOffset].currentUnit.cyber[j] is not None:
+                if tabs[iOffset].currentUnit.cyber[j].damaged:
                     screen.blit(smallLimbImgsCyberDamaged[j],(x+138,y+4))
                 else:
                     screen.blit(smallLimbImgsCyber[j],(x+138,y+4))
             else:
                 screen.blit(smallLimbImgs[j],(x+138,y+4))
 
-        if tabs[i].currentUnit.dead:
+        if tabs[iOffset].currentUnit.dead:
             screen.blit(deadTinyImg,(x+6,y+22))
-        elif tabs[i].currentUnit.uncon:
+        elif tabs[iOffset].currentUnit.uncon:
             screen.blit(unconTinyImg,(x+6,y+22))
-        elif tabs[i].currentUnit.stunned:
+        elif tabs[iOffset].currentUnit.stunned:
             screen.blit(stunTinyImg,(x+6,y+22))
         
-        if tabs[i].outerHitbox.collidepoint(game.mouse.get_pos()):
-            if tabs[i].duplicateHitbox.collidepoint(game.mouse.get_pos()):
+        if tabs[iOffset].outerHitbox.collidepoint(game.mouse.get_pos()):
+            if tabs[iOffset].duplicateHitbox.collidepoint(game.mouse.get_pos()):
                 screen.blit(duplicateImgHighlight,(x-32,y+12))
             else:
                 screen.blit(duplicateImg,(x-32,y+12))
 
-            if tabs[i].deleteHitbox.collidepoint(game.mouse.get_pos()):
+            if tabs[iOffset].deleteHitbox.collidepoint(game.mouse.get_pos()):
                 screen.blit(deleteImgHighlight,(x-64,y+12))
             else:
                 screen.blit(deleteImg,(x-64,y+12))
 
-        wounds=tabs[i].currentUnit.wounds
+        wounds=tabs[iOffset].currentUnit.wounds
         if wounds>0:
             game.draw.line(screen,WOUNDCOLOR,(x+3,y+46),(x+3+min(50,max(0,wounds))/50*169,y+46),4)
+
+    if tabScrollIndex>0:
+        game.draw.polygon(screen,BLACK,((830,585),(855,595),(880,585)))
+    if len(tabs)-tabScrollIndex>8:
+        game.draw.polygon(screen,BLACK,((830,193),(855,183),(880,193)))
+
 
 addTabHitbox=game.Rect(894,111,39,36)
 def drawAddTab():
@@ -1427,7 +1442,7 @@ def shoot():
         shotQueue.insert(0,(loc,dmg,rolls,more,ammoIndex))
 
 def runShot():
-    global shotQueue,logIndex,shotTimer,shieldWiggle
+    global shotQueue,logScrollIndex,shotTimer,shieldWiggle
     shotLoc,shotDmg,shotRolls,shotMore,shotAmmoIndex=shotQueue[-1]
     shotQueue=shotQueue[:-1]
 
@@ -1465,7 +1480,7 @@ def runShot():
         else:
             for _ in range(10):
                 particles.append(Particle(woundPoints[shotLoc],'tink'))
-        logIndex=0
+        logScrollIndex=0
         shotTimer=int(SHOTDELAY*30)
 
 shotTimer=0
@@ -1486,7 +1501,7 @@ ammoTypes=[Ammo(),
            Slug(),
            Arrow()]
 
-logIndex=0
+logScrollIndex=0
 calledShotLoc=-1
 tabIndex=0
 
@@ -1564,13 +1579,13 @@ while True:
                 if logs[i].hitbox is not None and logs[i].hitbox.collidepoint(game.mouse.get_pos()):
                     unit=deepcopy(logs[i].unit)
                     logs=logs[i:]
-                    logIndex=0
+                    logScrollIndex=0
                     break
             
             if loadLog.hitbox.collidepoint(game.mouse.get_pos()):
                 unit=deepcopy(loadLog.unit)
                 logs=[]
-                logIndex=0
+                logScrollIndex=0
 
             for i in range(4):
                 if shieldCollision(i,game.mouse.get_pos()):
@@ -1623,8 +1638,8 @@ while True:
                 loadFromDict()
                 loadInput.value=''
 
-            for i in range(min(len(tabs),8)):
-                if tabs[i].mainHitbox.collidepoint(game.mouse.get_pos()):
+            for i in range(len(tabs)):
+                if tabs[i].mainHitbox is not None and tabs[i].mainHitbox.collidepoint(game.mouse.get_pos()):
                     tabs[i].loadState()
                     tabIndex=i
 
@@ -1681,7 +1696,10 @@ while True:
                 ammoIndex=max(min(len(ammoTypes)-1,ammoIndex-event.y),0)
 
             if logHitbox.collidepoint(game.mouse.get_pos()):
-                logIndex=max(logIndex+event.y,0)
+                logScrollIndex=max(logScrollIndex+event.y,0)
+
+            if tabsHitbox.collidepoint(game.mouse.get_pos()):
+                tabScrollIndex=max(tabScrollIndex+event.y,0)
             
             for i in range(6):
                 if sdpHitboxes[i].collidepoint(game.mouse.get_pos()):
