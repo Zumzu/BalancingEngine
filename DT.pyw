@@ -72,6 +72,9 @@ TRACEDELAY=0.2 #measured in seconds
 
 game.init() 
 
+shroud=game.image.load('DT_Images/Misc/shroud.png')
+shroud.fill((255,255,255,60),None,game.BLEND_RGBA_MULT)
+
 background=game.image.load('DT_Images/Misc/Hexagons.png')
 background=game.transform.scale(background,(WIDTH,HEIGHT))
 screen = game.display.set_mode((WIDTH,HEIGHT)) 
@@ -1555,6 +1558,8 @@ tabs:list[Tab]=[Tab(loadLog,logs)]
 populateBody()
 populateSPInputs()
 
+
+
 ##################################################################################################################################################
 while True: 
     if shotTimer==0 and shotQueue!=[]:
@@ -1700,7 +1705,6 @@ while True:
             if barValueHitbox.collidepoint(game.mouse.get_pos()) and barrierActive:
                 unit.barrier.sp=0
 
-
         if event.type == game.MOUSEWHEEL:
             if coolHitbox.collidepoint(game.mouse.get_pos()):
                 unit.cool=max(min(10,unit.cool+event.y),3)
@@ -1731,7 +1735,6 @@ while True:
             for i in range(6):
                 if sdpHitboxes[i].collidepoint(game.mouse.get_pos()):
                     unit.cyber[i].setSDP(max(min(unit.cyber[i].maxSdp,unit.cyber[i].sdp+event.y),0))
-
 
         if event.type == game.KEYDOWN and event.key == game.K_RETURN:
             if damageSelected or multiplierSelected:
@@ -1861,6 +1864,9 @@ while True:
         particle.update()
 
     drawReroll()
+
+    if unit.dead:
+        screen.blit(shroud,(0,0))
 
     drawInfoBox()
 
