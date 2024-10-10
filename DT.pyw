@@ -1455,6 +1455,7 @@ bonusFadeoutTimer=0
 bonusProgress=0
 dropWiggle=0
 dropImg=game.image.load('DT_Images/Misc/drop.png').convert_alpha()
+dropHitbox=dropImg.get_rect(topleft=(3,742))
 def drawBonusBar():
     global dropWiggle,bonusProgress,bonusFadeoutTimer
     x=3
@@ -1479,6 +1480,9 @@ def drawBonusBar():
     game.draw.line(screen,DARKERGREY,(10+barOffset,11),(10+barOffset,750),2)
     game.draw.line(screen,DARKERGREY,(barOffset,770),(10+barOffset,770),2)
     screen.blit(dropImg,(x+barOffset,y))
+
+    if dropHitbox.collidepoint(game.mouse.get_pos()):
+        bonusFadeoutTimer=160
 
     if progress==1:
         particles.append(Particle((WIDTH//2+370,HEIGHT//2+70),'bonus'))
@@ -1790,6 +1794,9 @@ while True:
 
             if addTabHitbox.collidepoint(game.mouse.get_pos()):
                 addUnnamedTab()
+
+            if dropHitbox.collidepoint(game.mouse.get_pos()):
+                bonusProgress=0
 
         if event.type == game.MOUSEBUTTONDOWN and game.mouse.get_pressed()[2]:
             for i in range(6):
