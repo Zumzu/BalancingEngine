@@ -84,7 +84,7 @@ screen = game.display.set_mode((WIDTH,HEIGHT))
 background=background.convert_alpha()
 game.display.set_caption("Damage Tracker Mk2")
 game.display.set_icon(game.image.load('DT_Images/Misc/EngineIco.png'))
-monospacedBonus=game.font.SysFont('consolas',100)
+monospacedBonus=game.font.SysFont('consolas bold',300)
 monospacedMassive=game.font.SysFont('consolas',55)
 monospacedHuge=game.font.SysFont('consolas',40)
 monospacedLarge=game.font.SysFont('consolas',30)
@@ -1248,6 +1248,8 @@ bloodImg.fill(WOUNDCOLOR)
 sparkImg=game.image.load('DT_Images/Particles/spark.png').convert_alpha()
 sparkImg.fill(TRACEYELLOW)
 
+bonusDropshadow=monospacedBonus.render('Bonus!',True,BLACK)
+
 confettiPalette = [
     (255, 0, 0),
     (255, 51, 0),
@@ -1335,7 +1337,7 @@ class Particle:
             self.damp=1.22
         
         elif self.type=='bonus':
-            self.lifetime=90
+            self.lifetime=60
 
         elif 'trace' in self.type:
             if 'yellow' in self.type:
@@ -1358,7 +1360,8 @@ class Particle:
             particles.remove(self)
 
         if self.type=='bonus':
-            self.surface=monospacedBonus.render('Bonus!',True,confettiPalette[self.lifetime%len(confettiPalette)])
+            self.surface=monospacedBonus.render('Bonus!',False,confettiPalette[self.lifetime%len(confettiPalette)])
+            self.r=sin(self.lifetime/5)*10
 
         self.lifetime-=1
         self.rect=self.surface.get_rect(center=(self.x,self.y))
@@ -1368,7 +1371,16 @@ class Particle:
         else:
             self.surface.set_alpha(int(min(255,self.lifetime*52)))
 
-        if self.type=='cross' or self.type=='spark':
+        if self.type=='bonus':
+            x,y=self.rect[0],self.rect[1]
+            blitSurface,self.rect=rot_center(self.surface,self.r,x,y)
+            dropshadow,_=rot_center(bonusDropshadow,self.r,x,y)
+            dropshadow.set_alpha(int(min(200,self.lifetime*15)))
+            screen.blit(dropshadow,self.rect.move(3,3))
+            screen.blit(dropshadow,self.rect.move(3,-3))
+            screen.blit(dropshadow,self.rect.move(-3,3))
+            screen.blit(dropshadow,self.rect.move(-3,-3))
+        elif self.type=='cross' or self.type=='spark':
             blitSurface,self.rect=rot_center(self.surface,self.r,self.rect[0],self.rect[1])
         else:
             blitSurface=self.surface
@@ -1469,10 +1481,10 @@ def drawBonusBar():
     screen.blit(dropImg,(x+barOffset,y))
 
     if progress==1:
-        particles.append(Particle((WIDTH//2,HEIGHT//2),'bonus'))
-        for _ in range(200):
-            particles.append(Particle((WIDTH//2-150,HEIGHT//2),'confetti'))
-            particles.append(Particle((WIDTH//2+150,HEIGHT//2),'confetti'))
+        particles.append(Particle((WIDTH//2+370,HEIGHT//2+70),'bonus'))
+        for _ in range(250):
+            particles.append(Particle((WIDTH//2-200,HEIGHT//2),'confetti'))
+            particles.append(Particle((WIDTH//2+200,HEIGHT//2),'confetti'))
         bonusProgress=0
 
 ############### MECHANICAL BELOW
