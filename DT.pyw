@@ -159,20 +159,20 @@ for i in range(6):
 limbWiggle=[0]*6
 
 limbOffsets=[]
-limbOffsets.append((76,1))
-limbOffsets.append((51,60))
-limbOffsets.append((-1,69))
-limbOffsets.append((131,76))
-limbOffsets.append((23,215))
-limbOffsets.append((93,213))
+limbOffsets.append((209,64))
+limbOffsets.append((184,123))
+limbOffsets.append((132,132))
+limbOffsets.append((264,139))
+limbOffsets.append((156,278))
+limbOffsets.append((226,276))
 
 woundPoints=[]
-woundPoints.append((99,32))
-woundPoints.append((105,130))
-woundPoints.append((31,151))
-woundPoints.append((170,150))
-woundPoints.append((51,334))
-woundPoints.append((135,327))
+woundPoints.append((232,95))
+woundPoints.append((238,193))
+woundPoints.append((164,214))
+woundPoints.append((303,213))
+woundPoints.append((184,397))
+woundPoints.append((268,390))
 
 stunImg=game.image.load('DT_Images/HUD/stun.png').convert_alpha()
 stunSmolImg=game.image.load('DT_Images/HUD/stunSmol.png').convert_alpha()
@@ -333,22 +333,18 @@ def shieldCollision(i:int,pos):
     return not shieldParts[i].get_at(pixel)[3]==0
 
 def limbCollision(i:int,pos):
-    x=133
-    y=63
     width,height=limbImgs[i].get_size()
     posX,posY=pos
-    pixel=(posX-limbOffsets[i][0]-x, posY-limbOffsets[i][1]-y)
+    pixel=(posX-limbOffsets[i][0], posY-limbOffsets[i][1])
     if pixel[0]<0 or pixel[0]>=width or pixel[1]<0 or pixel[1]>=height:
         return False
 
     return not limbImgs[i].get_at(pixel)[3]==0
 
 def limbInnerCollision(i:int,pos):
-    x=133
-    y=63
     width,height=limbImgs[i].get_size()
     posX,posY=pos
-    pixel=(posX-limbOffsets[i][0]-x, posY-limbOffsets[i][1]-y)
+    pixel=(posX-limbOffsets[i][0], posY-limbOffsets[i][1])
     if pixel[0]<0 or pixel[0]>=width or pixel[1]<0 or pixel[1]>=height:
         return False
     
@@ -360,46 +356,40 @@ def drawDude():
         injured[injury.loc]=True
 
     for i in range(6):
-        x=133
-        y=63
-        if limbWiggle[i]!=0:
-            if i==1:
-                wiggleMod=8
-            else:
-                wiggleMod=4
-
-            x+=randint(-limbWiggle[i]//wiggleMod,limbWiggle[i]//wiggleMod)
-            y+=randint(-limbWiggle[i]//wiggleMod,limbWiggle[i]//wiggleMod)
-            limbWiggle[i]-=1
-
         
-        if calledShotLoc==i:
-            screen.blit(limbImgsCalled[i],(x+limbOffsets[i][0],y+limbOffsets[i][1]))
-        elif injured[i]:
-            screen.blit(limbImgsWounded[i],(x+limbOffsets[i][0],y+limbOffsets[i][1]))
+        if limbWiggle[i]!=0:
+            wiggleMod=8 if i==1 else 4
+
+            limbPosition=(limbOffsets[i][0]+randint(-limbWiggle[i]//wiggleMod,limbWiggle[i]//wiggleMod), limbOffsets[i][1]+randint(-limbWiggle[i]//wiggleMod,limbWiggle[i]//wiggleMod))
+            limbWiggle[i]-=1
         else:
-            screen.blit(limbImgs[i],(x+limbOffsets[i][0],y+limbOffsets[i][1]))
+            limbPosition=limbOffsets[i]
+
+
+        if calledShotLoc==i:
+            screen.blit(limbImgsCalled[i],limbPosition)
+        elif injured[i]:
+            screen.blit(limbImgsWounded[i],limbPosition)
+        else:
+            screen.blit(limbImgs[i],limbPosition)
         
         if unit.cyber[i] is not None:
-            screen.blit(limbImgCyber[i],(x+limbOffsets[i][0],y+limbOffsets[i][1]))
+            screen.blit(limbImgCyber[i],limbPosition)
         if limbCollision(i,game.mouse.get_pos()):
-            screen.blit(limbImgsHighlight[i],(x+limbOffsets[i][0],y+limbOffsets[i][1]))
+            screen.blit(limbImgsHighlight[i],limbPosition)
 
-    x=133
-    y=63
+    drawPointer(1,238,148)
+    drawPointer(2,164,214,True)
+    drawPointer(3,303,213)
+    drawPointer(4,184,397,True)
+    drawPointer(5,268,390)
 
-    drawPointer(1,x+105,y+85)
-    drawPointer(2,x+31,y+151,True)
-    drawPointer(3,x+170,y+150)
-    drawPointer(4,x+51,y+334,True)
-    drawPointer(5,x+135,y+327)
-    
-    drawSDP(0,x+110,y+30)
-    drawSDP(1,x+105,y+85)
-    drawSDP(2,x+31,y+151,True)
-    drawSDP(3,x+170,y+150)
-    drawSDP(4,x+51,y+334,True)
-    drawSDP(5,x+135,y+327)
+    drawSDP(0,243,93)
+    drawSDP(1,238,148)
+    drawSDP(2,164,214,True)
+    drawSDP(3,303,213)
+    drawSDP(4,184,397,True)
+    drawSDP(5,268,390)
 
     global pointerAngle
     pointerAngle+=0.03
@@ -1442,7 +1432,7 @@ def runShot():
     shotQueue=shotQueue[:-1]
 
     if shotLoc==-2:
-        particles.append(Particle((133+148,63+76),'cross'))
+        particles.append(Particle((281,139),'cross'))
         shotQueue.append((0,shotDmg,shotRolls,shotMore,shotAmmoIndex))
         if luckActive:
             particles[-1].lifetime=9999999
@@ -1468,13 +1458,13 @@ def runShot():
                 particles.append(Particle((361+randint(-20,20),429+randint(-20,20)),'tink'))
         elif logs[0].through!=0:
             for _ in range(logs[0].through*2):
-                particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'blood'))
+                particles.append(Particle(woundPoints[shotLoc],'blood'))
                 
             for _ in range(logs[0].through*-2):
-                particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'spark'))
+                particles.append(Particle(woundPoints[shotLoc],'spark'))
         else:
             for _ in range(10):
-                particles.append(Particle((133+woundPoints[shotLoc][0],63+woundPoints[shotLoc][1]),'tink'))
+                particles.append(Particle(woundPoints[shotLoc],'tink'))
         logIndex=0
         shotTimer=int(SHOTDELAY*30)
 
