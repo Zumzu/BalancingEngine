@@ -11,7 +11,7 @@ from Modules.Base import Unit,Weapon,Ammo,bodyToBTM,CyberLimb
 from Modules.Generator import findGun,findArmour,generateUnitList
 from Modules.Ammo import *
 from Modules.Dice import locationDie
-from random import randint,uniform,random
+from random import randint,uniform,random,choice,normalvariate
 
 from DT_Tools.ImgTools import fill,fill100,fill255,rot_center, dudeImgs,smallDudeImgs,shieldImgs
 from DT_Tools.DrawTools import frame,frameSelect,charFrame,buttonFrame
@@ -84,6 +84,7 @@ screen = game.display.set_mode((WIDTH,HEIGHT))
 background=background.convert_alpha()
 game.display.set_caption("Damage Tracker Mk2")
 game.display.set_icon(game.image.load('DT_Images/Misc/EngineIco.png'))
+monospacedBonus=game.font.SysFont('consolas',100)
 monospacedMassive=game.font.SysFont('consolas',55)
 monospacedHuge=game.font.SysFont('consolas',40)
 monospacedLarge=game.font.SysFont('consolas',30)
@@ -1247,6 +1248,44 @@ bloodImg.fill(WOUNDCOLOR)
 sparkImg=game.image.load('DT_Images/Particles/spark.png').convert_alpha()
 sparkImg.fill(TRACEYELLOW)
 
+confettiPalette = [
+    (255, 0, 0),
+    (255, 51, 0),
+    (255, 102, 0),
+    (255, 153, 0),
+    (255, 204, 0),
+    (255, 255, 0),
+    (204, 255, 0),
+    (153, 255, 0),
+    (102, 255, 0),
+    (51, 255, 0),
+    (0, 255, 0),
+    (0, 255, 51),
+    (0, 255, 102),
+    (0, 255, 153),
+    (0, 255, 204),
+    (0, 255, 255),
+    (0, 204, 255),
+    (0, 153, 255),
+    (0, 102, 255),
+    (0, 51, 255),
+    (0, 0, 255),
+    (51, 0, 255),
+    (102, 0, 255),
+    (153, 0, 255),
+    (204, 0, 255),
+    (255, 0, 255),
+    (255, 0, 204),
+    (255, 0, 153),
+    (255, 0, 102),
+    (255, 0, 51)
+]
+confettiImgs=[]
+for rgb in confettiPalette:
+    newImg=game.image.load('DT_Images/Particles/smolParticle.png').convert_alpha()
+    newImg.fill(rgb)
+    confettiImgs.append(newImg)
+
 class Particle:
     def __init__(self,loc:tuple[int],type:str):
         self.x,self.y=loc
@@ -1287,6 +1326,17 @@ class Particle:
             self.dy=uniform(-6,6)
             self.damp=1.15
         
+        elif 'confetti' in self.type:
+            self.surface=choice(confettiImgs)
+            self.lifetime=250+randint(-30,30)
+            self.dy=normalvariate(-40,30)
+            self.dx=normalvariate(0,50)
+            
+            self.damp=1.22
+        
+        elif self.type=='bonus':
+            self.lifetime=90
+
         elif 'trace' in self.type:
             if 'yellow' in self.type:
                 self.surface=traceYellowImg
@@ -1306,10 +1356,14 @@ class Particle:
     def update(self):
         if self.lifetime<=0:
             particles.remove(self)
+
+        if self.type=='bonus':
+            self.surface=monospacedBonus.render('Bonus!',True,confettiPalette[self.lifetime%len(confettiPalette)])
+
         self.lifetime-=1
         self.rect=self.surface.get_rect(center=(self.x,self.y))
 
-        if 'trace' in self.type:
+        if 'trace' in self.type or 'confetti' in self.type or self.type=='bonus':
             self.surface.set_alpha(int(min(200,self.lifetime*15)))
         else:
             self.surface.set_alpha(int(min(255,self.lifetime*52)))
@@ -1327,7 +1381,10 @@ class Particle:
         self.dx/=self.damp
         self.dy/=self.damp
 
-        if self.type=='blood':
+        if 'confetti' in self.type:
+            self.y+=randint(0,3)
+            self.x+=randint(-1,1)
+        elif self.type=='blood':
             self.dy+=1
         elif self.type=='cross':
             self.ry=max(self.ry/1.09,0.5)
@@ -1405,11 +1462,18 @@ def drawBonusBar():
     game.draw.rect(screen,LIGHTGREY, game.Rect(0+barOffset,770-760*progress, 10,760*progress))
 
     progress=min(1, bonusProgress/(BONUSWOUNDTARGET*5))
-    game.draw.rect(screen,WOUNDCOLOR, game.Rect(barOffset,770-760*progress, 10,760*progress))
+    game.draw.rect(screen,DARKYELLOW if progress==1 else WOUNDCOLOR, game.Rect(barOffset,770-760*progress, 10,760*progress))
     game.draw.line(screen,DARKERGREY,(barOffset,10),(10+barOffset,10),2)
     game.draw.line(screen,DARKERGREY,(10+barOffset,11),(10+barOffset,750),2)
     game.draw.line(screen,DARKERGREY,(barOffset,770),(10+barOffset,770),2)
     screen.blit(dropImg,(x+barOffset,y))
+
+    if progress==1:
+        particles.append(Particle((WIDTH//2,HEIGHT//2),'bonus'))
+        for _ in range(200):
+            particles.append(Particle((WIDTH//2-150,HEIGHT//2),'confetti'))
+            particles.append(Particle((WIDTH//2+150,HEIGHT//2),'confetti'))
+        bonusProgress=0
 
 ############### MECHANICAL BELOW
 
