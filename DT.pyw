@@ -60,12 +60,15 @@ DARKYELLOW=(198,187,0)
 
 WOUNDCOLOR=(169,18,1)
 DARKWOUNDCOLOR=(130,13,0)
+DARKERWOUNDCOLOR=(110,10,0)
 GREYWOUNDCOLOR=(200,150,150)
 
 DARKERGREY=(30,30,30)
 DARKGREY=(100,100,100)
 BASEGREY=(180,180,180)
 LIGHTGREY=(220,220,220)
+
+BONUSWOUNDTARGET=300
 
 SHOTDELAY=0.8 #measured in seconds
 TRACEDELAY=0.2 #measured in seconds
@@ -1379,8 +1382,34 @@ def drawTraces(x,y,dx,dy):
     else:
         traceTimer-=1
 
+bonusFadeoutTimer=0
+bonusProgress=0
+dropWiggle=0
+dropImg=game.image.load('DT_Images/Misc/drop.png').convert_alpha()
 def drawBonusBar():
-    pass
+    global dropWiggle,bonusProgress,bonusFadeoutTimer
+    x=3
+    y=742
+    if bonusFadeoutTimer>0:
+        bonusFadeoutTimer-=1
+    if dropWiggle>0:
+        x+= 1 if random()>0.5 else -1
+        y+= 1 if random()>0.5 else -1
+        bonusProgress+=1
+        dropWiggle-=1
+        bonusFadeoutTimer=160
+    
+    barOffset=-9*(1-min(20,bonusFadeoutTimer)/20)
+
+    progress=min(1, (bonusProgress+dropWiggle)/(BONUSWOUNDTARGET*5))
+    game.draw.rect(screen,LIGHTGREY, game.Rect(0+barOffset,770-760*progress, 10,760*progress))
+
+    progress=min(1, bonusProgress/(BONUSWOUNDTARGET*5))
+    game.draw.rect(screen,WOUNDCOLOR, game.Rect(barOffset,770-760*progress, 10,760*progress))
+    game.draw.line(screen,DARKERGREY,(barOffset,10),(10+barOffset,10),2)
+    game.draw.line(screen,DARKERGREY,(10+barOffset,11),(10+barOffset,750),2)
+    game.draw.line(screen,DARKERGREY,(barOffset,770),(10+barOffset,770),2)
+    screen.blit(dropImg,(x+barOffset,y))
 
 ############### MECHANICAL BELOW
 
@@ -1472,7 +1501,7 @@ def shoot():
         shotQueue.insert(0,(loc,dmg,rolls,more,ammoIndex))
 
 def runShot():
-    global shotQueue,logScrollIndex,shotTimer,shieldWiggle
+    global shotQueue,logScrollIndex,shotTimer,shieldWiggle,dropWiggle
     shotLoc,shotDmg,shotRolls,shotMore,shotAmmoIndex=shotQueue[-1]
     shotQueue=shotQueue[:-1]
 
@@ -1504,7 +1533,7 @@ def runShot():
         elif logs[0].through!=0:
             for _ in range(logs[0].through*2):
                 particles.append(Particle(woundPoints[shotLoc],'blood'))
-                
+            dropWiggle+=max(0,5*logs[0].through)
             for _ in range(logs[0].through*-2):
                 particles.append(Particle(woundPoints[shotLoc],'spark'))
         else:
@@ -1853,6 +1882,7 @@ while True:
     drawLoadBar()
 
     drawWounds()
+    drawBonusBar() #funny
 
     frame(screen,WIDTH//2+45,645,WIDTH//2-75,HEIGHT-675,BASEGREY)
     drawDamage()
