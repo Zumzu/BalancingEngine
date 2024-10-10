@@ -177,9 +177,18 @@ woundPoints.append((268,390))
 stunImg=game.image.load('DT_Images/HUD/stun.png').convert_alpha()
 stunSmolImg=game.image.load('DT_Images/HUD/stunSmol.png').convert_alpha()
 stunTinyImg=game.image.load('DT_Images/HUD/stunTiny.png').convert_alpha()
+stunBGImg=game.image.load('DT_Images/HUD/stunBG.png')
+stunBGImg.fill((0,0,0,32),None,game.BLEND_RGBA_MULT)
+stunBGImg=stunBGImg.convert_alpha()
+
+
 unconImg=game.image.load('DT_Images/HUD/uncon.png').convert_alpha()
 unconSmolImg=game.image.load('DT_Images/HUD/unconSmol.png').convert_alpha()
 unconTinyImg=game.image.load('DT_Images/HUD/unconTiny.png').convert_alpha()
+unconBGImg=game.image.load('DT_Images/HUD/unconBG.png').convert_alpha()
+unconBGImg.fill((0,0,0,32),None,game.BLEND_RGBA_MULT)
+unconBGImg=unconBGImg.convert_alpha()
+
 deadImg=game.image.load('DT_Images/HUD/dead.png').convert_alpha()
 deadSmolImg=game.image.load('DT_Images/HUD/deadSmol.png').convert_alpha()
 deadTinyImg=game.image.load('DT_Images/HUD/deadTiny.png').convert_alpha()
@@ -557,6 +566,21 @@ def drawUnitPreview(x:int,y:int,unitDict:dict):
     else:
         screen.blit(monospacedTiny.render("[?,?,?,?,?,?] Body: ? Cool: ?",True,BLACK),(x+3,y+25))
 
+
+stunUnconTextLabel=monospacedMedium.render("Modified DVs",True,BLACK)
+def drawModStunUncon():
+    frame(screen,471,60,134,50,BASEGREY)
+    screen.blit(stunUnconTextLabel,(474,40))
+    game.draw.line(screen,DARKGREY,(536,70),(536,100),2)
+    
+    screen.blit(stunBGImg,stunBGImg.get_rect(center=(504,85)))
+    screen.blit(unconBGImg,unconBGImg.get_rect(center=(570,85)))
+
+    stunTextLabel=monospacedHuge.render(f"{11+unit.stunMod()-max(unit.body,unit.cool)}",True,BLACK) if not hideActive else monospacedMedium.render("?",True,BLACK)
+    unconTextLabel=monospacedHuge.render(f"{11+unit.unconMod()-unit.body}",True,BLACK) if not hideActive else monospacedMedium.render("?",True,BLACK)
+    screen.blit(stunTextLabel,stunTextLabel.get_rect(center=(504,87)))
+    screen.blit(unconTextLabel,unconTextLabel.get_rect(center=(570,87)))
+
 bodyTextLabel=monospacedMediumLarge.render("Body",True,BLACK)
 bodyInput=pygame_textinput.TextInputVisualizer()
 bodyInput.font_object=monospacedHuge
@@ -565,8 +589,8 @@ bodySelected=False
 bodyHitbox=game.Rect(471,557,63,63)
 def drawBody():
     screen.blit(bodyTextLabel,(539,563))
-    btmTextLabel=monospacedLarge.render(f"Uncon:{11-unit.body}",True,BLACK) if not hideActive else monospacedMedium.render("Uncon:?",True,BLACK)
-    screen.blit(btmTextLabel,(540,585))
+    unconTextLabel=monospacedLarge.render(f"Uncon:{11-unit.body}",True,BLACK) if not hideActive else monospacedMedium.render("Uncon:?",True,BLACK)
+    screen.blit(unconTextLabel,(540,585))
     frame(screen,471,557,63,63,BASEGREY)
     btmTextLabel=monospacedSmall.render(f"BTM:-{str(unit.btm)}",True,BLACK) if not hideActive else monospacedMedium.render("BTM:-?",True,BLACK)
     screen.blit(btmTextLabel,(478,602))
@@ -588,8 +612,8 @@ coolSelected=False
 coolHitbox=game.Rect(471,488,63,63)
 def drawCool():
     screen.blit(coolTextLabel,(539,495))
-    btmTextLabel=monospacedLarge.render(f"Stun:{11-max(unit.body,unit.cool)}",True,BLACK) if not hideActive else monospacedMedium.render("Stun:?",True,BLACK)
-    screen.blit(btmTextLabel,(540,517))
+    stunTextLabel=monospacedLarge.render(f"Stun:{11-max(unit.body,unit.cool)}",True,BLACK) if not hideActive else monospacedMedium.render("Stun:?",True,BLACK)
+    screen.blit(stunTextLabel,(540,517))
     frame(screen,471,488,63,63,BASEGREY)
     coolInput.font_color=BLACK if unit.cool>unit.body else DARKGREY
     if not hideActive:
@@ -1352,6 +1376,9 @@ def drawTraces(x,y,dx,dy):
     else:
         traceTimer-=1
 
+def drawBonusBar():
+    pass
+
 ############### MECHANICAL BELOW
 
 def loadFromDict():
@@ -1417,7 +1444,7 @@ def deleteTabAt(index:int):
         tabIndex-=1
 
 def addUnnamedTab():
-    tabs.append(Tab(LoadLog(Unit(None,findArmour([14,14,14,14,10,10]),0,7,7,cyber=[0,0,0,0,0,0]),'Unnamed'),[]))
+    tabs.append(Tab(LoadLog(Unit(None,findArmour([14,14,14,14,10,10]),0,8,8,cyber=[0,0,0,0,0,0]),'Unnamed'),[]))
 
 
 def shoot():
@@ -1517,7 +1544,7 @@ except:
 
 
 weapon:Weapon=findGun("streetmaster")
-unit=Unit(None,findArmour([14,14,14,14,10,10]),0,7,7,cyber=[0,0,0,0,0,0]) # manual load
+unit=Unit(None,findArmour([14,14,14,14,10,10]),0,8,8,cyber=[0,0,0,0,0,0]) # manual load
 
 logs:list[Log]=[]
 loadLog:LoadLog=LoadLog(unit,"Unnamed")
@@ -1809,6 +1836,7 @@ while True:
 
     drawBody()
     drawCool()
+    drawModStunUncon()
     drawBar()
     drawLuck()
     drawHide()
