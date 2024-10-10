@@ -7,7 +7,7 @@ from os import system
 from math import cos,sin,pi
 from numpy import dot
 
-from Modules.Base import Unit,Weapon,Ammo,bodyToBTM,CyberLimb
+from Modules.Base import Unit,Weapon,Ammo,bodyToBTM,CyberLimb,FragileBarrier
 from Modules.Generator import findGun,findArmour,generateUnitList
 from Modules.Ammo import *
 from Modules.Dice import locationDie
@@ -31,7 +31,7 @@ from DT_Tools.DataProcessors import processDamage
 #Lethality Intensifier
 #World Lethality
 #Gun Shield
-#
+#Crit injury threshold ticks
 
 #  TODO Later
 #load Hover preview
@@ -902,13 +902,13 @@ def drawLuck():
 hideActive=False
 hideIconOn=game.image.load('DT_Images/Toggles/hideIconOn.png').convert_alpha()
 hideIconOff=game.image.load('DT_Images/Toggles/hideIconOff.png').convert_alpha()
-hideToggleHitbox=game.Rect(471,281,63,63)
+hideToggleHitbox=game.Rect(471,212,63,63)
 def drawHide():
-    frame(screen,471,281,63,63,BASEGREY)
+    frame(screen,471,212,63,63,BASEGREY)
     if hideActive:
-        screen.blit(hideIconOn,(481,289))
+        screen.blit(hideIconOn,(481,220))
     else:
-        screen.blit(hideIconOff,(481,289))
+        screen.blit(hideIconOff,(481,220))
 
 
 skullIconOn=game.image.load('DT_Images/Toggles/skullIconOn.png').convert_alpha()
@@ -920,6 +920,20 @@ def drawSkull():
         screen.blit(skullIconOn,(548,289))
     else:
         screen.blit(skullIconOff,(548,289))
+
+#faceshieldIconSP=game.image.load('DT_Images/Toggles/faceshieldIconSP.png').convert_alpha()
+faceshieldIconSDP=game.image.load('DT_Images/Toggles/faceshieldIconSDP.png').convert_alpha()
+faceshieldIconOff=game.image.load('DT_Images/Toggles/faceshieldIconOff.png').convert_alpha()
+faceshieldToggleHitbox=game.Rect(471,281,63,63)
+def drawFaceshield():
+    frame(screen,471,281,63,63,BASEGREY)
+    if unit.faceShield.sp==0:
+        screen.blit(faceshieldIconOff,(481,289))
+    elif isinstance(unit.faceShield,FragileBarrier):
+        screen.blit(faceshieldIconSDP,(481,289))
+    else:
+        pass
+        #screen.blit(faceshieldIconSP,(481,289))
 
 luckRerollHitbox=game.Rect(290,77,65,30)
 luckDontHitbox=game.Rect(360,77,55,30)
@@ -1958,6 +1972,7 @@ while True:
     drawDeflection()
     drawIgnore()
     drawSkull()
+    drawFaceshield()
 
     drawTabs()
     drawAddTab()

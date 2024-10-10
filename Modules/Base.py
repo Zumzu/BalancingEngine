@@ -222,7 +222,6 @@ class Gun(Weapon):
     def cybercontrol(self):
         return self.ammotype.cybercontrol
 
-
 class Armour:
     def __init__(self,name:str,cost:int,sp,mv:int,ev:int,type:str='soft'):
         self.name=name
@@ -321,6 +320,19 @@ class Barrier:
             self.sp-=1
         return output
     
+class FragileBarrier(Barrier):
+    def apply(self,loc:int,dmg:int,ignore:int):
+        if not self.covers[loc]:
+            return dmg
+        
+        if self.sp>=dmg:
+            self.sp-=dmg
+            return 0
+        else:
+            dmg-=self.sp
+            self.sp=0
+            return dmg
+    
 
 class Unit:
     def __init__(self,weapon:Weapon,armour:ArmourSet,ws:int,body:int,cool:int=-1,dodge:int=-1,cyber:list[int]=[0,0,0,0,0,0],threshold:list[int]=[8,15,8,8,8,8]):
@@ -350,6 +362,7 @@ class Unit:
 
         self.critInjuries=[]
         self.barrier=Barrier(0,[True]*6)
+        self.faceShield=Barrier(0,[True,False,False,False,False,False])
         self.injuryThreshold=threshold
 
         self.deflection=False
@@ -434,6 +447,7 @@ class Unit:
             dmg=self.armour.apply(loc,dmg,pref,weapon.pierceSP())
         else:
             dmg=self.barrier.apply(loc,dmg,0)
+            dmg=self.faceShield.apply(loc,dmg,0)
             dmg=self.armour.apply(loc,dmg,False,0)
 
         if dmg<=0 or self.injuryThreshold[loc]==0: # return early if no damage
@@ -459,7 +473,7 @@ class Unit:
                     self.critInjuries.append(doubleCritInjuryRoll(loc))
                 else:
                     self.critInjuries.append(critInjuryRoll(loc))
-                if self.injuryThreshold[loc]>1:
+                if loc>1 and self.injuryThreshold[loc]>1:
                     self.injuryThreshold[loc]-=1
 
             for injury in self.critInjuries:
