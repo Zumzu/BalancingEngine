@@ -7,7 +7,7 @@ from os import system
 from math import cos,sin,pi
 from numpy import dot
 
-from Modules.Base import Unit,Weapon,Ammo,bodyToBTM,CyberLimb,FragileBarrier
+from Modules.Base import Unit,Weapon,Ammo,bodyToBTM,CyberLimb,Barrier,FragileBarrier
 from Modules.Generator import findGun,findArmour,generateUnitList
 from Modules.Ammo import *
 from Modules.Dice import locationDie
@@ -921,19 +921,27 @@ def drawSkull():
     else:
         screen.blit(skullIconOff,(548,289))
 
-#faceshieldIconSP=game.image.load('DT_Images/Toggles/faceshieldIconSP.png').convert_alpha()
+faceshieldIconSP=game.image.load('DT_Images/Toggles/faceshieldIconSP.png').convert_alpha()
 faceshieldIconSDP=game.image.load('DT_Images/Toggles/faceshieldIconSDP.png').convert_alpha()
 faceshieldIconOff=game.image.load('DT_Images/Toggles/faceshieldIconOff.png').convert_alpha()
 faceshieldToggleHitbox=game.Rect(471,281,63,63)
+faceshieldLabelSP=monospacedSmall.render("SP",True,BLACK)
+faceshieldLabelSDP=monospacedSmall.render("SDP",True,BLACK)
 def drawFaceshield():
     frame(screen,471,281,63,63,BASEGREY)
+    x=477+(randint(-1,1) if limbWiggle[0]>0 else 0)
+    y=281+(randint(-1,1) if limbWiggle[0]>0 else 0)
     if unit.faceShield.sp==0:
-        screen.blit(faceshieldIconOff,(481,289))
-    elif isinstance(unit.faceShield,FragileBarrier):
-        screen.blit(faceshieldIconSDP,(481,289))
+        screen.blit(faceshieldIconOff,(477,289))
     else:
-        pass
-        #screen.blit(faceshieldIconSP,(481,289))
+        spText=monospacedMedium.render(f"{unit.faceShield.sp}",True,BLACK)
+        screen.blit(spText,spText.get_rect(midright=(530,333)))
+        if isinstance(unit.faceShield,FragileBarrier):
+            screen.blit(faceshieldLabelSDP,faceshieldLabelSDP.get_rect(midleft=(476,333)))
+            screen.blit(faceshieldIconSDP,(x,y))
+        else:
+            screen.blit(faceshieldLabelSP,faceshieldLabelSP.get_rect(midleft=(476,333)))
+            screen.blit(faceshieldIconSP,(x,y))
 
 luckRerollHitbox=game.Rect(290,77,65,30)
 luckDontHitbox=game.Rect(360,77,55,30)
@@ -966,8 +974,7 @@ def drawIgnore():
         return
     
     screen.blit(ignoreOnImg,(547,357))
-    ignoreText=f"{unit.ignoreWounds//5}"
-    ignoreLabel=monospacedMedium.render(ignoreText,True,BLACK)
+    ignoreLabel=monospacedMedium.render(f"{unit.ignoreWounds//5}",True,BLACK)
     screen.blit(ignoreLabel,(585,390))
     
 
@@ -1812,6 +1819,14 @@ while True:
             if dropHitbox.collidepoint(game.mouse.get_pos()):
                 bonusProgress=0
 
+            if faceshieldToggleHitbox.collidepoint(game.mouse.get_pos()):
+                if unit.faceShield.sp==0:
+                    unit.faceShield=FragileBarrier(15,[True,False,False,False,False,False])
+                elif isinstance(unit.faceShield,FragileBarrier):
+                    unit.faceShield=Barrier(10,[True,False,False,False,False,False])
+                else:
+                    unit.faceShield=Barrier(0,[True,False,False,False,False,False])
+
         if event.type == game.MOUSEBUTTONDOWN and game.mouse.get_pressed()[2]:
             for i in range(6):
                 if spHitboxes[i].collidepoint(game.mouse.get_pos()):
@@ -1837,6 +1852,9 @@ while True:
 
             if barValueHitbox.collidepoint(game.mouse.get_pos()) and barrierActive:
                 unit.barrier.sp=max(min(99,unit.barrier.sp+event.y),0)
+
+            if faceshieldToggleHitbox.collidepoint(game.mouse.get_pos()):
+                unit.faceShield.sp=max(min(99,unit.faceShield.sp+event.y),0)
 
             if bodyHitbox.collidepoint(game.mouse.get_pos()):
                 unit.body=max(min(10,unit.body+event.y),3)

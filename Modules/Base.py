@@ -439,11 +439,11 @@ class Unit:
         if weapon is not None:
             dmg+=weapon.bonusDamage(self,loc)
             dmg=self.barrier.apply(loc,dmg,weapon.pierceBar())
+            dmg=self.faceShield.apply(loc,dmg,0)
             if self.armour.typeAt(loc)=='hard' and self.injuryThreshold[0]>=12:
                 pref=False
             else:
                 pref=weapon.preferred(self,loc)
-
             dmg=self.armour.apply(loc,dmg,pref,weapon.pierceSP())
         else:
             dmg=self.barrier.apply(loc,dmg,0)
