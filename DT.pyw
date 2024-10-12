@@ -73,6 +73,8 @@ BONUSWOUNDTARGET=300
 SHOTDELAY=0.8 #measured in seconds
 TRACEDELAY=0.2 #measured in seconds
 
+DEFAULTCRITINJURYTHRESHOLD=[8,15,8,8,8,8]
+
 game.init() 
 
 shroud=game.image.load('DT_Images/Misc/shroud.png')
@@ -866,9 +868,18 @@ def drawSP(startX,startY,sp,maxSP):
             game.draw.polygon(screen,(255,182,0),((x+3,y+3),(x+12,y+3),(x+3,y+12)))
         else:
             game.draw.polygon(screen,(230,60,13),((x+3,y+3),(x+12,y+3),(x+3,y+12)))
+        
+        if unit.injuryThreshold[i]==0:
+           injuryMarkerText=impactTiny.render("●" ,True,WOUNDCOLOR)
+        else:
+            injuryMarkers=""
+            for _ in range(DEFAULTCRITINJURYTHRESHOLD[i]-unit.injuryThreshold[i]):
+                injuryMarkers+="/"
+            injuryMarkerText=impactTiny.render(injuryMarkers,True,BLACK)
+        screen.blit(injuryMarkerText,injuryMarkerText.get_rect(midright=(x+58,y+52)))
 
-        if luckActive:
-            screen.blit(luckImg,(62,548))
+    if luckActive:
+        screen.blit(luckImg,(62,548))
 
 def generateSPHitboxes(startX,startY):
     spHitboxes=[]
@@ -929,8 +940,12 @@ faceshieldLabelSP=monospacedSmall.render("SP",True,BLACK)
 faceshieldLabelSDP=monospacedSmall.render("SDP",True,BLACK)
 def drawFaceshield():
     frame(screen,471,281,63,63,BASEGREY)
-    x=477+(randint(-1,1) if limbWiggle[0]>0 else 0)
-    y=281+(randint(-1,1) if limbWiggle[0]>0 else 0)
+    x=477
+    y=281
+    if limbWiggle[0]>0:
+        x+=randint(-1,1)
+        y+=randint(-1,1)
+
     if unit.faceShield.sp==0:
         screen.blit(faceshieldIconOff,(477,289))
     else:
