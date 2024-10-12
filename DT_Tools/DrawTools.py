@@ -3,7 +3,7 @@ import pygame as game
 BLACK=(0,0,0)
 DARKERGREY=(30,30,30)
 
-def charFrame(screen,x:int,y:int,dx:int,dy:int):
+def charFrameDefault(screen,x:int,y:int,dx:int,dy:int):
     game.draw.rect(screen, DARKERGREY, game.Rect(x,y,dx,dy), 4, border_radius=5)
 
     s=game.Surface((dx-6,dy-6),game.SRCALPHA)

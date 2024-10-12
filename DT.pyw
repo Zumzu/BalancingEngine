@@ -14,7 +14,7 @@ from Modules.Dice import locationDie
 from random import randint,uniform,random,choice,normalvariate
 
 from DT_Tools.ImgTools import fill,fill100,fill255,rot_center, dudeImgs,smallDudeImgs,shieldImgs
-from DT_Tools.DrawTools import frame,frameSelect,charFrame,buttonFrame
+from DT_Tools.DrawTools import frame,frameSelect,charFrameDefault,buttonFrame
 from DT_Tools.DataProcessors import processDamage
 
 
@@ -27,9 +27,14 @@ from DT_Tools.DataProcessors import processDamage
 
 #  TODO Soon
 #Connect Crit Injury Threshold to DB
-#Tabss - scrollable, mark heros
+#Tabss - mark heros
 #Lethality Intensifier
 #World Lethality
+#Mono and by proxy double preferred for weakpoint
+#Decentralized
+#Resilience
+#Pacesetter
+#Pain editor
 
 #  TODO Later
 #load Hover preview
@@ -1257,9 +1262,6 @@ def drawAddTab():
     game.draw.line(screen, BLACK, (906,128), (918,128), 3)
     game.draw.line(screen, BLACK, (912,122), (912,134), 3)
 
-debugImg=game.image.load('DT_Images/Particles/smolParticle.png').convert_alpha()
-fill(debugImg,(255,0,255))
-
 crossImg=game.image.load('DT_Images/Particles/cross.png').convert_alpha()
 fill(crossImg,(255,0,0))
 
@@ -1701,7 +1703,10 @@ tabs:list[Tab]=[Tab(loadLog,logs)]
 populateBody()
 populateSPInputs()
 
-
+#DEBUG
+#debugImg=game.image.load('DT_Images/Misc/spade.png').convert_alpha()
+debugImg=game.image.load('DT_Images/Particles/smolParticle.png').convert_alpha()
+fill(debugImg,(255,0,255))
 
 ##################################################################################################################################################
 while True: 
@@ -1859,6 +1864,9 @@ while True:
             if barValueHitbox.collidepoint(game.mouse.get_pos()) and barrierActive:
                 unit.barrier.sp=0
 
+            if faceshieldToggleHitbox.collidepoint(game.mouse.get_pos()):
+                unit.faceShield.sp=0
+
         if event.type == game.MOUSEWHEEL:
             if coolHitbox.collidepoint(game.mouse.get_pos()):
                 unit.cool=max(min(10,unit.cool+event.y),3)
@@ -1987,7 +1995,7 @@ while True:
         tempY+=1.5
     
     screen.blit(background,(0,0))
-    charFrame(screen,30,30,400,600) # char frame
+    charFrameDefault(screen,30,30,400,600) # char frame
     frame(screen,460,30,WIDTH-490,600,BASEGREY) # main frame
     drawHudElements()
     drawTraces(120,68,207,469)
