@@ -30,8 +30,6 @@ from DT_Tools.DataProcessors import processDamage
 #Tabss - scrollable, mark heros
 #Lethality Intensifier
 #World Lethality
-#Gun Shield
-#Crit injury threshold ticks
 
 #  TODO Later
 #load Hover preview
@@ -585,8 +583,8 @@ def drawModStunUncon():
     screen.blit(stunBGImg,stunBGImg.get_rect(center=(504,85)))
     screen.blit(unconBGImg,unconBGImg.get_rect(center=(570,85)))
 
-    stunTextLabel=monospacedHuge.render(f"{11+unit.stunMod()-max(unit.body,unit.cool)}",True,BLACK) if not hideActive else monospacedMedium.render("?",True,BLACK)
-    unconTextLabel=monospacedHuge.render(f"{11+unit.unconMod()-unit.body}",True,BLACK) if not hideActive else monospacedMedium.render("?",True,BLACK)
+    stunTextLabel=monospacedHuge.render(f"{11+unit.stunMod()-max(unit.body,unit.cool)}",True,BLACK) if not hideActive else monospacedHuge.render("?",True,BLACK)
+    unconTextLabel=monospacedHuge.render(f"{11+unit.unconMod()-unit.body}",True,BLACK) if not hideActive else monospacedHuge.render("?",True,BLACK)
     screen.blit(stunTextLabel,stunTextLabel.get_rect(center=(504,87)))
     screen.blit(unconTextLabel,unconTextLabel.get_rect(center=(570,87)))
 
@@ -598,10 +596,10 @@ bodySelected=False
 bodyHitbox=game.Rect(471,557,63,63)
 def drawBody():
     screen.blit(bodyTextLabel,(539,563))
-    unconTextLabel=monospacedLarge.render(f"Uncon:{11-unit.body}",True,BLACK) if not hideActive else monospacedMedium.render("Uncon:?",True,BLACK)
+    unconTextLabel=monospacedLarge.render(f"Uncon:{11-unit.body}",True,BLACK) if not hideActive else monospacedLarge.render("Uncon:?",True,BLACK)
     screen.blit(unconTextLabel,(540,585))
     frame(screen,471,557,63,63,BASEGREY)
-    btmTextLabel=monospacedSmall.render(f"BTM:-{str(unit.btm)}",True,BLACK) if not hideActive else monospacedMedium.render("BTM:-?",True,BLACK)
+    btmTextLabel=monospacedSmall.render(f"BTM:-{str(unit.btm)}",True,BLACK) if not hideActive else monospacedSmall.render("BTM:-?",True,BLACK)
     screen.blit(btmTextLabel,(478,602))
     if not hideActive:
         if len(bodyInput.value)==2:
@@ -621,7 +619,7 @@ coolSelected=False
 coolHitbox=game.Rect(471,488,63,63)
 def drawCool():
     screen.blit(coolTextLabel,(539,495))
-    stunTextLabel=monospacedLarge.render(f"Stun:{11-max(unit.body,unit.cool)}",True,BLACK) if not hideActive else monospacedMedium.render("Stun:?",True,BLACK)
+    stunTextLabel=monospacedLarge.render(f"Stun:{11-max(unit.body,unit.cool)}",True,BLACK) if not hideActive else monospacedLarge.render("Stun:?",True,BLACK)
     screen.blit(stunTextLabel,(540,517))
     frame(screen,471,488,63,63,BASEGREY)
     coolInput.font_color=BLACK if unit.cool>unit.body else DARKGREY
@@ -1508,10 +1506,10 @@ def drawBonusBar():
     barOffset=-9*(1-min(20,bonusFadeoutTimer)/20)
 
     progress=min(1, (bonusProgress+dropWiggle)/(BONUSWOUNDTARGET*5))
-    game.draw.rect(screen,LIGHTGREY, game.Rect(0+barOffset,770-760*progress, 10,760*progress))
+    game.draw.rect(screen,LIGHTGREY, game.Rect(0+barOffset,770-760*progress, 10,759*progress))
 
     progress=min(1, bonusProgress/(BONUSWOUNDTARGET*5))
-    game.draw.rect(screen,DARKYELLOW if progress==1 else WOUNDCOLOR, game.Rect(barOffset,770-760*progress, 10,760*progress))
+    game.draw.rect(screen,STUNYELLOW if progress==1 else WOUNDCOLOR, game.Rect(barOffset,770-760*progress, 10,760*progress))
     game.draw.line(screen,DARKERGREY,(barOffset,10),(10+barOffset,10),2)
     game.draw.line(screen,DARKERGREY,(10+barOffset,11),(10+barOffset,750),2)
     game.draw.line(screen,DARKERGREY,(barOffset,770),(10+barOffset,770),2)
@@ -1520,7 +1518,7 @@ def drawBonusBar():
     if dropHitbox.collidepoint(game.mouse.get_pos()):
         bonusFadeoutTimer=160
 
-    if progress==1:
+    if progress==1 and shotQueue==[]:
         particles.append(Particle((WIDTH//2+370,HEIGHT//2+70),'bonus'))
         for _ in range(250):
             particles.append(Particle((WIDTH//2-200,HEIGHT//2),'confetti'))
