@@ -2,6 +2,16 @@ from PIL import ImageTk, Image
 import tkinter as tk
 from tkinterdnd2 import DND_FILES, TkinterDnD
 
+from Modules.Character import Skillset,Character
+
+
+testChar=Character('james')
+print(testChar.getSkill("agility"))
+print(testChar.getNetSkill("agility"))
+
+print()
+raise
+
 window = TkinterDnD.Tk()
 window.title("The Cyberpunk Mk2 Codex")
 
