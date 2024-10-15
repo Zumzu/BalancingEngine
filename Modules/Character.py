@@ -48,13 +48,6 @@ class Skillset:
             if value is not None:
                 return value+stat['value']
 
-    def updateUnit(self,unit:Unit):
-        unit.cool=self.skillList[4]['value']
-        unit.body=self.skillList[7]['value']
-        unit.ws=max(self.getNetSkill('handgun'),self.getNetSkill('rifle'))
-        unit.dodge=self.getNetSkill('dodge')    #TODO
-
-
 
 class Character:
     def __init__(self,name):
@@ -81,24 +74,9 @@ class Character:
 
         charDict={'skillset': [skill for skill in self.skillSet.skillList]}
         charRef.document(self.name).set(charDict)
-
-    def getStat(self,input:str) -> int:
-        return self.skillSet.getStat(input)
-    
-    def setStat(self,input:str,newValue:int):
-        self.skillSet.setStat(input,newValue)
-
-    def getSkill(self,input:str) -> int:
-        return self.skillSet.getSkill(input)
-                
-    def setSkill(self,input:str,newValue:int):
-        self.skillSet.setSkill(input,newValue)
-
-    def getNetSkill(self,input:str) -> int:
-        return self.skillSet.getNetSkill(input)
     
     def genUnit(self) -> Unit:
-        return Unit(self.weapons[0], ArmourSet([]), max(self.getNetSkill('handgun'), self.getNetSkill('rifle')), self.skillSet.getStat('body'), self.skillSet.getStat('cool'), self.skillSet.getSkill('dodge'))
+        return Unit(self.weapons[0], ArmourSet([]), max(self.skillSet.getNetSkill('handgun'), self.skillSet.getNetSkill('rifle')), self.skillSet.getStat('body'), self.skillSet.getStat('cool'), self.skillSet.getSkill('dodge'))
 
 
 """
@@ -110,27 +88,6 @@ Hierarchy:
     Items
     Cyberware (Items)
     Special Rules (Items)
-
-Extra Stats: {dict}
-    Luck
-    Int
-    Tech
-    Emp
-    Dex
-    Ref
-    MA
-
-Skills: {dict}
-    Handgun/SMG
-    Rifle/Shotgun
-    Melee
-    Brawl
-    Dodge
-    Stealth
-    Willpower
-    Awareness
-    First Aid
-    Throwing
 
 
 """

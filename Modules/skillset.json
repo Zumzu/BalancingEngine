@@ -6,7 +6,7 @@
             "skills": {}
         },
         {
-            "name": "intelligence",
+            "name": "int",
             "value": 7,
             "skills": {
                 "awareness": 3,
@@ -42,7 +42,7 @@
             }
         },
         {
-            "name": "empathy",
+            "name": "emp",
             "value": 7,
             "skills": {
                 "human perception": 0,
@@ -67,7 +67,7 @@
             }
         },
         {
-            "name": "dexterity",
+            "name": "dex",
             "value": 7,
             "skills": {
                 "agility": 0,
@@ -80,7 +80,7 @@
             }
         },
         {
-            "name": "reflexes",
+            "name": "ref",
             "value": 7,
             "skills": {
                 "rifle": 5,
@@ -93,11 +93,6 @@
             }
         },
         {
-            "name": "ma",
-            "value": 7,
-            "skills": {}
-        },
-        {
             "name": "body",
             "value": 7,
             "skills": {
@@ -105,6 +100,11 @@
                 "strength feat": 0,
                 "swimming": 0
             }
+        },
+        {
+            "name": "ma",
+            "value": 7,
+            "skills": {}
         },
         {
             "name": "misc",
