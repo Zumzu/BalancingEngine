@@ -40,13 +40,17 @@ class Skillset:
             if stat['skills'].get(input) is not None:
                 stat['skills'][input]=newValue
                 return
-        self.skillList[-1]['skills'][input]=newValue
+        if newValue<=0 and self.skillList[-1]['skills'].get(input) is not None:
+            del self.skillList[-1]['skills'][input]
+        else:
+            self.skillList[-1]['skills'][input]=newValue
+        
 
     def getNetSkill(self,input:str):
         for stat in self.skillList:
             value=stat['skills'].get(input)
             if value is not None:
-                return value+stat['value']
+                return value+int(stat['value'])
 
 
 class Character:
