@@ -1,8 +1,8 @@
-from PIL import ImageTk, Image
 from tkinter import *
 from tkinter.ttk import Entry
 from tkinterdnd2 import DND_FILES, TkinterDnD
 from ttkwidgets.autocomplete import AutocompleteCombobox
+from PIL import ImageTk, Image
 
 from Modules.Character import Character
 

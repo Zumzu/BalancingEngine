@@ -8,6 +8,14 @@ firebase_admin.initialize_app(credentials.Certificate("C:/Users/zaneg/Documents/
 DB = firebase_admin.firestore.client()
 
 
+class Item:
+    def __init__(self):
+        pass
+
+class ItemSet:
+    def __init__(self):
+        pass
+
 class Skillset:
     def __init__(self,skillList:list[dict]=None):
         if skillList is not None:
@@ -52,13 +60,11 @@ class Skillset:
             if value is not None:
                 return value+int(stat['value'])
 
-
 class Character:
     def __init__(self,name):
         self.name=name
         if not self._loadCharacter(name):
             self.skillSet=Skillset()
-            self.weapons:list[Weapon]=[]
             #self.items:list[Item]=[]
 
     def _loadCharacter(self,name):
@@ -68,7 +74,6 @@ class Character:
         if doc.exists:
             data=doc.to_dict()
             self.skillSet=Skillset(data['skillset'])
-            self.weapons:list[Weapon]=[]    #TODO
             return True
         
         return False
@@ -80,7 +85,7 @@ class Character:
         charRef.document(self.name).set(charDict)
     
     def genUnit(self) -> Unit:
-        return Unit(self.weapons[0], ArmourSet([]), max(self.skillSet.getNetSkill('handgun'), self.skillSet.getNetSkill('rifle')), self.skillSet.getStat('body'), self.skillSet.getStat('cool'), self.skillSet.getSkill('dodge'))
+        return Unit(self.weapons[0], ArmourSet([]), max(self.skillSet.getNetSkill('handgun'),self.skillSet.getNetSkill('rifle')), self.skillSet.getStat('body'), self.skillSet.getStat('cool'), self.skillSet.getSkill('dodge'))
 
 
 """
