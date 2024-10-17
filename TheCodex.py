@@ -29,7 +29,7 @@ statsFrame = Frame(window, relief=RAISED, bd=2)
 statsFrame.grid(row=2, column=0, rowspan=3, sticky="nsew")
 
 skillsFrame = Frame(window, relief=RAISED, bd=2)
-skillsFrame.grid(row=2, column=1, rowspan=3, sticky="nswe", padx=10)
+skillsFrame.grid(row=2, column=1, rowspan=3, sticky="nswe")
 
 gunFrame = Frame(window, relief=RAISED, bd=2)
 gunFrame.grid(row=2, column=2, rowspan=3, columnspan=2, sticky="nsew")
@@ -77,16 +77,29 @@ def refreshSkills():
                 skillEntry = Entry(skillsFrame, font=consolasSmall, width=3, justify="center")
                 skillEntry.insert(0, str(netSkillValue))
                 skillEntry.grid(row=row, column=1, sticky="ew", padx=3)
-                
-                skillEntry.bind("<KeyRelease>",lambda _, name=skillName, entry=skillEntry: skillChanged(name, entry.get()))
-                
-                row += 1
 
-def skillChanged(skillName: str, newValue: str):
-    if newValue.isnumeric() and 0 <= int(newValue) <= 20:
-        char.skillSet.setSkill(skillName, int(newValue))
-        if int(newValue)==0:
-            refreshSkills()
+                warningLabel = Label(skillsFrame, text="⚠️", font=consolasSmall, fg="red")
+                warningLabel.grid(row=row, column=2, sticky="w", padx=3)
+                warningLabel.grid_remove()
+
+                def showTooltip(event):
+                    tooltip = Toplevel()
+                    tooltip.wm_overrideredirect(True)
+                    tooltip.geometry(f"+{event.x_root + 10}+{event.y_root + 10}")
+                    label = Label(tooltip, text="Value not be saved. Must be numeric and in range [0,20].", background="yellow", relief="solid", borderwidth=1)
+                    label.pack()
+                    warningLabel.tooltip = tooltip
+
+                def hideTooltip(_):
+                    if hasattr(warningLabel, 'tooltip'):
+                        warningLabel.tooltip.destroy()
+                        del warningLabel.tooltip
+                
+                skillEntry.bind("<KeyRelease>", lambda _, skillName=skillName, entry=skillEntry, warning=warningLabel: skillChanged(skillName, entry, warning))
+                skillEntry.bind("<MouseWheel>", lambda event, skillName=skillName, entry=skillEntry, warning=warningLabel: skillScrolled(event, skillName, entry, warning))
+                warningLabel.bind("<Enter>", showTooltip)
+                warningLabel.bind("<Leave>", hideTooltip)
+                row += 1
 
 def populateStatsFrame():
     for index, stat in enumerate(char.skillSet.skillList[:-1]):
@@ -104,8 +117,8 @@ def populateStatsFrame():
         warningLabel.grid(row=index, column=2, sticky="w", padx=3)
         warningLabel.grid_remove()
 
-        valueEntry.bind("<FocusOut>", lambda _, statName=stat['name'], entry=valueEntry, warning=warningLabel: statChanged(statName, entry, warning))
-        valueEntry.bind("<MouseWheel>", lambda event, statName=stat['name'], entry=valueEntry, warning=warningLabel: scrollValue(event, statName, entry, warning))
+        valueEntry.bind("<KeyRelease>", lambda _, statName=stat['name'], entry=valueEntry, warning=warningLabel: statChanged(statName, entry, warning))
+        valueEntry.bind("<MouseWheel>", lambda event, statName=stat['name'], entry=valueEntry, warning=warningLabel: statScrolled(event, statName, entry, warning))
 
         def showTooltip(event):
             tooltip = Toplevel()
@@ -126,13 +139,13 @@ def populateStatsFrame():
 def statChanged(statName: str, entry:Entry, warningLabel: Label):
     newValue=str(entry.get())
     if newValue.isnumeric() and 0 <= int(newValue) <= 20:
-        char.skillSet.setStat(statName, newValue)
+        char.skillSet.setStat(statName, int(newValue))
         refreshSkills()
         warningLabel.grid_remove()
     else:
         warningLabel.grid()
 
-def scrollValue(event, statName:str, entry:Entry, warningLabel: Label):
+def statScrolled(event, statName:str, entry:Entry, warningLabel: Label):
     try:
         currentVal = int(entry.get())
         if event.delta > 0 and currentVal < 10:
@@ -143,6 +156,30 @@ def scrollValue(event, statName:str, entry:Entry, warningLabel: Label):
             entry.delete(0,"end")
             entry.insert(0, str(currentVal - 1))
             statChanged(statName,entry,warningLabel)
+    except ValueError:
+        pass
+
+def skillChanged(skillName: str, entry:Entry, warningLabel: Label):
+    newValue=str(entry.get())
+    if newValue.isnumeric() and 0 <= int(newValue) <= 20:
+        char.skillSet.setSkill(skillName, int(newValue))
+        warningLabel.grid_remove()
+        if int(newValue)==0:
+            refreshSkills()
+    else:
+        warningLabel.grid()
+
+def skillScrolled(event, skillName:str, entry:Entry, warningLabel: Label):
+    try:
+        currentVal = int(entry.get())
+        if event.delta > 0 and currentVal < 10:
+            entry.delete(0,"end")
+            entry.insert(0, str(currentVal + 1))
+            skillChanged(skillName,entry,warningLabel)
+        elif event.delta < 0 and currentVal > 3:
+            entry.delete(0,"end")
+            entry.insert(0, str(currentVal - 1))
+            skillChanged(skillName,entry,warningLabel)
     except ValueError:
         pass
 
