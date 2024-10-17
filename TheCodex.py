@@ -30,27 +30,64 @@ statsFrame.grid(row=2, column=0, rowspan=3, columnspan=2, sticky="nsew")
 gunFrame = tk.Frame(window, relief=tk.RAISED, bd=2)
 gunFrame.grid(row=2, column=2, rowspan=3, columnspan=2, sticky="nsew")
 
-def statChanged(statName:str, newValue:str):
-    if newValue.isnumeric() and int(newValue)>0 and int(newValue)<=20:
-        char.skillSet.setStat(statName,newValue)
-
 consolas = ("Consolas", 24)
 
-for index,stat in enumerate(char.skillSet.skillList[:-1]):
-    for i in range(len(char.skillSet.skillList)-1):
-        statsFrame.rowconfigure(i,weight=1)
+def populateStatsFrame():
+    for index, stat in enumerate(char.skillSet.skillList[:-1]):
+        for i in range(len(char.skillSet.skillList) - 1):
+            statsFrame.rowconfigure(i, weight=1)
 
-    label = tk.Label(statsFrame, text=str(stat['name']).capitalize(), anchor="w", font=consolas)
-    label.grid(row=index, column=0, sticky="w")
+        label = tk.Label(statsFrame, text=str(stat['name']).capitalize(), anchor="w", font=consolas)
+        label.grid(row=index, column=0, sticky="w")
 
-    valueEntry = tk.Entry(statsFrame, font=consolas, width=3,justify="center")
-    valueEntry.insert(0, str(stat['value']))
-    valueEntry.grid(row=index, column=1, sticky="ew", padx=3)
+        valueEntry = tk.Entry(statsFrame, font=consolas, width=3, justify="center")
+        valueEntry.insert(0, str(stat['value']))
+        valueEntry.grid(row=index, column=1, sticky="ew", padx=3)
 
-    valueEntry.bind(    
-        "<FocusOut>",
-        lambda _, statName=stat['name'], entry=valueEntry: statChanged(statName, entry.get())
-    )
+        warningLabel = tk.Label(statsFrame, text="⚠️", font=consolas, fg="red")
+        warningLabel.grid(row=index, column=2, sticky="w", padx=3)
+        warningLabel.grid_remove()
+
+        valueEntry.bind("<FocusOut>", lambda _, statName=stat['name'], entry=valueEntry, warning=warningLabel: statChanged(statName, entry, warning))
+        valueEntry.bind("<MouseWheel>", lambda event, statName=stat['name'], entry=valueEntry, warning=warningLabel: scrollValue(event, statName, entry, warning))
+
+        def showTooltip(event):
+            tooltip = tk.Toplevel()
+            tooltip.wm_overrideredirect(True)
+            tooltip.geometry(f"+{event.x_root + 10}+{event.y_root + 10}")
+            label = tk.Label(tooltip, text="Value not be saved. Must be numeric and in range [0,20].", background="yellow", relief="solid", borderwidth=1)
+            label.pack()
+            warningLabel.tooltip = tooltip
+
+        def hideTooltip(_):
+            if hasattr(warningLabel, 'tooltip'):
+                warningLabel.tooltip.destroy()
+                del warningLabel.tooltip
+
+        warningLabel.bind("<Enter>", showTooltip)
+        warningLabel.bind("<Leave>", hideTooltip)
+
+def statChanged(statName: str, entry:tk.Entry, warningLabel: tk.Label):
+    newValue=str(entry.get())
+    if newValue.isnumeric() and 0 <= int(newValue) <= 20:
+        char.skillSet.setStat(statName, newValue)
+        warningLabel.grid_remove()
+    else:
+        warningLabel.grid()
+
+def scrollValue(event, statName:str, entry:tk.Entry, warningLabel: tk.Label):
+    try:
+        currentVal = int(entry.get())
+        if event.delta > 0 and currentVal < 10:
+            entry.delete(0,"end")
+            entry.insert(0, str(currentVal + 1))
+            statChanged(statName,entry,warningLabel)
+        elif event.delta < 0 and currentVal > 3:
+            entry.delete(0,"end")
+            entry.insert(0, str(currentVal - 1))
+            statChanged(statName,entry,warningLabel)
+    except ValueError:
+        pass
 
 def dropImage(event):
     file_path = event.data
@@ -65,6 +102,7 @@ def onClose():
     char.saveCharacter()    
     window.destroy()
 
+populateStatsFrame()
 window.protocol("WM_DELETE_WINDOW",onClose)
 window.drop_target_register(DND_FILES)
 window.dnd_bind('<<Drop>>', dropImage)
