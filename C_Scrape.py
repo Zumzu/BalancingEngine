@@ -2,7 +2,7 @@ from Modules.Generator import scrapeGuns,scrapeArmour,scrapeMelee
 import firebase_admin
 from firebase_admin import credentials,firestore
 
-def pushGunList():
+def pushGunList(): # pushing to DB deligated to codex project, scraping for engine should be purely local
     cred = credentials.Certificate("C:/Users/zaneg/Documents/Junk Drawer/dt-tracker-d5d20-firebase-adminsdk-5sitn-0e6ea61dcc.json")
     firebase_admin.initialize_app(cred)
 
@@ -27,5 +27,3 @@ def pushGunList():
 scrapeGuns()
 scrapeArmour()
 scrapeMelee()
-
-pushGunList()
