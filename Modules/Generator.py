@@ -174,6 +174,14 @@ def generateUnitList():
       docDict=doc.to_dict()
       docDict['name']=doc.id
       output.append(docDict)
+
+    users_ref = db.collection("players")
+    docs = users_ref.stream()
+
+    for doc in docs:
+      docDict=doc.to_dict()
+      docDict['name']=doc.id
+      output.append(docDict)
     
     return output
 
