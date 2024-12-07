@@ -29,7 +29,7 @@ class TMJ(Ammo):
     def __init__(self):
         super().__init__()
         self.name="Total Metal Jacket"
-        self.desc="Pierces 15sp of barriers  "
+        self.desc="Pierces 15sp of barriers"
         self.pierceBar=15
 
 class Incin(Ammo):
@@ -91,8 +91,8 @@ class FragFlechette(Ammo):
         self.name="Frag Flechette"
         self.desc="Preferred both (0.5x SP) "
 
-    def preferred(self,enemyUnit:Unit,loc:int):
-        return True
+    def spMultiplier(self,enemyUnit:Unit,loc:int):
+        return 0.5
     
 class Cybercontrol(Ammo):
     def __init__(self):
@@ -108,8 +108,8 @@ class CybercontrolSlug(Ammo):
         self.desc="Slug that additionally, deals 2x SDP damage to cyber limbs, Triggers a stun check"
         self.cybercontrol=True
     
-    def preferred(self,enemyUnit:Unit,loc:int):
-        return enemyUnit.armour.typeAt(loc)=='hard'
+    def spMultiplier(self,enemyUnit:Unit,loc:int):
+        return 0.5 if enemyUnit.armour.typeAt(loc)=='hard' and enemyUnit.injuryThreshold[0]<12 else 1
     
 class Slug(Ammo):
     def __init__(self):
@@ -117,8 +117,8 @@ class Slug(Ammo):
         self.name="Slugs"
         self.desc="2x Range, Preferred hard (0.5x SP if hard)"
 
-    def preferred(self,enemyUnit:Unit,loc:int):
-        return enemyUnit.armour.typeAt(loc)=='hard'
+    def spMultiplier(self,enemyUnit:Unit,loc:int):
+        return 0.5 if enemyUnit.armour.typeAt(loc)=='hard' and enemyUnit.injuryThreshold[0]<12 else 1
     
 class Arrow(Ammo):
     def __init__(self):
@@ -126,9 +126,27 @@ class Arrow(Ammo):
         self.name="Arrow/Bolt"
         self.desc="Preferred soft (0.5x SP if soft)"
 
-    def preferred(self,enemyUnit:Unit,loc:int):
-        return enemyUnit.armour.typeAt(loc)=='soft'
-    
+    def spMultiplier(self,enemyUnit:Unit,loc:int):
+        return 0.5 if enemyUnit.armour.typeAt(loc)=='soft' else 1
+
+class Mono(Ammo):
+    def __init__(self):
+        super().__init__()
+        self.name="Mono"
+        self.desc="Preferred mono (0.25x SP if soft else 0.5x SP)"
+
+    def spMultiplier(self,enemyUnit:Unit,loc:int):
+        return 0.25 if enemyUnit.armour.typeAt(loc)=='soft' else 0.5
+
+class DoublePreferred(Ammo):
+    def __init__(self):
+        super().__init__()
+        self.name="Double Preferred"
+        self.desc="Preferred + Weakpoint (0.25x SP)"
+
+    def spMultiplier(self,enemyUnit:Unit,loc:int):
+        return 0.25
+
 class BuckshotInCQB(Ammo):
     def bonusDamage(self,enemyUnit,loc: int):
         return d6()+d6()
@@ -137,8 +155,8 @@ class FlechetteInCQB(Ammo):
     def bonusDamage(self,enemyUnit,loc: int):
         return d6()+d6()
     
-    def preferred(self,enemyUnit:Unit,loc:int):
-        return True
+    def spMultiplier(self,enemyUnit:Unit,loc:int):
+        return 0.5
     
 class Caseless(Ammo):
     def bonusDamage(self,enemyUnit:Unit,loc:int):

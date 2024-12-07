@@ -21,8 +21,8 @@ class Ammo:
     def bonusDamage(self,enemyUnit,loc:int):
         return 0
     
-    def preferred(self,enemyUnit,loc:int):
-        return False
+    def spMultiplier(self,enemyUnit,loc:int):
+        return 1
     
     def onDamage(self,enemyUnit,loc:int):
         pass
@@ -43,8 +43,8 @@ class Weapon(ABC):
     def bonusDamage(self,enemyUnit,loc:int):
         return 0
     
-    def preferred(self,enemyUnit,loc:int):
-        return False
+    def spMultiplier(self,enemyUnit,loc:int):
+        return 1
     
     def onDamage(self,enemyUnit,loc:int):
         pass
@@ -134,13 +134,20 @@ class Melee(Weapon):
 
         return output
 
-    def preferred(self,enemyUnit,loc:int):
+    def spMultiplier(self,enemyUnit,loc:int):
         if self.pref=='none':
-            return False
-        elif self.pref=='both' or self.pref=='mono': # temp mono
-            return True
-        
-        return enemyUnit.armour.typeAt(loc)==self.pref
+            return 1
+        elif self.pref=='both':
+            return 0.5
+        elif self.pref=='mono':
+            return 0.25 if enemyUnit.armour.typeAt(loc)=='soft' else 0.5
+        elif self.pref=='soft':
+            return 0.5 if enemyUnit.armour.typeAt(loc)=='soft' else 1
+        elif self.pref=='hard' and enemyUnit.injuryThreshold[0]<12: #for inner skull
+            return 0.5 if enemyUnit.armour.typeAt(loc)=='hard' else 1
+
+        return 1
+            
 
 class Gun(Weapon):
     def __init__(self,name:str,cost:int,wa:int,d6:int,more:int,rof:int,mag:int,ammotype:Ammo):
@@ -204,8 +211,8 @@ class Gun(Weapon):
     def bonusDamage(self,enemyUnit,loc:int):
         return self.ammotype.bonusDamage(enemyUnit,loc)
     
-    def preferred(self,enemyUnit,loc:int):
-        return self.ammotype.preferred(enemyUnit,loc)
+    def spMultiplier(self,enemyUnit,loc:int):
+        return self.ammotype.spMultiplier(enemyUnit,loc)
     
     def onDamage(self,enemyUnit,loc:int):
         self.ammotype.onDamage(enemyUnit,loc)
@@ -263,13 +270,10 @@ class ArmourSet:
     def reset(self):
         self.sp=list(self.spMax)
 
-    def apply(self,loc:int,damage:int,preferred:bool,pierce:int):
-        if preferred:
-            output=max(0, damage-max(0,self.sp[loc]//2-pierce))
-        else:
-            output=max(0, damage-max(0,self.sp[loc]-pierce))
+    def apply(self,loc:int,damage:int,spMultiplier:int,pierce:int):
+        output=max(0, damage-max(0,floor(self.sp[loc]*spMultiplier)-pierce))
 
-        if damage>=self.sp[loc]//2 and self.sp[loc]>0:
+        if damage>=self.sp[loc]//2 and self.sp[loc]>0: #POTENTIAL ISSUE? MONO CAN FAIL TO DEGRADE WHILE DAMAGING
             self.sp[loc]-=1
             
         return output
@@ -439,15 +443,13 @@ class Unit:
         if weapon is not None:
             dmg+=weapon.bonusDamage(self,loc)
             dmg=self.barrier.apply(loc,dmg,weapon.pierceBar())
-            dmg=self.faceShield.apply(loc,dmg,0)
-            if self.armour.typeAt(loc)=='hard' and self.injuryThreshold[0]>=12:
-                pref=False
-            else:
-                pref=weapon.preferred(self,loc)
-            dmg=self.armour.apply(loc,dmg,pref,weapon.pierceSP())
+            dmg=self.faceShield.apply(loc,dmg,weapon.pierceBar())
+            #contact armour for explo
+            dmg=self.armour.apply(loc,dmg,weapon.spMultiplier(self,loc),weapon.pierceSP())
         else:
             dmg=self.barrier.apply(loc,dmg,0)
             dmg=self.faceShield.apply(loc,dmg,0)
+            #contact armour for explo
             dmg=self.armour.apply(loc,dmg,False,0)
 
         if dmg<=0 or self.injuryThreshold[loc]==0: # return early if no damage
@@ -462,6 +464,10 @@ class Unit:
             dmg=max(1,floor(dmg)-self.btm) # apply btm
             if self.deflection:
                 dmg-=1
+                if dmg==0:
+                    if weapon is not None:
+                        weapon.postEffect(self,loc)
+                    return False
             self.wounds+=dmg # apply wounds
             
             for injury in self.critInjuries:

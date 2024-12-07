@@ -36,6 +36,13 @@ def tint(surface,rgb):
             rgba=surface.get_at((i,j))
             surface.set_at((i,j),game.Color(min(255,rgba[0]+rgb[0]),min(255,rgba[1]+rgb[1]),min(255,rgba[2]+rgb[2]),rgba[3]))
 
+def modAlpha(surface,alphaIn):
+    w,h = surface.get_size()
+    for i in range(w):
+        for j in range(h):
+            r,g,b,a=surface.get_at((i,j))
+            surface.set_at((i,j),game.Color(r,g,b,max(0,min(255,a+alphaIn))))
+
 def rot_center(image, angle, x, y):
     rotated_image = game.transform.rotate(image, angle)
     new_rect = rotated_image.get_rect(center = image.get_rect(center = (x, y)).center)

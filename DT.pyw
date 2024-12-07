@@ -13,7 +13,7 @@ from Modules.Ammo import *
 from Modules.Dice import locationDie
 from random import randint,uniform,random,choice,normalvariate
 
-from DT_Tools.ImgTools import fill,fill100,fill255,rot_center, dudeImgs,smallDudeImgs,shieldImgs
+from DT_Tools.ImgTools import fill,fill100,fill255,modAlpha,rot_center, dudeImgs,smallDudeImgs,shieldImgs
 from DT_Tools.DrawTools import frame,frameSelect,charFrameDefault,buttonFrame
 from DT_Tools.DataProcessors import processDamage
 
@@ -30,11 +30,11 @@ from DT_Tools.DataProcessors import processDamage
 #Tabss - mark heros
 #Lethality Intensifier
 #World Lethality
-#Mono and by proxy double preferred for weakpoint
 #Decentralized
 #Resilience
 #Pacesetter
 #Pain editor
+#contact armour for explo
 
 #  TODO Later
 #load Hover preview
@@ -1674,7 +1674,9 @@ ammoTypes=[Ammo(),
            Cybercontrol(),
            CybercontrolSlug(),
            Slug(),
-           Arrow()]
+           Arrow(),
+           Mono(),
+           DoublePreferred()]
 
 logScrollIndex=0
 calledShotLoc=-1
