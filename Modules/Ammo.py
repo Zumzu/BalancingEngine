@@ -47,7 +47,7 @@ class Explosive(Ammo):
         self.name="Explosive"
         self.desc="Deals an additional 1D3 SP damage"
 
-    def postEffect(self,enemyUnit:Unit,loc:int):
+    def postContact(self,enemyUnit:Unit,loc:int):
         enemyUnit.armour.sp[loc]=max(0,enemyUnit.armour.sp[loc]-d3())
 
 class Firecracker(Ammo):
@@ -56,7 +56,7 @@ class Firecracker(Ammo):
         self.name="Firecracker"
         self.desc="Deals an additional 1D6+1 SP damage"
 
-    def postEffect(self,enemyUnit:Unit,loc:int):
+    def postContact(self,enemyUnit:Unit,loc:int):
         enemyUnit.armour.sp[loc]=max(0,enemyUnit.armour.sp[loc]-(d6()+1))
     
 class HEI(Ammo):
@@ -68,7 +68,7 @@ class HEI(Ammo):
     def onDamage(self,enemyUnit:Unit,loc:int):
         enemyUnit.directToBody(d6())
 
-    def postEffect(self,enemyUnit:Unit,loc:int):
+    def postContact(self,enemyUnit:Unit,loc:int):
         enemyUnit.armour.sp[loc]=max(0,enemyUnit.armour.sp[loc]-d3())
 
 class API(Ammo):

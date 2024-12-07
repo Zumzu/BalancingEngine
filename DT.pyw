@@ -26,15 +26,12 @@ from DT_Tools.DataProcessors import processDamage
 #(An older iteration of this was in unity and the overhead was UNREAL)
 
 #  TODO Soon
-#Connect Crit Injury Threshold to DB
 #Tabss - mark heros
 #Lethality Intensifier
-#World Lethality
 #Decentralized
 #Resilience
 #Pacesetter
 #Pain editor
-#contact armour for explo
 
 #  TODO Later
 #load Hover preview

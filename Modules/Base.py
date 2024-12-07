@@ -27,7 +27,7 @@ class Ammo:
     def onDamage(self,enemyUnit,loc:int):
         pass
 
-    def postEffect(self,enemyUnit,loc:int):
+    def postContact(self,enemyUnit,loc:int):
         pass
 
 class Weapon(ABC):
@@ -49,7 +49,7 @@ class Weapon(ABC):
     def onDamage(self,enemyUnit,loc:int):
         pass
 
-    def postEffect(self,enemyUnit,loc:int):
+    def postContact(self,enemyUnit,loc:int):
         pass
 
     def pierceSP(self):
@@ -217,8 +217,8 @@ class Gun(Weapon):
     def onDamage(self,enemyUnit,loc:int):
         self.ammotype.onDamage(enemyUnit,loc)
 
-    def postEffect(self,enemyUnit,loc:int):
-        self.ammotype.postEffect(enemyUnit,loc)
+    def postContact(self,enemyUnit,loc:int):
+        self.ammotype.postContact(enemyUnit,loc)
 
     def pierceSP(self):
         return self.ammotype.pierceSP
@@ -440,21 +440,25 @@ class Unit:
                 raise 'No source of damage, both dmg and weapon are null'
             dmg=weapon.getDamage()
         
+        contact=False
+
         if weapon is not None:
             dmg+=weapon.bonusDamage(self,loc)
             dmg=self.barrier.apply(loc,dmg,weapon.pierceBar())
             dmg=self.faceShield.apply(loc,dmg,weapon.pierceBar())
-            #contact armour for explo
+            if dmg>0:
+                contact=True
             dmg=self.armour.apply(loc,dmg,weapon.spMultiplier(self,loc),weapon.pierceSP())
         else:
             dmg=self.barrier.apply(loc,dmg,0)
             dmg=self.faceShield.apply(loc,dmg,0)
-            #contact armour for explo
+            if dmg>0:
+                contact=True
             dmg=self.armour.apply(loc,dmg,False,0)
 
         if dmg<=0 or self.injuryThreshold[loc]==0: # return early if no damage
-            if weapon is not None:
-                weapon.postEffect(self,loc)
+            if weapon is not None and contact:
+                weapon.postContact(self,loc)
             return False
 
         if self.cyber[loc] is None: # if not a cyberlimb
@@ -464,9 +468,9 @@ class Unit:
             dmg=max(1,floor(dmg)-self.btm) # apply btm
             if self.deflection:
                 dmg-=1
-                if dmg==0:
-                    if weapon is not None:
-                        weapon.postEffect(self,loc)
+                if dmg<=0:
+                    if weapon is not None and contact:
+                        weapon.postContact(self,loc)
                     return False
             self.wounds+=dmg # apply wounds
             
@@ -512,7 +516,7 @@ class Unit:
                 self.uncon=True #current assumption is that loss of limb is death
 
         if weapon is not None:
-            weapon.postEffect(self,loc)
+            weapon.postContact(self,loc)
 
         return self.uncon or self.critInjuries!=[]# otherwise as a last effort apply stun and return wether or not they die from it or gain a crit injury
     
