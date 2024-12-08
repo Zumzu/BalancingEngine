@@ -932,6 +932,16 @@ def drawSkull():
     else:
         screen.blit(skullIconOff,(548,289))
 
+heartIconOn=game.image.load('DT_Images/Toggles/heartIconOn.png').convert_alpha()
+heartIconOff=game.image.load('DT_Images/Toggles/heartIconOff.png').convert_alpha()
+heartToggleHitbox=game.Rect(609,281,63,63)
+def drawHeart():
+    frame(screen,609,281,63,63,BASEGREY)
+    if unit.decentralized:
+        screen.blit(heartIconOn,(617,289))
+    else:
+        screen.blit(heartIconOff,(617,289))
+
 faceshieldIconSP=game.image.load('DT_Images/Toggles/faceshieldIconSP.png').convert_alpha()
 faceshieldIconSDP=game.image.load('DT_Images/Toggles/faceshieldIconSDP.png').convert_alpha()
 faceshieldIconOff=game.image.load('DT_Images/Toggles/faceshieldIconOff.png').convert_alpha()
@@ -1786,6 +1796,9 @@ while True:
             if skullToggleHitbox.collidepoint(game.mouse.get_pos()):
                 unit.injuryThreshold[0]=12 if unit.injuryThreshold[0]!=12 else 8
 
+            if heartToggleHitbox.collidepoint(game.mouse.get_pos()):
+                unit.decentralized=not unit.decentralized
+
             if shotTimer>5000:
                 if luckRerollHitbox.collidepoint(game.mouse.get_pos()):
                     particles=[]
@@ -2010,6 +2023,7 @@ while True:
     drawDeflection()
     drawIgnore()
     drawSkull()
+    drawHeart()
     drawFaceshield()
 
     drawTabs()

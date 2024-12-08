@@ -370,6 +370,7 @@ class Unit:
         self.injuryThreshold=threshold
 
         self.deflection=False
+        self.decentralized=False
         self.ignoreWounds=0
 
     def __str__(self):
@@ -478,7 +479,7 @@ class Unit:
                 if 'incomplete' in injury.name.lower() and injury.loc==loc:
                     injury.breakIncomplete()
             
-            if dmg>=self.injuryThreshold[loc]:
+            if dmg>=self.injuryThreshold[loc] and not (self.decentralized and loc==1):
                 if dmg>=self.injuryThreshold[loc]*2:
                     self.critInjuries.append(doubleCritInjuryRoll(loc))
                 else:
@@ -575,6 +576,10 @@ class Unit:
         output=self.allNegative()
         for injury in self.critInjuries:
             output+=injury.stunUnconPenalty
+
+        if self.decentralized:
+            output-=3
+
         return output
     
     def allNegative(self):
