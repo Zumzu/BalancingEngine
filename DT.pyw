@@ -27,11 +27,10 @@ from DT_Tools.DataProcessors import processDamage
 
 #  TODO Soon
 #Tabss - mark heros
-#Lethality Intensifier
-#Decentralized
+#Pain editor
 #Resilience
 #Pacesetter
-#Pain editor
+#Lethality Intensifier
 
 #  TODO Later
 #load Hover preview
