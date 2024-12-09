@@ -475,28 +475,7 @@ class Unit:
                     return False
             self.wounds+=dmg # apply wounds
             
-            for injury in self.critInjuries:
-                if 'incomplete' in injury.name.lower() and injury.loc==loc:
-                    injury.breakIncomplete()
-            
-            if dmg>=self.injuryThreshold[loc] and not (self.decentralized and loc==1):
-                if dmg>=self.injuryThreshold[loc]*2:
-                    self.critInjuries.append(doubleCritInjuryRoll(loc))
-                else:
-                    self.critInjuries.append(critInjuryRoll(loc))
-                if loc>1 and self.injuryThreshold[loc]>1:
-                    self.injuryThreshold[loc]-=1
-
-            for injury in self.critInjuries:
-                if 'spinal' in injury.name.lower() or 'bonk' in injury.name.lower():
-                    self.stun=True
-                    self.uncon=True
-                elif 'headshot' in injury.name.lower():
-                    self.stun=True
-                    self.uncon=True
-                    self.dead=True
-                elif 'dismember' in injury.name.lower():
-                    self.injuryThreshold[injury.loc]=0
+            self._checkCritInjury(dmg,loc)
             
             if self.wounds>=WOUND_CAP:
                 self.uncon=True
@@ -521,6 +500,30 @@ class Unit:
 
         return self.uncon or self.critInjuries!=[]# otherwise as a last effort apply stun and return wether or not they die from it or gain a crit injury
     
+    def _checkCritInjury(self,dmg,loc):
+        for injury in self.critInjuries:
+            if 'incomplete' in injury.name.lower() and injury.loc==loc:
+                injury.breakIncomplete()
+        
+        if dmg>=self.injuryThreshold[loc] and not (self.decentralized and loc==1):
+            if dmg>=self.injuryThreshold[loc]*2:
+                self.critInjuries.append(doubleCritInjuryRoll(loc))
+            else:
+                self.critInjuries.append(critInjuryRoll(loc))
+            if loc>1 and self.injuryThreshold[loc]>1:
+                self.injuryThreshold[loc]-=1
+
+        for injury in self.critInjuries:
+            if 'spinal' in injury.name.lower() or 'bonk' in injury.name.lower():
+                self.stun=True
+                self.uncon=True
+            elif 'headshot' in injury.name.lower():
+                self.stun=True
+                self.uncon=True
+                self.dead=True
+            elif 'dismember' in injury.name.lower():
+                self.injuryThreshold[injury.loc]=0
+
     def directToBody(self,dmg:int):
         if dmg<=0: #return early if no damage
             return False
@@ -620,3 +623,20 @@ def bodyToBTM(body):
         return ceil(body/2-1)
     else:
         return floor(body/2-1)
+    
+def bodyToBonusMeleeDamage(body):
+    if body<=2:
+        return -2
+    elif body<=4:
+        return -1
+    elif body<=7:
+        return 0
+    elif body<=9:
+        return +1
+    elif body<=10:
+        return +2
+    elif body<=14:
+        return +3
+    else:
+        return +5
+    
