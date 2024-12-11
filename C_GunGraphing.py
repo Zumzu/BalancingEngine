@@ -2,8 +2,9 @@ import matplotlib.pyplot as plt
 import copy
 import numpy as np
 
-from Modules.Base import Unit
+from Modules.Base import Unit,Gun
 from Modules.Generator import generateGunList,findArmour
+from Modules.Ammo import *
         
 TTK_TURN_LIMIT=50
 def fightLength(attacker,dummy):
@@ -101,9 +102,14 @@ ITERATIONS=3000
 BODY=7
 COOL=7
 WS=15
-ARMOUR=findArmour([12,12,12,12,8,8])
+ARMOUR=findArmour([14,14,14,14,10,10])
 
 if __name__=="__main__":
     guns=generateGunList()
-    plotTTKonCost(guns,"bow")
+    guns.append(Gun("Hellfire",950,2,4,3,1,6,Hellfire()))
+    guns.append(Gun("Hellfire Dual",1900,0,4,3,2,12,Hellfire()))
+
+    guns.append(Gun("Super Hellfire",750,2,5,1,1,5,Incin()))
+    guns.append(Gun("Super Hellfire Dual",1400,0,5,1,2,10,Incin()))
+    plotTTKonCost(guns,"Hellfire")
     #plotInstakillOnCost(guns,"LMG")

@@ -36,7 +36,7 @@ class Incin(Ammo):
     def __init__(self):
         super().__init__()
         self.name="Incendiary Rounds"
-        self.desc="When dealing damage through:, +1D6 damage direct to body, (triggers an additional stun check)"
+        self.desc="When dealing damage through:, 1D6 damage direct to body, (triggers an additional stun check)"
     
     def onDamage(self,enemyUnit:Unit,loc:int):
         enemyUnit.directToBody(d6())
@@ -58,6 +58,15 @@ class Firecracker(Ammo):
 
     def postContact(self,enemyUnit:Unit,loc:int):
         enemyUnit.armour.sp[loc]=max(0,enemyUnit.armour.sp[loc]-(d6()+1))
+
+class Hellfire(Ammo):
+    def __init__(self):
+        super().__init__()
+        self.name="Hellfire Rounds"
+        self.desc="When dealing damage through:, 2D6 damage direct to body, (triggers an additional stun check)"
+    
+    def onDamage(self,enemyUnit:Unit,loc:int):
+        enemyUnit.directToBody(d6()+d6())
     
 class HEI(Ammo):
     def __init__(self):
