@@ -41,6 +41,8 @@ def generateGunList(name='D_Guns.csv'):
                 ammotype=Firecracker()
             elif "five-seven" in data[0].lower() or "mp7" in data[0].lower():
                 ammotype=AP()
+            elif "hellfire" in data[0].lower():
+                ammotype=Hellfire()
                 
             guns.append(Gun(data[0],int(data[1]),int(data[2]),int(data[3]),int(data[4]),int(data[5]),int(data[6]),ammotype))
         

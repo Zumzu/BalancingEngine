@@ -575,12 +575,21 @@ def drawUnitPreview(x:int,y:int,unitDict:dict):
         screen.blit(monospacedTiny.render("[?,?,?,?,?,?] Body: ? Cool: ?",True,BLACK),(x+3,y+25))
 
 
+autostunHitbox=game.Rect(474,63,126,43)
+
 stunUnconTextLabel=monospacedMedium.render("Modified DVs",True,BLACK)
 def drawModStunUncon():
-    frame(screen,471,60,134,50,BASEGREY)
+    frame(screen,471,60,134,50,BASEGREY if unit.autostun else WHITE)
     screen.blit(stunUnconTextLabel,(474,40))
     game.draw.line(screen,DARKGREY,(536,70),(536,100),2)
     
+    if unit.autostun:
+        autostunLabel=monospacedTiny.render(f"***AUTOSTUN***",True,DARKERGREY)
+        screen.blit(autostunLabel,autostunLabel.get_rect(center=(538,117)))
+    else:
+        autostunLabel=monospacedTiny.render(f"*** MANUAL ***",True,WOUNDCOLOR)
+        screen.blit(autostunLabel,autostunLabel.get_rect(center=(538,117)))
+
     screen.blit(stunBGImg,stunBGImg.get_rect(center=(504,85)))
     screen.blit(unconBGImg,unconBGImg.get_rect(center=(570,85)))
 
@@ -1819,6 +1828,9 @@ while True:
 
             if deflectionHitbox.collidepoint(game.mouse.get_pos()):
                 unit.deflection=not unit.deflection
+
+            if autostunHitbox.collidepoint(game.mouse.get_pos()):
+                unit.autostun=not unit.autostun
 
             if ignoreHitbox.collidepoint(game.mouse.get_pos()):
                 if unit.ignoreWounds==0:

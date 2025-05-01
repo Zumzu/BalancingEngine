@@ -373,6 +373,8 @@ class Unit:
         self.decentralized=False
         self.ignoreWounds=0
 
+        self.autostun=True
+
     def __str__(self):
         i=0
         output=f"{self.weapon.name}  -  {str(self.weapon)}  ({self.multiPenalty})\n{self.armour}{'  -STUN-' if self.stunned else ''}{'  ##UNCON##' if self.uncon else ''}\nCyber: ("
@@ -484,13 +486,15 @@ class Unit:
             if weapon is not None:
                 weapon.onDamage(self,loc)
 
-            self.rollStun()
+            if self.autostun:
+                self.rollStun()
 
         else: #limb is cyberlimb
             if weapon is not None:
                 if weapon.cybercontrol():
                     dmg*=2
-                    self.rollStun()
+                    if self.autostun:
+                        self.rollStun()
             self.cyber[loc].damage(dmg)
             if self.cyber[loc].broken:
                 self.uncon=True #current assumption is that loss of limb is death
@@ -534,7 +538,11 @@ class Unit:
 
         if self.uncon:
             return True
-        return self.rollStun()
+        
+        if self.autostun:
+            return self.rollStun()
+        
+        return False
         
     def multiAction(self):
         self.multiPenalty += 2+self.armour.mv
