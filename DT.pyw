@@ -1169,6 +1169,8 @@ class Tab:
         self.luck=False
         self.barrier=False
 
+        self.wild=False
+
     def saveState(self):
         self.loadLog=loadLog
         self.logs=logs
@@ -1200,6 +1202,8 @@ duplicateImg=game.image.load('DT_Images/Misc/duplicate.png').convert_alpha()
 duplicateImgHighlight=game.image.load('DT_Images/Misc/duplicate.png').convert_alpha()
 fill(duplicateImgHighlight,DARKGREEN)
 
+spadeImg=game.image.load('DT_Images/Misc/spade.png').convert_alpha()
+
 tabScrollIndex=0
 tabsHitbox=game.Rect(760,105,175,504)
 
@@ -1215,9 +1219,14 @@ def drawTabs():
         y=553-i*56
         tabs[iOffset].mainHitbox=game.Rect(x,y,175,52)
         tabs[iOffset].outerHitbox=game.Rect(x-80,y,255,52)
-        tabs[iOffset].duplicateHitbox=duplicateImg.get_rect(topleft=(x-32,y+12))
         tabs[iOffset].deleteHitbox=deleteImg.get_rect(topleft=(x-64,y+12))
-        
+        if not tabs[iOffset].wild:
+            tabs[iOffset].duplicateHitbox=duplicateImg.get_rect(topleft=(x-32,y+12))
+        else:
+            tabs[iOffset].duplicateHitbox=game.Rect(x-35,y+5,35,42)
+            frame(screen,x-35,y+5,41,42,WHITE if tabs[iOffset].duplicateHitbox.collidepoint(game.mouse.get_pos()) else BASEGREY)
+            screen.blit(spadeImg,(x-28,y+14))
+
         if tabIndex==iOffset:
             frameSelect(screen,x,y,175,52,WHITE if game.Rect(x,y,175,52).collidepoint(game.mouse.get_pos()) else LIGHTGREY)
         else:
@@ -1251,10 +1260,11 @@ def drawTabs():
             screen.blit(stunTinyImg,(x+6,y+22))
         
         if tabs[iOffset].outerHitbox.collidepoint(game.mouse.get_pos()):
-            if tabs[iOffset].duplicateHitbox.collidepoint(game.mouse.get_pos()):
-                screen.blit(duplicateImgHighlight,(x-32,y+12))
-            else:
-                screen.blit(duplicateImg,(x-32,y+12))
+            if not tabs[iOffset].wild:
+                if tabs[iOffset].duplicateHitbox.collidepoint(game.mouse.get_pos()):
+                    screen.blit(duplicateImgHighlight,(x-32,y+12))
+                else:
+                    screen.blit(duplicateImg,(x-32,y+12))
 
             if tabs[iOffset].deleteHitbox.collidepoint(game.mouse.get_pos()):
                 screen.blit(deleteImgHighlight,(x-64,y+12))
@@ -1848,7 +1858,7 @@ while True:
                     tabIndex=i
 
             for i in range(len(tabs)):
-                if tabs[i].duplicateHitbox.collidepoint(game.mouse.get_pos()):
+                if tabs[i].duplicateHitbox.collidepoint(game.mouse.get_pos()) and not tabs[i].wild:
                     duplicateTabAt(i)
                     break
                 elif tabs[i].deleteHitbox.collidepoint(game.mouse.get_pos()):
@@ -1890,6 +1900,12 @@ while True:
 
             if faceshieldToggleHitbox.collidepoint(game.mouse.get_pos()):
                 unit.faceShield.sp=0
+
+            for i in range(len(tabs)):
+                if tabs[i].wild and tabs[i].duplicateHitbox is not None and tabs[i].duplicateHitbox.collidepoint(game.mouse.get_pos()):
+                    tabs[i].wild=False
+                elif tabs[i].mainHitbox is not None and tabs[i].mainHitbox.collidepoint(game.mouse.get_pos()):
+                    tabs[i].wild=not tabs[i].wild
 
         if event.type == game.MOUSEWHEEL:
             if coolHitbox.collidepoint(game.mouse.get_pos()):
