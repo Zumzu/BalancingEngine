@@ -1170,6 +1170,7 @@ class Tab:
         self.barrier=False
 
         self.wild=False
+        self.iconIndex=0
 
     def saveState(self):
         self.loadLog=loadLog
@@ -1202,7 +1203,12 @@ duplicateImg=game.image.load('DT_Images/Misc/duplicate.png').convert_alpha()
 duplicateImgHighlight=game.image.load('DT_Images/Misc/duplicate.png').convert_alpha()
 fill(duplicateImgHighlight,DARKGREEN)
 
-spadeImg=game.image.load('DT_Images/Misc/spade.png').convert_alpha()
+profileImgList=[]
+profileImgList.append(game.image.load('DT_Images/Profile/spade.png').convert_alpha())
+profileImgList.append(game.image.load('DT_Images/Profile/cross.png').convert_alpha())
+profileImgList.append(game.image.load('DT_Images/Profile/matt.png').convert_alpha())
+profileImgList.append(game.image.load('DT_Images/Profile/bag.png').convert_alpha())
+profileImgList.append(game.image.load('DT_Images/Profile/feather.png').convert_alpha())
 
 tabScrollIndex=0
 tabsHitbox=game.Rect(760,105,175,504)
@@ -1225,7 +1231,7 @@ def drawTabs():
         else:
             tabs[iOffset].duplicateHitbox=game.Rect(x-35,y+5,35,42)
             frame(screen,x-35,y+5,41,42,WHITE if tabs[iOffset].duplicateHitbox.collidepoint(game.mouse.get_pos()) else BASEGREY)
-            screen.blit(spadeImg,(x-28,y+14))
+            screen.blit(profileImgList[tabs[iOffset].iconIndex],(x-28,y+14))
 
         if tabIndex==iOffset:
             frameSelect(screen,x,y,175,52,WHITE if game.Rect(x,y,175,52).collidepoint(game.mouse.get_pos()) else LIGHTGREY)
@@ -1940,6 +1946,10 @@ while True:
             for i in range(6):
                 if sdpHitboxes[i].collidepoint(game.mouse.get_pos()):
                     unit.cyber[i].setSDP(max(min(unit.cyber[i].maxSdp,unit.cyber[i].sdp+event.y),0))
+
+            for i in range(len(tabs)):
+                if tabs[i].wild and tabs[i].duplicateHitbox is not None and tabs[i].duplicateHitbox.collidepoint(game.mouse.get_pos()):
+                    tabs[i].iconIndex=(tabs[i].iconIndex-event.y)%len(profileImgList)
 
         if event.type == game.KEYDOWN and event.key == game.K_RETURN:
             if damageSelected or multiplierSelected:

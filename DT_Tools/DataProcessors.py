@@ -25,6 +25,6 @@ def processDamage(input):
                 dmg+=int(item)
       
     except:
-        raise "@@FAILED DMG EVAL@@"
+        print("@@FAILED DMG EVAL@@")
 
     return (dmg,rolled,more)
