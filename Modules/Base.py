@@ -373,7 +373,8 @@ class Unit:
         self.decentralized=False
         self.ignoreWounds=0
 
-        self.autostun=True
+        self.stunCallback=None
+        self.unconCallback=None
 
     def __str__(self):
         i=0
@@ -595,19 +596,28 @@ class Unit:
         return output
 
     def rollStun(self):
-        if not self.autostun:
-            return False
-
-        if(not self.stunned):
-            if(d10E()>max(self.body,self.cool)-self.stunMod()):
+        if not self.stunned:
+            if self.stunCallback is not None:
+                self.stunCallback(self.stunDV())
+            elif d10E() < self.stunDV():
                 self.stunned=True
 
-        if(self.stunned and self.wounds-self.ignoreWounds>15):
-            if(d10E()>self.body-self.unconMod()):
+        if not self.uncon and self.stunned and self.wounds-self.ignoreWounds>15:
+            if self.unconCallback is not None:
+                self.unconCallback(self.unconDV())
+                if self.uncon:
+                    return True
+            elif d10E() < self.unconDV():
                 self.uncon=True
                 return True
 
         return False
+    
+    def stunDV(self):
+        return 11+self.stunMod()-max(self.body,self.cool)
+    
+    def unconDV(self):
+        return 11+self.unconMod()-self.body
 
     def unstun(self): # unit attempts unstun, if they succeed stunned is set to false and this function returns true if they went from stunned to unstunned
         if(self.stunned):

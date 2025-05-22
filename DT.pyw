@@ -10,7 +10,7 @@ from numpy import dot
 from Modules.Base import Unit,Weapon,Ammo,bodyToBTM,CyberLimb,Barrier,FragileBarrier
 from Modules.Generator import findGun,findArmour,generateUnitList
 from Modules.Ammo import *
-from Modules.Dice import locationDie
+from Modules.Dice import locationDie,d10E
 from random import randint,uniform,random,choice,normalvariate
 
 from DT_Tools.ImgTools import fill,fill100,fill255,modAlpha,rot_center, dudeImgs,smallDudeImgs,shieldImgs
@@ -579,11 +579,11 @@ autostunHitbox=game.Rect(474,63,126,43)
 
 stunUnconTextLabel=monospacedMedium.render("Modified DVs",True,BLACK)
 def drawModStunUncon():
-    frame(screen,471,60,134,50,BASEGREY if unit.autostun else WHITE)
+    frame(screen,471,60,134,50,BASEGREY if tabs[tabIndex].autostun else WHITE)
     screen.blit(stunUnconTextLabel,(474,40))
     game.draw.line(screen,DARKGREY,(536,70),(536,100),2)
     
-    if unit.autostun:
+    if tabs[tabIndex].autostun:
         autostunLabel=monospacedTiny.render(f"***AUTOSTUN***",True,DARKERGREY)
         screen.blit(autostunLabel,autostunLabel.get_rect(center=(538,117)))
     else:
@@ -593,8 +593,8 @@ def drawModStunUncon():
     screen.blit(stunBGImg,stunBGImg.get_rect(center=(504,85)))
     screen.blit(unconBGImg,unconBGImg.get_rect(center=(570,85)))
 
-    stunTextLabel=monospacedHuge.render(f"{11+unit.stunMod()-max(unit.body,unit.cool)}",True,BLACK) if not hideActive else monospacedHuge.render("?",True,BLACK)
-    unconTextLabel=monospacedHuge.render(f"{11+unit.unconMod()-unit.body}",True,BLACK) if not hideActive else monospacedHuge.render("?",True,BLACK)
+    stunTextLabel=monospacedHuge.render(f"{unit.stunDV()}",True,BLACK) if not hideActive else monospacedHuge.render("?",True,BLACK)
+    unconTextLabel=monospacedHuge.render(f"{unit.unconDV()}",True,BLACK) if not hideActive else monospacedHuge.render("?",True,BLACK)
     screen.blit(stunTextLabel,stunTextLabel.get_rect(center=(504,87)))
     screen.blit(unconTextLabel,unconTextLabel.get_rect(center=(570,87)))
 
@@ -1013,7 +1013,7 @@ def drawIgnore():
 
 locationTextNames=["Head","Torso","L.Arm","R.Arm","L.Leg","R.Leg"]
 class Log:
-    def __init__(self,loc:int,dmgTotal:int,dmgRolled:list[int],more:int,oldUnit:Unit,newUnit:Unit,ammoType:Ammo,countLabel:str,miss:bool) -> None:
+    def __init__(self,loc:int,dmgTotal:int,dmgRolled:list[int],more:int,oldUnit:Unit,newUnit:Unit,ammoType:Ammo,countLabel:str,miss:bool,stunHistory:list[tuple]) -> None:
         self.loc=loc
         self.dmgTotal=dmgTotal
         self.dmgRolled=dmgRolled
@@ -1021,6 +1021,7 @@ class Log:
         self.ammoType=ammoType
         self.countLabel=countLabel
         self.miss=miss
+        self.stunHistory=stunHistory
 
         self.through=newUnit.wounds-oldUnit.wounds
         for i in range(6):
@@ -1065,8 +1066,24 @@ class Log:
                 line=monospacedMediumLarge.render(f"= {self.dmgTotal} to {locationTextNames[self.loc]}",True,black)
         else:
             line=monospacedMediumLarge.render(f"{self.dmgTotal} to {locationTextNames[self.loc]}",True,black)
-
         screen.blit(line,(x+offset,y))
+
+        earlyBreak=line.get_width()+offset>280
+        print(line.get_width()+offset)
+
+        if self.stunHistory != []:
+            offset=382
+            for i in reversed(range(len(self.stunHistory))): #history in form (isStun, roll, DV)
+                outer=monospacedMedium.render(f"<{' '*len(str(self.stunHistory[i][1]))}>",True,DARKYELLOW if self.stunHistory[i][0] else DARKERWOUNDCOLOR)
+                w=outer.get_width()
+                screen.blit(outer,(x+offset-w,y))
+                inner=monospacedMedium.render(f" {self.stunHistory[i][1]} ",True,WOUNDCOLOR if self.stunHistory[i][1]<self.stunHistory[i][2] else BLACK)
+                screen.blit(inner,(x+offset-w,y))
+                offset-=w+4
+                
+                if earlyBreak:
+                    break
+                
         offset=0
         if self.miss:
             screen.blit(monospacedMedium.render(f"Missed",True,DARKGREY),(x,y+23))
@@ -1171,6 +1188,8 @@ class Tab:
 
         self.wild=False
         self.iconIndex=0
+
+        self.autostun=True
 
     def saveState(self):
         self.loadLog=loadLog
@@ -1625,6 +1644,29 @@ def deleteTabAt(index:int):
 def addUnnamedTab():
     tabs.append(Tab(LoadLog(Unit(None,findArmour([14,14,14,14,10,10]),0,8,8,cyber=[0,0,0,0,0,0],threshold=[8,15,8,8,8,8]),'Unnamed'),[]))
 
+stunBuffer=[]
+
+def stunHandler(DV):
+    if not tabs[tabIndex].autostun:
+        return False
+
+    roll=d10E()
+    if roll < DV:
+        unit.stunned=True
+
+    stunBuffer.append((True,roll,DV))
+
+def unconHandler(DV):
+    if not tabs[tabIndex].autostun:
+        return False
+
+    roll=d10E()
+    if roll < DV:
+        unit.uncon=True
+
+    stunBuffer.append((False,roll,DV))
+    
+
 
 def shoot():
     global shotTimer
@@ -1648,9 +1690,13 @@ def shoot():
         shotQueue.insert(0,(loc,dmg,rolls,more,ammoIndex))
 
 def runShot():
-    global shotQueue,logScrollIndex,shotTimer,shieldWiggle,dropWiggle
+    global shotQueue,logScrollIndex,shotTimer,shieldWiggle,dropWiggle,stunBuffer
     shotLoc,shotDmg,shotRolls,shotMore,shotAmmoIndex=shotQueue[-1]
     shotQueue=shotQueue[:-1]
+
+    if unit.stunCallback is None or unit.unconCallback is None:
+        unit.stunCallback = stunHandler
+        unit.unconCallback = unconHandler
 
     if shotLoc==-2:
         particles.append(Particle((281,139),'cross'))
@@ -1666,7 +1712,8 @@ def runShot():
         unit.damage(weapon=weapon,dmg=shotDmg,loc=shotLoc) # RUN DAMAGE
         if oldUnit.wounds==unit.wounds and not oldUnit.uncon and unit.uncon: # for engine cyber generalization
             unit.uncon=False
-        logs.insert(0,Log(shotLoc,shotDmg,shotRolls,shotMore,oldUnit,unit,ammoTypes[shotAmmoIndex],f'{len(logs)+1}',oldUnit.injuryThreshold[shotLoc]==0))
+        logs.insert(0,Log(shotLoc,shotDmg,shotRolls,shotMore,oldUnit,unit,ammoTypes[shotAmmoIndex],f'{len(logs)+1}',oldUnit.injuryThreshold[shotLoc]==0,stunBuffer))
+        stunBuffer=[]
 
         if oldUnit.barrier.sp>0 and unit.barrier.covers[shotLoc]:
             shieldWiggle=10
@@ -1846,7 +1893,7 @@ while True:
                 unit.deflection=not unit.deflection
 
             if autostunHitbox.collidepoint(game.mouse.get_pos()):
-                unit.autostun=not unit.autostun
+                tabs[tabIndex].autostun=not tabs[tabIndex].autostun
 
             if ignoreHitbox.collidepoint(game.mouse.get_pos()):
                 if unit.ignoreWounds==0:
