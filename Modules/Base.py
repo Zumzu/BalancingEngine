@@ -486,15 +486,13 @@ class Unit:
             if weapon is not None:
                 weapon.onDamage(self,loc)
 
-            if self.autostun:
-                self.rollStun()
+            self.rollStun()
 
         else: #limb is cyberlimb
             if weapon is not None:
                 if weapon.cybercontrol():
                     dmg*=2
-                    if self.autostun:
-                        self.rollStun()
+                    self.rollStun()
             self.cyber[loc].damage(dmg)
             if self.cyber[loc].broken:
                 self.uncon=True #current assumption is that loss of limb is death
@@ -539,10 +537,7 @@ class Unit:
         if self.uncon:
             return True
         
-        if self.autostun:
-            return self.rollStun()
-        
-        return False
+        return self.rollStun()
         
     def multiAction(self):
         self.multiPenalty += 2+self.armour.mv
@@ -600,6 +595,9 @@ class Unit:
         return output
 
     def rollStun(self):
+        if not self.autostun:
+            return False
+
         if(not self.stunned):
             if(d10E()>max(self.body,self.cool)-self.stunMod()):
                 self.stunned=True

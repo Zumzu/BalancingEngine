@@ -1870,6 +1870,8 @@ while True:
                 elif tabs[i].deleteHitbox.collidepoint(game.mouse.get_pos()):
                     deleteTabAt(i)
                     break
+                elif tabs[i].wild and tabs[i].duplicateHitbox is not None and tabs[i].duplicateHitbox.collidepoint(game.mouse.get_pos()):
+                    tabs[i].iconIndex=(tabs[i].iconIndex+1)%len(profileImgList)
 
             if addTabHitbox.collidepoint(game.mouse.get_pos()):
                 addUnnamedTab()
@@ -1946,10 +1948,6 @@ while True:
             for i in range(6):
                 if sdpHitboxes[i].collidepoint(game.mouse.get_pos()):
                     unit.cyber[i].setSDP(max(min(unit.cyber[i].maxSdp,unit.cyber[i].sdp+event.y),0))
-
-            for i in range(len(tabs)):
-                if tabs[i].wild and tabs[i].duplicateHitbox is not None and tabs[i].duplicateHitbox.collidepoint(game.mouse.get_pos()):
-                    tabs[i].iconIndex=(tabs[i].iconIndex-event.y)%len(profileImgList)
 
         if event.type == game.KEYDOWN and event.key == game.K_RETURN:
             if damageSelected or multiplierSelected:
