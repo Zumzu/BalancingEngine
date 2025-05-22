@@ -1236,10 +1236,14 @@ profileImgList.append(game.image.load('DT_Images/Profile/matt.png').convert_alph
 profileImgList.append(game.image.load('DT_Images/Profile/bag.png').convert_alpha())
 profileImgList.append(game.image.load('DT_Images/Profile/feather.png').convert_alpha())
 
+profileNameList=['Wildcard','Nathan','Matt','Mikhail','Zane']
+
 tabScrollIndex=0
 tabsHitbox=game.Rect(760,105,175,504)
 
 def drawTabs():
+    global infoText
+
     for tab in tabs:
         tab.mainHitbox=None
     for i in range(8):
@@ -1258,6 +1262,8 @@ def drawTabs():
             tabs[iOffset].duplicateHitbox=game.Rect(x-35,y+5,35,42)
             frame(screen,x-35,y+5,41,42,WHITE if tabs[iOffset].duplicateHitbox.collidepoint(game.mouse.get_pos()) else BASEGREY)
             screen.blit(profileImgList[tabs[iOffset].iconIndex],(x-28,y+14))
+            if tabs[iOffset].duplicateHitbox.collidepoint(game.mouse.get_pos()):
+                infoText=profileNameList[tabs[iOffset].iconIndex]
 
         if tabIndex==iOffset:
             frameSelect(screen,x,y,175,52,WHITE if game.Rect(x,y,175,52).collidepoint(game.mouse.get_pos()) else LIGHTGREY)
@@ -1423,14 +1429,14 @@ class Particle:
         
         elif 'confetti' in self.type:
             self.surface=choice(confettiImgs)
-            self.lifetime=250+randint(-30,30)
+            self.lifetime=270+randint(-30,30)
             self.dy=normalvariate(-40,30)
             self.dx=normalvariate(0,50)
             
             self.damp=1.22
         
         elif self.type=='bonus':
-            self.lifetime=60
+            self.lifetime=120
 
         elif 'trace' in self.type:
             if 'yellow' in self.type:
@@ -1618,23 +1624,8 @@ def loadFromDict():
 
 def duplicateTabAt(index:int):
     newTab=deepcopy(tabs[index])
-    lastChar=newTab.loadLog.desc[-1]
-    if lastChar.isnumeric():
-        count=1
-        newName=newTab.loadLog.desc[:-2]
-        for tab in tabs:
-            if tab.loadLog.desc[:-2]==newName:
-                count+=1
-        newTab.loadLog.desc=newTab.loadLog.desc[:-1]+str(count)
-        for i in reversed(range(len(tabs))):
-            if tabs[i].loadLog.desc[:-2]==newName:
-                index=i
-                break
-    else:
-        tabs[index].loadLog.desc+=' 1'
-        newTab.loadLog.desc+=' 2'
-        loadLogInput.value=loadLog.desc.capitalize()
-        loadLogInput.manager.cursor_pos=20
+    loadLogInput.value=loadLog.desc.capitalize()
+    loadLogInput.manager.cursor_pos=20
     tabs.insert(index+1,newTab)
 
 def deleteTabAt(index:int):
