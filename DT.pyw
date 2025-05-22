@@ -5,7 +5,6 @@ from colour import Color
 from copy import deepcopy
 from os import system
 from math import cos,sin,pi
-from numpy import dot
 
 from Modules.Base import Unit,Weapon,Ammo,bodyToBTM,CyberLimb,Barrier,FragileBarrier
 from Modules.Generator import findGun,findArmour,generateUnitList
@@ -1068,22 +1067,30 @@ class Log:
             line=monospacedMediumLarge.render(f"{self.dmgTotal} to {locationTextNames[self.loc]}",True,black)
         screen.blit(line,(x+offset,y))
 
-        earlyBreak=line.get_width()+offset>280
-        print(line.get_width()+offset)
-
         if self.stunHistory != []:
-            offset=382
+            earlyBreak=line.get_width()+offset>306 and self.stunHistory[0][3]
+
+            offset=376
             for i in reversed(range(len(self.stunHistory))): #history in form (isStun, roll, DV)
-                outer=monospacedMedium.render(f"<{' '*len(str(self.stunHistory[i][1]))}>",True,DARKYELLOW if self.stunHistory[i][0] else DARKERWOUNDCOLOR)
+                if not self.stunHistory[i][3]:
+                    outer=monospacedMedium.render(f"≡{' '*len(str(self.stunHistory[i][2]))}≡",True,DARKYELLOW if self.stunHistory[i][0] else DARKWOUNDCOLOR)
+                elif self.stunHistory[i][0]:
+                    outer=monospacedMedium.render(f"«{' '*len(str(self.stunHistory[i][1]))}»",True,DARKYELLOW)
+                else:
+                    outer=monospacedMedium.render(f"{'{'}{' '*len(str(self.stunHistory[i][1]))}{'}'}",True,DARKWOUNDCOLOR)
                 w=outer.get_width()
-                screen.blit(outer,(x+offset-w,y))
-                inner=monospacedMedium.render(f" {self.stunHistory[i][1]} ",True,WOUNDCOLOR if self.stunHistory[i][1]<self.stunHistory[i][2] else BLACK)
-                screen.blit(inner,(x+offset-w,y))
+                screen.blit(outer,(x+offset-w,y if self.stunHistory[0][3] else y+23))
+
+                if self.stunHistory[i][3]:
+                    inner=monospacedMedium.render(f" {self.stunHistory[i][1]} ",True,WOUNDCOLOR if self.stunHistory[i][1]<self.stunHistory[i][2] else DARKGREEN)
+                else:
+                    inner=monospacedMedium.render(f" {self.stunHistory[i][2]} ",True,BLACK)
+                screen.blit(inner,(x+offset-w,y if self.stunHistory[0][3] else y+23))
                 offset-=w+4
-                
+
                 if earlyBreak:
                     break
-                
+
         offset=0
         if self.miss:
             screen.blit(monospacedMedium.render(f"Missed",True,DARKGREY),(x,y+23))
@@ -1646,25 +1653,28 @@ def addUnnamedTab():
 
 stunBuffer=[]
 
-def stunHandler(DV):
+def stunHandler(stunDV,unconDV):
     if not tabs[tabIndex].autostun:
+        stunBuffer.append((True,-69,stunDV,False))
+        stunBuffer.append((False,-69,unconDV,False))
         return False
 
     roll=d10E()
-    if roll < DV:
+    if roll < stunDV:
         unit.stunned=True
 
-    stunBuffer.append((True,roll,DV))
+    stunBuffer.append((True,roll,stunDV,True))
 
 def unconHandler(DV):
     if not tabs[tabIndex].autostun:
+        stunBuffer.append((False,-69,DV,False))
         return False
 
     roll=d10E()
     if roll < DV:
         unit.uncon=True
 
-    stunBuffer.append((False,roll,DV))
+    stunBuffer.append((False,roll,DV,True))
     
 
 

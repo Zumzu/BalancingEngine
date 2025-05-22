@@ -598,7 +598,7 @@ class Unit:
     def rollStun(self):
         if not self.stunned:
             if self.stunCallback is not None:
-                self.stunCallback(self.stunDV())
+                self.stunCallback(self.stunDV(),self.unconDV())
             elif d10E() < self.stunDV():
                 self.stunned=True
 
