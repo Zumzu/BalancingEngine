@@ -25,7 +25,6 @@ from DT_Tools.DataProcessors import processDamage
 #(An older iteration of this was in unity and the overhead was UNREAL)
 
 #  TODO Soon
-#Tabss - mark heros
 #Pain editor
 #Resilience
 #Pacesetter
@@ -812,6 +811,17 @@ def drawWounds():
             infoText='This unit is super not alive'
         else:
             infoText=f'@DC-{10+2*((unit.wounds-1)//5)}, First Aid Time: {5 if unit.wounds<=25 else 10}m, Surgery Time: {5+5*((unit.wounds-1)//10)}m'
+
+        totalSp=totalSpMax=totalSdp=totalSdpMax=0
+        for i in range(6):
+            totalSp+=unit.armour.sp[i]
+            totalSpMax+=unit.armour.spMax[i]
+            totalSdp+=0 if unit.cyber[i] is None else unit.cyber[i].sdp
+            totalSdpMax+=0 if unit.cyber[i] is None else unit.cyber[i].maxSdp
+        missingSp=totalSpMax-totalSp
+        missingSdp=totalSdpMax-totalSdp
+
+        infoText+=f',  , @Missing SP: {missingSp}, ^[${missingSp*10}|${missingSp*20}],  , @Missing SDP: {missingSdp}, ^[${missingSdp*5}|${missingSdp*10}]'
 
 
 def generateWoundHitboxes(startX:int,startY:int,endX:int,buffer:int):
