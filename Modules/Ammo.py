@@ -29,8 +29,8 @@ class TMJ(Ammo):
     def __init__(self):
         super().__init__()
         self.name="Total Metal Jacket"
-        self.desc="Pierces 15sp of barriers"
-        self.pierceBar=15
+        self.desc="Pierces 16sp of barriers"
+        self.pierceBar=16
 
 class Incin(Ammo):
     def __init__(self):
