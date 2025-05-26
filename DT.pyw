@@ -690,11 +690,7 @@ def drawPew():
 lethalityHitbox=game.Rect(1368,729,30,30)
 def drawLethality():
     global infoText
-    if lethalityHitbox.collidepoint(game.mouse.get_pos()):
-        frame(screen,1368,729,30,30,WHITE)
-        infoText=f'Lethality, Intensifier, {"@ACTIVE" if lethality else "Inactive"}'
-    else:
-        frame(screen,1368,729,30,30,WHITE if lethality else BASEGREY)
+    frame(screen,1368,729,30,30,WHITE if lethality or lethalityHitbox.collidepoint(game.mouse.get_pos()) else BASEGREY)
 
     screen.blit(monospacedLarge.render("L",True,BLACK),(1371,731))
     if lethality:
