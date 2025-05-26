@@ -687,6 +687,19 @@ def drawPew():
     else:
         screen.blit(pewPewTextLabel,(DAMAGEX+225,DAMAGEY+47))
 
+lethalityHitbox=game.Rect(1368,729,30,30)
+def drawLethality():
+    global infoText
+    if lethalityHitbox.collidepoint(game.mouse.get_pos()):
+        frame(screen,1368,729,30,30,WHITE)
+        infoText=f'Lethality, Intensifier, {"@ACTIVE" if lethality else "Inactive"}'
+    else:
+        frame(screen,1368,729,30,30,WHITE if lethality else BASEGREY)
+
+    screen.blit(monospacedLarge.render("L",True,BLACK),(1371,731))
+    if lethality:
+        screen.blit(monospacedLarge.render("×",True,DARKWOUNDCOLOR),(1378,728))
+
 ammoBoldTextCache={}
 ammoFaintTextCache={}
 
@@ -1720,7 +1733,7 @@ def runShot():
     else:
         weapon.ammotype=ammoTypes[shotAmmoIndex]
         oldUnit=deepcopy(unit)
-        unit.damage(weapon=weapon,dmg=shotDmg,loc=shotLoc) # RUN DAMAGE
+        unit.damage(weapon=weapon,dmg=shotDmg,loc=shotLoc,lethality=lethality) # RUN DAMAGE
         if oldUnit.wounds==unit.wounds and not oldUnit.uncon and unit.uncon: # for engine cyber generalization
             unit.uncon=False
         logs.insert(0,Log(shotLoc,shotDmg,shotRolls,shotMore,oldUnit,unit,ammoTypes[shotAmmoIndex],f'{len(logs)+1}',oldUnit.injuryThreshold[shotLoc]==0,stunBuffer))
@@ -1746,6 +1759,8 @@ def runShot():
                 particles.append(Particle(woundPoints[shotLoc],'tink'))
         logScrollIndex=0
         shotTimer=int(SHOTDELAY*30)
+
+lethality=False
 
 shotTimer=0
 traceTimer=0
@@ -1945,6 +1960,9 @@ while True:
                 else:
                     unit.faceShield=Barrier(0,[True,False,False,False,False,False])
 
+            if lethalityHitbox.collidepoint(game.mouse.get_pos()):
+                lethality=not lethality
+
         if event.type == game.MOUSEBUTTONDOWN and game.mouse.get_pressed()[2]:
             for i in range(6):
                 if spHitboxes[i].collidepoint(game.mouse.get_pos()):
@@ -2133,6 +2151,7 @@ while True:
     drawMultiplier()
     drawPew()
     ammoSpinner()
+    drawLethality()
 
     for particle in particles:
         particle.update()

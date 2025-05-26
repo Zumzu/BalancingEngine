@@ -435,7 +435,7 @@ class Unit:
         self.weapon.attack(self,enemy)
         return enemy.uncon
         
-    def damage(self,weapon=None,loc:int=-1,dmg:int=-1): # returns true if unit died or went uncon, false otherwise
+    def damage(self,weapon=None,loc:int=-1,dmg:int=-1,lethality=False): # returns true if unit died or went uncon, false otherwise
         if loc==-1:
             loc=locationDie()
 
@@ -478,7 +478,7 @@ class Unit:
                     return False
             self.wounds+=dmg # apply wounds
             
-            self._checkCritInjury(dmg,loc)
+            self._checkCritInjury(dmg,loc,lethality)
             
             if self.wounds>=WOUND_CAP:
                 self.uncon=True
@@ -503,13 +503,14 @@ class Unit:
 
         return self.uncon or self.critInjuries!=[]# otherwise as a last effort apply stun and return wether or not they die from it or gain a crit injury
     
-    def _checkCritInjury(self,dmg,loc):
+    def _checkCritInjury(self,dmg,loc,lethality):
         for injury in self.critInjuries:
             if 'incomplete' in injury.name.lower() and injury.loc==loc:
                 injury.breakIncomplete()
-        
-        if dmg>=self.injuryThreshold[loc] and not (self.decentralized and loc==1):
-            if dmg>=self.injuryThreshold[loc]*2:
+
+        target=self.injuryThreshold[loc]-2 if lethality and loc>0 else self.injuryThreshold[loc]
+        if dmg>=target and not (self.decentralized and loc==1):
+            if dmg>=target*2:
                 self.critInjuries.append(doubleCritInjuryRoll(loc))
             else:
                 self.critInjuries.append(critInjuryRoll(loc))
