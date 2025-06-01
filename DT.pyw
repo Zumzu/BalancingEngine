@@ -1254,8 +1254,9 @@ profileImgList.append(game.image.load('DT_Images/Profile/cross.png').convert_alp
 profileImgList.append(game.image.load('DT_Images/Profile/matt.png').convert_alpha())
 profileImgList.append(game.image.load('DT_Images/Profile/bag.png').convert_alpha())
 profileImgList.append(game.image.load('DT_Images/Profile/feather.png').convert_alpha())
+profileImgList.append(game.image.load('DT_Images/Profile/max.png').convert_alpha())
 
-profileNameList=['Wildcard','Nathan','Matt','Mikhail','Zane']
+profileNameList=['Wildcard','Nathan','Matt','Mikhail','Zane','Max']
 
 tabScrollIndex=0
 tabsHitbox=game.Rect(760,105,175,504)
