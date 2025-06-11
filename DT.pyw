@@ -24,18 +24,19 @@ from DT_Tools.DataProcessors import processDamage
 #The choice of pygame was largely with the intention of making a portable, relatively lightweight UI that supports things like particles and animation so long as I write them myself
 #(An older iteration of this was in unity and the overhead was UNREAL)
 
+#  TODO Bugs
+#Deletion and duplication not respecting scroll
+#Barrier not clearing
+
 #  TODO Soon
+#Refresh DB
+
+#  TODO Later
+#Push melee/gun/armour list to firestore eventually
+#Extended Track
 #Pain editor
 #Resilience
 #Pacesetter
-#Lethality Intensifier
-
-#  TODO Later
-#load Hover preview
-#Graveyard (this will fix a bug in tab auto naming logic too)
-#Push melee/gun/armour list to firestore eventually
-#SO much refactoring to a real code format
-#Sound?
 
 
 WIDTH=1429 #actively clean multiple of hexagon backgrounds native resolution

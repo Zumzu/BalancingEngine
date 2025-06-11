@@ -101,15 +101,10 @@ def plotInstakillOnCost(guns,mark:str):
 ITERATIONS=3000
 BODY=7
 COOL=7
-WS=15
-ARMOUR=findArmour([14,14,14,14,10,10])
+WS=12
+ARMOUR=findArmour([10,10,10,10,8,8])
 
 if __name__=="__main__":
     guns=generateGunList()
-    guns.append(Gun("Hellfire",950,2,4,3,1,6,Hellfire()))
-    guns.append(Gun("Hellfire Dual",1900,0,4,3,2,12,Hellfire()))
-
-    guns.append(Gun("Super Hellfire",750,2,5,1,1,5,Incin()))
-    guns.append(Gun("Super Hellfire Dual",1400,0,5,1,2,10,Incin()))
-    plotTTKonCost(guns,"Hellfire")
-    #plotInstakillOnCost(guns,"LMG")
+    plotTTKonCost(guns,"cuke-gumber")
+    #plotInstakillOnCost(guns,"cuke-gumber")

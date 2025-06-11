@@ -25,5 +25,5 @@ def pushGunList(): # pushing to DB deligated to codex project, scraping for engi
             guns_ref.document(name).set(gunDict)
 
 scrapeGuns()
-scrapeArmour()
-scrapeMelee()
+#scrapeArmour()
+#scrapeMelee()
