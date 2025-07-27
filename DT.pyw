@@ -71,7 +71,7 @@ BONUSWOUNDTARGET=300
 SHOTDELAY=0.8 #measured in seconds
 TRACEDELAY=0.2 #measured in seconds
 
-DEFAULTCRITINJURYTHRESHOLD=[8,15,8,8,8,8]
+DEFAULTCRITINJURYTHRESHOLD=[10,20,10,10,10,10]
 
 game.init() 
 
@@ -954,7 +954,7 @@ skullIconOff=game.image.load('DT_Images/Toggles/skullIconOff.png').convert_alpha
 skullToggleHitbox=game.Rect(540,281,63,63)
 def drawSkull():
     frame(screen,540,281,63,63,BASEGREY)
-    if unit.injuryThreshold[0]>=12:
+    if unit.injuryThreshold[0]>=15:
         screen.blit(skullIconOn,(548,289))
     else:
         screen.blit(skullIconOff,(548,289))
@@ -1622,7 +1622,7 @@ def loadFromDict():
     if versionFloat>=1.2:
         newUnit.ignoreWounds=loadDict['ignore']*5
         newUnit.deflection=loadDict['deflection']
-        newUnit.injuryThreshold[0]=12 if loadDict['skull'] else 8
+        newUnit.injuryThreshold[0]=15 if loadDict['skull'] else 10
     
     hardness=[]
     for isHard in loadDict['hard']:
@@ -1797,7 +1797,7 @@ except:
 
 
 weapon:Weapon=findGun("streetmaster")
-unit=Unit(None,findArmour([14,14,14,14,10,10]),0,8,8,cyber=[0,0,0,0,0,0],threshold=[8,15,8,8,8,8]) # manual load
+unit=Unit(None,findArmour([14,14,14,14,10,10]),0,8,8,cyber=[0,0,0,0,0,0]) # manual load
 
 logs:list[Log]=[]
 loadLog:LoadLog=LoadLog(unit,"Unnamed")
@@ -1890,7 +1890,7 @@ while True:
                 hideActive=not hideActive
 
             if skullToggleHitbox.collidepoint(game.mouse.get_pos()):
-                unit.injuryThreshold[0]=12 if unit.injuryThreshold[0]!=12 else 8
+                unit.injuryThreshold[0]=15 if unit.injuryThreshold[0]!=15 else 10
 
             if heartToggleHitbox.collidepoint(game.mouse.get_pos()):
                 unit.decentralized=not unit.decentralized

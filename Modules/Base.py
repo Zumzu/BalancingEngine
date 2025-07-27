@@ -339,7 +339,7 @@ class FragileBarrier(Barrier):
     
 
 class Unit:
-    def __init__(self,weapon:Weapon,armour:ArmourSet,ws:int,body:int,cool:int=-1,dodge:int=-1,cyber:list[int]=[0,0,0,0,0,0],threshold:list[int]=[8,15,8,8,8,8]):
+    def __init__(self,weapon:Weapon,armour:ArmourSet,ws:int,body:int,cool:int=-1,dodge:int=-1,cyber:list[int]=[0,0,0,0,0,0],threshold:list[int]=[10,20,10,10,10,10]):
         self.weapon=deepcopy(weapon)
         self.armour=deepcopy(armour)
         self.ws=ws

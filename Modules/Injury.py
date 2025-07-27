@@ -70,9 +70,9 @@ def critInjuryRoll(loc:int):
     elif loc==1:
         output=deepcopy(torsoCritInjuries[choice([0,1,1,2,2,3,3,4,4,5])])
     elif loc==2 or loc==3:
-        output=deepcopy(armCritInjuries[choice([0,1,2,2,3,3,4,4,5,6])])
+        output=deepcopy(armCritInjuries[choice([0,1,2,2,3,4,4,5,6,6])])
     elif loc==4 or loc==5:
-        output=deepcopy(legCritInjuries[choice([0,1,2,2,3,3,4,4,5,5])])
+        output=deepcopy(legCritInjuries[choice([0,1,1,2,3,3,4,4,5,5])])
     else:
         raise "Bad location"
 
