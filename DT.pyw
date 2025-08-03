@@ -1616,7 +1616,7 @@ def drawBonusBar():
 def loadFromDict():
     versionFloat=float(loadDict['version'])
 
-    newUnit=Unit(weapon,findArmour([10,10,10,10,8,8]),0,loadDict['body'],loadDict['cool'],cyber=loadDict['cyber'],threshold=[8,15,8,8,8,8])
+    newUnit=Unit(weapon,findArmour([10,10,10,10,8,8]),0,loadDict['body'],loadDict['cool'],cyber=loadDict['cyber'],threshold=deepcopy(DEFAULTCRITINJURYTHRESHOLD))
     newUnit.armour.sp=deepcopy(loadDict['sp'])
     newUnit.armour.spMax=deepcopy(loadDict['sp'])
     if versionFloat>=1.2:
@@ -1661,7 +1661,7 @@ def deleteTabAt(index:int):
         tabIndex-=1
 
 def addUnnamedTab():
-    tabs.append(Tab(LoadLog(Unit(None,findArmour([14,14,14,14,10,10]),0,8,8,cyber=[0,0,0,0,0,0],threshold=[8,15,8,8,8,8]),'Unnamed'),[]))
+    tabs.append(Tab(LoadLog(Unit(None,findArmour([14,14,14,14,10,10]),0,8,8,cyber=[0,0,0,0,0,0],threshold=deepcopy(DEFAULTCRITINJURYTHRESHOLD)),'Unnamed'),[]))
 
 stunBuffer=[]
 
