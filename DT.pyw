@@ -210,6 +210,7 @@ shirt2Img=game.image.load('DT_Images/HUD/shirt2Small.png').convert_alpha()
 
 undoImg=game.image.load('DT_Images/Misc/undo.png').convert_alpha()
 refreshImg=game.image.load('DT_Images/Misc/refresh.png').convert_alpha()
+loadingImg=game.image.load('DT_Images/Misc/loading.png').convert_alpha()
 bulletImg=game.image.load('DT_Images/Misc/bullet.png').convert_alpha()
 
 warningRedImg=game.image.load('DT_Images/HUD/warning.png').convert_alpha()
@@ -1629,6 +1630,12 @@ def loadFromDict():
         newUnit.deflection=loadDict['deflection']
         newUnit.injuryThreshold[0]=15 if loadDict['skull'] else 10
     
+    if versionFloat>=1.3:
+        newUnit.injuryThreshold=loadDict['threshold']
+
+    #if versionFloat>=1.9:
+
+
     hardness=[]
     for isHard in loadDict['hard']:
         hardness.append('hard' if isHard else 'soft')
@@ -1967,6 +1974,9 @@ while True:
                 lethality=not lethality
 
             if refreshHitbox.collidepoint(game.mouse.get_pos()):
+                freddyHitbox=game.Rect(1243,55,30,30)
+                screen.blit(loadingImg,freddyHitbox)
+                game.display.update()
                 try:
                     unitDicts=generateUnitList()
                 except:
