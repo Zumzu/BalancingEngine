@@ -209,6 +209,7 @@ shirtImg=game.image.load('DT_Images/HUD/shirtSmall.png').convert_alpha()
 shirt2Img=game.image.load('DT_Images/HUD/shirt2Small.png').convert_alpha()
 
 undoImg=game.image.load('DT_Images/Misc/undo.png').convert_alpha()
+refreshImg=game.image.load('DT_Images/Misc/refresh.png').convert_alpha()
 bulletImg=game.image.load('DT_Images/Misc/bullet.png').convert_alpha()
 
 warningRedImg=game.image.load('DT_Images/HUD/warning.png').convert_alpha()
@@ -529,6 +530,7 @@ tempX=0
 tempY=0
 pressedArrows=[False]*4
 
+refreshHitbox=game.Rect(1288,56,30,30)
 loadTextLabel=monospacedLarge.render("Load",True,BLACK)
 loadInput=pygame_textinput.TextInputVisualizer()
 loadInput.font_object=monospacedMedium
@@ -556,6 +558,9 @@ def drawLoadBar():
     screen.blit(loadTextLabel,(955,55))
     frame(screen,1032,52,246,36,LIGHTGREY)
     screen.blit(loadInput.surface,(1038,60))
+
+    frame(screen,1288,56,30,30,WHITE if refreshHitbox.collidepoint(game.mouse.get_pos()) else BASEGREY)
+    screen.blit(refreshImg,refreshHitbox)
 
 def drawUnitPreview(x:int,y:int,unitDict:dict):
     global loadDict
@@ -1960,6 +1965,12 @@ while True:
 
             if lethalityHitbox.collidepoint(game.mouse.get_pos()):
                 lethality=not lethality
+
+            if refreshHitbox.collidepoint(game.mouse.get_pos()):
+                try:
+                    unitDicts=generateUnitList()
+                except:
+                    print('@@@ FAILED TO INITIALIZE FIRESTORE @@@')
 
         if event.type == game.MOUSEBUTTONDOWN and game.mouse.get_pressed()[2]:
             for i in range(6):
