@@ -1256,14 +1256,15 @@ duplicateImgHighlight=game.image.load('DT_Images/Misc/duplicate.png').convert_al
 fill(duplicateImgHighlight,DARKGREEN)
 
 profileImgList=[]
-profileImgList.append(game.image.load('DT_Images/Profile/spade.png').convert_alpha())
 profileImgList.append(game.image.load('DT_Images/Profile/cross.png').convert_alpha())
 profileImgList.append(game.image.load('DT_Images/Profile/matt.png').convert_alpha())
-profileImgList.append(game.image.load('DT_Images/Profile/bag.png').convert_alpha())
 profileImgList.append(game.image.load('DT_Images/Profile/feather.png').convert_alpha())
 profileImgList.append(game.image.load('DT_Images/Profile/max.png').convert_alpha())
+profileImgList.append(game.image.load('DT_Images/Profile/shield.png').convert_alpha())
+profileImgList.append(game.image.load('DT_Images/Profile/bag.png').convert_alpha())
+profileImgList.append(game.image.load('DT_Images/Profile/baseball.png').convert_alpha())
 
-profileNameList=['Wildcard','Nathan','Matt','Mikhail','Zane','Max']
+profileNameList=['Nathan','Matt','Zane','Max','Aidan','Mikhail','Owen']
 
 tabScrollIndex=0
 tabsHitbox=game.Rect(760,105,175,504)
@@ -1631,10 +1632,12 @@ def loadFromDict():
         newUnit.injuryThreshold[0]=15 if loadDict['skull'] else 10
     
     if versionFloat>=1.3:
-        newUnit.injuryThreshold=loadDict['threshold']
+        tempThreshold=loadDict['threshold']
+        if tempThreshold is not None:
+            newUnit.injuryThreshold=tempThreshold
 
     #if versionFloat>=1.9:
-
+    #    ...
 
     hardness=[]
     for isHard in loadDict['hard']:
