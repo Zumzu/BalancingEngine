@@ -97,7 +97,7 @@ class API(Ammo):
 class FragFlechette(Ammo):
     def __init__(self):
         super().__init__()
-        self.name="Frag Flechette"
+        self.name="Pref. Both"
         self.desc="Preferred both (0.5x SP) "
 
     def spMultiplier(self,enemyUnit:Unit,loc:int):
@@ -123,8 +123,8 @@ class CybercontrolSlug(Ammo):
 class Slug(Ammo):
     def __init__(self):
         super().__init__()
-        self.name="Slugs"
-        self.desc="2x Range, Preferred hard (0.5x SP if hard)"
+        self.name="Pref. Hard"
+        self.desc="Preferred hard (0.5x SP if hard)"
 
     def spMultiplier(self,enemyUnit:Unit,loc:int):
         return 0.5 if enemyUnit.armour.typeAt(loc)=='hard' and enemyUnit.injuryThreshold[0]<12 else 1
@@ -132,7 +132,7 @@ class Slug(Ammo):
 class Arrow(Ammo):
     def __init__(self):
         super().__init__()
-        self.name="Arrow/Bolt"
+        self.name="Pref. Soft"
         self.desc="Preferred soft (0.5x SP if soft)"
 
     def spMultiplier(self,enemyUnit:Unit,loc:int):
@@ -141,7 +141,7 @@ class Arrow(Ammo):
 class Mono(Ammo):
     def __init__(self):
         super().__init__()
-        self.name="Mono"
+        self.name="Pref. Mono"
         self.desc="Preferred mono (0.25x SP if soft else 0.5x SP)"
 
     def spMultiplier(self,enemyUnit:Unit,loc:int):

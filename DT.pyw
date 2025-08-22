@@ -1805,23 +1805,26 @@ lethality=False
 shotTimer=0
 traceTimer=0
 ammoIndex=0
-ammoTypes=[Ammo(),
-           HP(),
-           AP(),
-           TMJ(),
-           Explosive(),
-           Incin(),
-           API(),
-           HEI(),
-           FragFlechette(),
-           Firecracker(),
-           Hellfire(),
-           Cybercontrol(),
-           CybercontrolSlug(),
-           Slug(),
-           Arrow(),
-           Mono(),
-           DoublePreferred()]
+ammoTypes=[
+    Ammo(),
+
+    Arrow(),
+    Slug(),
+    FragFlechette(),
+    Mono(),
+    DoublePreferred(),
+
+    HP(),
+    AP(),
+    TMJ(),
+    Explosive(),
+    Incin(),
+    API(),
+    HEI(),
+    Firecracker(),
+    Hellfire(),
+    Cybercontrol(),
+    CybercontrolSlug()]
 
 logScrollIndex=0
 calledShotLoc=-1
@@ -1839,7 +1842,7 @@ except:
 
 
 weapon:Weapon=findGun("streetmaster")
-unit=Unit(None,findArmour([14,14,14,14,10,10]),0,8,8,cyber=[0,0,0,0,0,0],threshold=deepcopy(DEFAULTCRITINJURYTHRESHOLD),block=12,breach=18) # manual load
+unit=Unit(None,findArmour([14,14,14,14,10,10]),0,8,8,cyber=[0,0,0,0,0,0],block=12,breach=18) # manual load
 
 logs:list[Log]=[]
 loadLog:LoadLog=LoadLog(unit,"Unnamed")
