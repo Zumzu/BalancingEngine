@@ -1604,38 +1604,29 @@ def drawTraces(x,y,dx,dy):
     else:
         traceTimer-=1
 
-bonusFadeoutTimer=0
 bonusProgress=0
 dropWiggle=0
 dropImg=game.image.load('DT_Images/Misc/drop.png').convert_alpha()
 dropHitbox=dropImg.get_rect(topleft=(3,742))
 def drawBonusBar():
-    global dropWiggle,bonusProgress,bonusFadeoutTimer
+    global dropWiggle,bonusProgress
     x=3
     y=742
-    if bonusFadeoutTimer>0:
-        bonusFadeoutTimer-=1
     if dropWiggle>0:
         x+= 1 if random()>0.5 else -1
         y+= 1 if random()>0.5 else -1
         bonusProgress+=1
         dropWiggle-=1
-        bonusFadeoutTimer=160
-    
-    barOffset=-9*(1-min(20,bonusFadeoutTimer)/20)
 
     progress=min(1, (bonusProgress+dropWiggle)/(BONUSWOUNDTARGET*5))
-    game.draw.rect(screen,LIGHTGREY, game.Rect(0+barOffset,770-760*progress, 10,759*progress))
+    game.draw.rect(screen,LIGHTGREY, game.Rect(0,770-760*progress, 10,759*progress))
 
     progress=min(1, bonusProgress/(BONUSWOUNDTARGET*5))
-    game.draw.rect(screen,STUNYELLOW if progress==1 else WOUNDCOLOR, game.Rect(barOffset,770-760*progress, 10,760*progress))
-    game.draw.line(screen,DARKERGREY,(barOffset,10),(10+barOffset,10),2)
-    game.draw.line(screen,DARKERGREY,(10+barOffset,11),(10+barOffset,750),2)
-    game.draw.line(screen,DARKERGREY,(barOffset,770),(10+barOffset,770),2)
-    screen.blit(dropImg,(x+barOffset,y))
-
-    if dropHitbox.collidepoint(game.mouse.get_pos()):
-        bonusFadeoutTimer=160
+    game.draw.rect(screen,STUNYELLOW if progress==1 else WOUNDCOLOR, game.Rect(0,770-760*progress, 10,760*progress))
+    game.draw.line(screen,DARKERGREY,(0,10),(10,10),2)
+    game.draw.line(screen,DARKERGREY,(10,11),(10,750),2)
+    game.draw.line(screen,DARKERGREY,(0,770),(10,770),2)
+    screen.blit(dropImg,(x,y))
 
     if progress==1 and shotQueue==[]:
         particles.append(Particle((WIDTH//2+370,HEIGHT//2+70),'bonus'))
@@ -1994,6 +1985,7 @@ while True:
 
             if dropHitbox.collidepoint(game.mouse.get_pos()):
                 bonusProgress=0
+                dropWiggle=0
 
             if faceshieldToggleHitbox.collidepoint(game.mouse.get_pos()):
                 if unit.faceShield.sp==0:
