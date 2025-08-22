@@ -339,7 +339,7 @@ class FragileBarrier(Barrier):
     
 
 class Unit:
-    def __init__(self,weapon:Weapon,armour:ArmourSet,ws:int,body:int,cool:int=-1,dodge:int=-1,cyber:list[int]=[0,0,0,0,0,0],threshold:list[int]=[10,20,10,10,10,10]):
+    def __init__(self,weapon:Weapon,armour:ArmourSet,ws:int,body:int,cool:int=-1,cyber:list[int]=[0,0,0,0,0,0],threshold:list[int]=[10,20,10,10,10,10],block:int=-1,breach:int=-1):
         self.weapon=deepcopy(weapon)
         self.armour=deepcopy(armour)
         self.ws=ws
@@ -348,7 +348,9 @@ class Unit:
             self.cool=body
         else:
             self.cool=cool
-        self.dodge=dodge
+
+        self.block=block
+        self.breach=breach
 
         self.cyber=[]
         for c in cyber:
@@ -559,20 +561,6 @@ class Unit:
         for injury in self.critInjuries:
             output-=injury.attackPenalty
         return output
-    
-    def dodgeRoll(self):
-        if self.dodge==-1:
-            raise "Dodge not set"
-        output = d10E()
-        output+= self.dodge
-        output-= self.armour.ev + self.allNegative()
-        return output
-    
-    def blockRoll(self): ## NOTE: DOES NOT FACTOR WEAPON SKILL
-        output = d10E()
-        output+= self.ws
-        output-= self.armour.ev + self.allNegative()
-        return output
 
     def stunMod(self):
         output=max(floor((self.wounds-self.ignoreWounds-1)/5),0)
@@ -619,6 +607,18 @@ class Unit:
     
     def unconDV(self):
         return 11+self.unconMod()-self.body
+    
+    def blockDV(self):
+        injuryAllNegative=0
+        for injury in self.critInjuries:
+            injuryAllNegative+=injury.allNegative
+        return self.block-injuryAllNegative
+
+    def breachDV(self):
+        injuryAllNegative=0
+        for injury in self.critInjuries:
+            injuryAllNegative+=injury.allNegative
+        return self.breach-injuryAllNegative*2
 
     def unstun(self): # unit attempts unstun, if they succeed stunned is set to false and this function returns true if they went from stunned to unstunned
         if(self.stunned):

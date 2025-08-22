@@ -213,6 +213,13 @@ refreshImg=game.image.load('DT_Images/Misc/refresh.png').convert_alpha()
 loadingImg=game.image.load('DT_Images/Misc/loading.png').convert_alpha()
 bulletImg=game.image.load('DT_Images/Misc/bullet.png').convert_alpha()
 
+blockImg=game.image.load('DT_Images/HUD/block.png').convert_alpha()
+modAlpha(blockImg,-222)
+breachImg=game.image.load('DT_Images/HUD/breach.png').convert_alpha()
+modAlpha(breachImg,-222)
+breach2Img=game.image.load('DT_Images/HUD/breach2.png').convert_alpha()
+modAlpha(breach2Img,-170)
+
 warningRedImg=game.image.load('DT_Images/HUD/warning.png').convert_alpha()
 warningYellowImg=game.image.load('DT_Images/HUD/warning.png').convert_alpha()
 fill(warningYellowImg,STUNYELLOW)
@@ -602,6 +609,25 @@ def drawModStunUncon():
     unconTextLabel=monospacedHuge.render(f"{unit.unconDV()}",True,BLACK) if not hideActive else monospacedHuge.render("?",True,BLACK)
     screen.blit(stunTextLabel,stunTextLabel.get_rect(center=(504,87)))
     screen.blit(unconTextLabel,unconTextLabel.get_rect(center=(570,87)))
+
+blockHitbox=game.Rect(632,63,66,43)
+breachHitbox=game.Rect(698,63,66,43)
+blockBreachTextLabel=monospacedMedium.render("Melee DVs",True,BLACK)
+def drawBlockBreach():
+    frame(screen,632,60,134,50,BASEGREY)
+    screen.blit(blockBreachTextLabel,(635,40))
+    game.draw.line(screen,DARKGREY,(697,70),(697,100),2)
+
+    screen.blit(blockImg,blockImg.get_rect(center=(665,85)))
+    if breachHitbox.collidepoint(game.mouse.get_pos()):
+        screen.blit(breach2Img,breach2Img.get_rect(center=(731,85)))
+    else:
+        screen.blit(breachImg,breachImg.get_rect(center=(731,85)))
+
+    blockTextLabel=monospacedHuge.render(f"{unit.blockDV()}",True,BLACK)
+    breachTextLabel=monospacedHuge.render(f"{unit.breachDV()}",True,BLACK)
+    screen.blit(blockTextLabel,blockTextLabel.get_rect(center=(665,87)))
+    screen.blit(breachTextLabel,breachTextLabel.get_rect(center=(731,87)))
 
 bodyTextLabel=monospacedMediumLarge.render("Body",True,BLACK)
 bodyInput=pygame_textinput.TextInputVisualizer()
@@ -1623,7 +1649,7 @@ def drawBonusBar():
 def loadFromDict():
     versionFloat=float(loadDict['version'])
 
-    newUnit=Unit(weapon,findArmour([10,10,10,10,8,8]),0,loadDict['body'],loadDict['cool'],cyber=loadDict['cyber'],threshold=deepcopy(DEFAULTCRITINJURYTHRESHOLD))
+    newUnit=Unit(weapon,findArmour([10,10,10,10,8,8]),0,loadDict['body'],loadDict['cool'],cyber=loadDict['cyber'],threshold=deepcopy(DEFAULTCRITINJURYTHRESHOLD),block=12,breach=18)
     newUnit.armour.sp=deepcopy(loadDict['sp'])
     newUnit.armour.spMax=deepcopy(loadDict['sp'])
     if versionFloat>=1.2:
@@ -1636,8 +1662,9 @@ def loadFromDict():
         if tempThreshold is not None:
             newUnit.injuryThreshold=tempThreshold
 
-    #if versionFloat>=1.9:
-    #    ...
+    if versionFloat>=1.9:
+        newUnit.block=loadDict['block']
+        newUnit.breach=loadDict['breach']
 
     hardness=[]
     for isHard in loadDict['hard']:
@@ -1676,7 +1703,7 @@ def deleteTabAt(index:int):
         tabIndex-=1
 
 def addUnnamedTab():
-    tabs.append(Tab(LoadLog(Unit(None,findArmour([14,14,14,14,10,10]),0,8,8,cyber=[0,0,0,0,0,0],threshold=deepcopy(DEFAULTCRITINJURYTHRESHOLD)),'Unnamed'),[]))
+    tabs.append(Tab(LoadLog(Unit(None,findArmour([14,14,14,14,10,10]),0,8,8,cyber=[0,0,0,0,0,0],threshold=deepcopy(DEFAULTCRITINJURYTHRESHOLD),block=12,breach=18),'Unnamed'),[]))
 
 stunBuffer=[]
 
@@ -1812,7 +1839,7 @@ except:
 
 
 weapon:Weapon=findGun("streetmaster")
-unit=Unit(None,findArmour([14,14,14,14,10,10]),0,8,8,cyber=[0,0,0,0,0,0]) # manual load
+unit=Unit(None,findArmour([14,14,14,14,10,10]),0,8,8,cyber=[0,0,0,0,0,0],threshold=deepcopy(DEFAULTCRITINJURYTHRESHOLD),block=12,breach=18) # manual load
 
 logs:list[Log]=[]
 loadLog:LoadLog=LoadLog(unit,"Unnamed")
@@ -2047,6 +2074,16 @@ while True:
                 if sdpHitboxes[i].collidepoint(game.mouse.get_pos()):
                     unit.cyber[i].setSDP(max(min(unit.cyber[i].maxSdp,unit.cyber[i].sdp+event.y),0))
 
+            if blockHitbox.collidepoint(game.mouse.get_pos()):
+                unit.block=max(3,unit.block+event.y)
+                if unit.breach < unit.block+3:
+                    unit.breach = unit.block+3
+
+            if breachHitbox.collidepoint(game.mouse.get_pos()):
+                unit.breach=max(6,unit.breach+event.y)
+                if unit.block > unit.breach-3:
+                    unit.block = unit.breach-3
+
         if event.type == game.KEYDOWN and event.key == game.K_RETURN:
             if damageSelected or multiplierSelected:
                 shoot()
@@ -2151,6 +2188,8 @@ while True:
     drawBody()
     drawCool()
     drawModStunUncon()
+    drawBlockBreach()
+
     drawBar()
     drawLuck()
     drawHide()
