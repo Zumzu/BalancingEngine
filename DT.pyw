@@ -1300,6 +1300,9 @@ def drawTabs():
 
     for tab in tabs:
         tab.mainHitbox=None
+        tab.deleteHitbox=None
+        tab.duplicateHitbox=None
+
     for i in range(8):
         iOffset=i+tabScrollIndex
         if iOffset>=len(tabs):
@@ -1677,10 +1680,13 @@ def loadFromDict():
     tabs[tabIndex].loadState()
 
 def duplicateTabAt(index:int):
+    global tabIndex
     newTab=deepcopy(tabs[index])
     loadLogInput.value=loadLog.desc.capitalize()
     loadLogInput.manager.cursor_pos=20
     tabs.insert(index+1,newTab)
+    tabIndex=index
+    tabs[index].loadState()
 
 def deleteTabAt(index:int):
     global tabIndex
@@ -1971,10 +1977,13 @@ while True:
                     tabIndex=i
 
             for i in range(len(tabs)):
-                if tabs[i].duplicateHitbox.collidepoint(game.mouse.get_pos()) and not tabs[i].wild:
+                if i<tabScrollIndex or i>=tabScrollIndex+8:
+                    continue
+
+                if tabs[i].duplicateHitbox is not None and tabs[i].duplicateHitbox.collidepoint(game.mouse.get_pos()) and not tabs[i].wild:
                     duplicateTabAt(i)
                     break
-                elif tabs[i].deleteHitbox.collidepoint(game.mouse.get_pos()):
+                elif tabs[i].deleteHitbox is not None and tabs[i].deleteHitbox.collidepoint(game.mouse.get_pos()):
                     deleteTabAt(i)
                     break
                 elif tabs[i].wild and tabs[i].duplicateHitbox is not None and tabs[i].duplicateHitbox.collidepoint(game.mouse.get_pos()):
