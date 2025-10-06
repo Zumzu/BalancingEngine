@@ -1289,8 +1289,9 @@ profileImgList.append(game.image.load('DT_Images/Profile/max.png').convert_alpha
 profileImgList.append(game.image.load('DT_Images/Profile/shield.png').convert_alpha())
 profileImgList.append(game.image.load('DT_Images/Profile/bag.png').convert_alpha())
 profileImgList.append(game.image.load('DT_Images/Profile/baseball.png').convert_alpha())
+profileImgList.append(game.image.load('DT_Images/Profile/rodent.png').convert_alpha())
 
-profileNameList=['Nathan','Matt','Zane','Max','Aidan','Mikhail','Owen']
+profileNameList=['Nathan','Matt','Zane','Max','Aidan','Mikhail','Owen','Logan']
 
 tabScrollIndex=0
 tabsHitbox=game.Rect(760,105,175,504)
