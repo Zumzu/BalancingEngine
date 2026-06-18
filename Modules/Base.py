@@ -82,6 +82,7 @@ class Melee(Weapon):
         self.sdp=sdp
         self.pref=pref.lower()
         self.broken=False
+        self._attacker_body=0
 
     def __str__(self) -> str:
         return f"{self.wa}wa, {self.d6}D6+{self.more}, {self.rof}, {self.pref.capitalize()}"
@@ -89,38 +90,39 @@ class Melee(Weapon):
     def attack(self,attacker,enemy):
         if self.broken:
             return
-        
+
+        self._attacker_body=attacker.body
+
         if self.rof==3:
             self._burstAttack(attacker,enemy)
         else:
             self._normalAttack(attacker,enemy)
-    
-    def _normalAttack(self,attacker,target): # Just single fires as many times as it can up to 2
-        for _ in range(min(self.rof,2)):
-            if target.dodge==-1:
-                disparity=attacker.attackRoll()-target.blockRoll()
-                if disparity>=5:
-                    target.damage(self) #roll full damage through
-                elif disparity>=0:
-                    target.damage(dmg=target.weapon.damage(self.getDamage())) #roll damage against their weapon and excess goes through
-            else:
-                if attacker.attackRoll()>target.dodgeRoll():
-                    target.damage(self) #roll full damage through
-                 
-    def _burstAttack(self,attacker,target): # Burst
-        loc=locationDie()
-        if target.dodge==-1:
-            disparity=attacker.attackRoll()+BURST_BONUS-target.blockRoll()
-            if disparity>=5:
-                for _ in range(3):
-                    target.damage(self,loc)
-            elif disparity>=0:
-                for _ in range(3):
-                    target.damage(dmg=target.weapon.damage(self.getDamage()))
-        else:
-            if attacker.attackRoll()+BURST_BONUS>target.dodgeRoll():
-                for _ in range(3):
-                    target.damage(self,loc)
+
+    def bonusDamage(self, enemyUnit, loc: int):
+        return bodyToBonusMeleeDamage(self._attacker_body)
+
+    def _normalAttack(self, attacker, target):
+        for _ in range(min(self.rof, 2)):
+            roll=attacker.attackRoll()
+
+            if roll>=target.breachDV():
+                target.damage(self,target.chooseStrongestLocation(self))
+
+            elif roll>=target.blockDV():
+                target.damage(self,target.chooseWeakestLocation(self))
+
+    def _burstAttack(self, attacker, target):
+        roll=attacker.attackRoll()+BURST_BONUS
+
+        if roll>=target.breachDV():
+            loc=target.chooseStrongestLocation(self)
+            for _ in range(3):
+                target.damage(self,loc)
+
+        elif roll>=target.blockDV():
+            loc=target.chooseWeakestLocation(self)
+            for _ in range(3):
+                target.damage(self,loc)
             
 
     def damage(self,dmg): # returns excess damage
@@ -629,6 +631,26 @@ class Unit:
     
     def cost(self):
         return self.weapon.cost+self.armour.cost
+
+    def chooseWeakestLocation(self, weapon) -> int: #greedy, finds location with highest effective SP
+        best_loc=1
+        best_eff=-1
+        for loc in range(1,6):
+            eff=floor(self.armour.sp[loc]*weapon.spMultiplier(self,loc))
+            if eff>best_eff:
+                best_eff=eff
+                best_loc=loc
+        return best_loc
+
+    def chooseStrongestLocation(self, weapon) -> int: #greedy, finds location with lowest effective SP
+        best_loc=1
+        best_eff=float('inf')
+        for loc in range(1, 6):
+            eff=floor(self.armour.sp[loc]*weapon.spMultiplier(self,loc))
+            if eff<=best_eff:
+                best_eff=eff
+                best_loc=loc
+        return best_loc
 
 
 def bodyToBTM(body):

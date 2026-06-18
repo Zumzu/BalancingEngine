@@ -11,7 +11,7 @@ Security Jacket,275,0;15;15;15;0;0,2,0,soft
 Light Armourjack,350,0;14;14;14;0;0,1,0,soft
 Medium Armourjack,500,0;16;16;16;0;0,2,0,hard
 Heavy Armourjack,550,0;18;18;18;0;0,2,1,hard
-Samurai Jacket,1100,0;14;14;14;0;0,0,0, 
+Samurai Jacket,1100,0;14;14;14;0;0,0,0,soft
 Deflector Jacket,1200,0;16;16;16;0;0,1,0,soft
 Kevlar Vest,100,0;10;0;0;0;0,0,0,soft
 Flak Vest,150,0;16;0;0;0;0,2,0,soft
@@ -30,7 +30,6 @@ Plated Leggings,325,0;0;0;0;20;20,2,0,hard
 Deflector Leggies,500,0;0;0;0;14;14,0,0,soft
 Sneak Suit,600,10;10;10;10;10;10,1,0,soft
 Stealth Suit,1400,16;16;16;16;16;16,1,1,soft
-Medical Suit,2472,18;18;18;18;18;18,2,0,hard
 Millitech Full Metal,1500,20;20;20;20;20;20,2,2,hard
 Towa Mk55 "Warplate",3250,22;22;22;22;22;22,0,2,hard
 Arasaka "Sentinel" Suite,6000,25;25;25;25;25;25,1,2,hard

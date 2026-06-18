@@ -4,7 +4,7 @@ from copy import deepcopy
 import firebase_admin
 from firebase_admin import credentials,firestore
 
-from Modules.Base import Ammo,Gun,Armour,ArmourSet
+from Modules.Base import Ammo,Gun,Melee,Armour,ArmourSet
 from Modules.Ammo import *
 
 
@@ -78,11 +78,36 @@ def scrapeMelee():
     for row in rows: # construct Melee
         if row[16]!='\xa0' and row[16]!='': # data col is used to get ROF, if a line has anything in mag itll try to read it, care
             d6,more=processDamage(row[4])
-            melee.append([row[0],row[1],row[3],d6,more,row[16],row[6],str(row[7]).lower()])
+            melee.append([row[0],row[1],row[3],d6,more,row[16], row[6] if str(row[6]).isnumeric() else '1', str(row[7]).lower()])
 
     with open('D_Melee.csv','w') as f: # save to file, ternary is just to remove last '\n'
         for m in melee:
             f.write(','.join(m) + ('\n' if m!=melee[-1] else ''))
+
+def generateMeleeList(name='D_Melee.csv'):
+    melees=[]
+    with open(name,'r') as f:
+        for line in f:     
+            data=line.split(",")
+
+            melees.append(Melee(data[0],int(data[1]),int(data[2]),int(data[3]),int(data[4]),int(data[5]),int(data[6]),str(data[7])))
+
+    melees.sort(key=lambda melee: melee.cost)
+    return melees
+
+def findMelee(name):
+    prospectMelee=None
+    for melee in MELEE_LIST:
+        if name.lower() in melee.name.lower():
+            if prospectMelee is not None:
+                print(f'Warning: Multiple melees found by search "{name}", likely incorrect')
+                break
+            prospectMelee=deepcopy(melee)
+
+    if prospectMelee is None:
+        raise Exception(f'Error: Melee not found by search "{name}"')
+    
+    return prospectMelee
 
 ################################  END MELEE  ###  START ARMOUR
 
@@ -187,4 +212,5 @@ def generateUnitList():
     return output
 
 GUN_LIST=generateGunList()
+MELEE_LIST=generateMeleeList()
 ARMOUR_LIST=generateArmourList()

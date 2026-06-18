@@ -3,8 +3,9 @@ import copy
 import numpy as np
 
 from Modules.Base import Unit,Gun
-from Modules.Generator import generateGunList,findArmour
+from Modules.Generator import GUN_LIST,MELEE_LIST,findArmour
 from Modules.Ammo import *
+from copy import deepcopy
         
 TTK_TURN_LIMIT=50
 def fightLength(attacker,dummy):
@@ -38,7 +39,7 @@ def Instakill(gun,iterations,armour,ws,body,cool):
 
     return successes/iterations
 
-def plotTTKonCost(guns,mark:str):
+def plotTTKonCost(guns,mark:str='DoNotMark'):
     cost=[]
     ttk=[]
     for gun in guns:
@@ -75,7 +76,7 @@ def plotTTKonCost(guns,mark:str):
     #a,b=np.polyfit(np.log10(x),y,1)
     #plt.plot(x,a*np.log10(x)+b,color='steelblue',linestyle='--')
 
-def plotInstakillOnCost(guns,mark:str):
+def plotInstakillOnCost(guns,mark:str='DoNotMark'):
     for gun in guns:
         m='o'
         if(gun.rof==1):
@@ -99,12 +100,18 @@ def plotInstakillOnCost(guns,mark:str):
 
 #The body, WS, and SP to be used for individual applications such as TTK or instakill on cost
 ITERATIONS=3000
-BODY=7
-COOL=7
-WS=12
-ARMOUR=findArmour([10,10,10,10,8,8])
+BODY=8
+COOL=5
+WS=13
+ARMOUR=findArmour([14,14,14,14,10,10])
 
 if __name__=="__main__":
-    guns=generateGunList()
-    plotTTKonCost(guns,"cuke-gumber")
-    #plotInstakillOnCost(guns,"cuke-gumber")
+    melees=deepcopy(MELEE_LIST)
+    for m in melees:
+        m.name=f'{m.name} MELEEWEAPON'
+
+    weapons=deepcopy(GUN_LIST)
+    weapons.extend(melees)
+
+    plotTTKonCost(weapons, 'MELEEWEAPON')
+    #plotInstakillOnCost(GUN_LIST)
