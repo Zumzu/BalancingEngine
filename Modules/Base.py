@@ -636,20 +636,22 @@ class Unit:
         best_loc=1
         best_eff=-1
         for loc in range(1,6):
-            eff=floor(self.armour.sp[loc]*weapon.spMultiplier(self,loc))
-            if eff>best_eff:
-                best_eff=eff
-                best_loc=loc
+            if self.injuryThreshold[loc] > 0:
+                eff=floor(self.armour.sp[loc]*weapon.spMultiplier(self,loc))
+                if eff>best_eff:
+                    best_eff=eff
+                    best_loc=loc
         return best_loc
 
     def chooseStrongestLocation(self, weapon) -> int: #greedy, finds location with lowest effective SP
         best_loc=1
         best_eff=float('inf')
         for loc in range(1, 6):
-            eff=floor(self.armour.sp[loc]*weapon.spMultiplier(self,loc))
-            if eff<=best_eff:
-                best_eff=eff
-                best_loc=loc
+            if self.injuryThreshold[loc] > 0:
+                eff=floor(self.armour.sp[loc]*weapon.spMultiplier(self,loc))
+                if eff<=best_eff:
+                    best_eff=eff
+                    best_loc=loc
         return best_loc
 
 

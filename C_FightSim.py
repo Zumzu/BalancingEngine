@@ -2,7 +2,7 @@ from random import choice,random
 from copy import deepcopy
 
 from Modules.Base import Unit
-from Modules.Generator import findGun,findArmour
+from Modules.Generator import findGun,findArmour,findMelee
 from Modules.Ammo import *
 from Modules.Dice import d6
 
@@ -114,8 +114,8 @@ FAVOUR_ITERATIONS=10000
 if __name__=='__main__':
     unitsA,unitsB=[],[]
     
-    s1=Unit(findGun('viper'),findArmour([14,14,14,14,10,10]),15,8)
-    s2=Unit(findGun('viper'),findArmour([14,14,14,14,10,10]),15,8)
+    s1=Unit(findMelee('monok'),findArmour([14,14,14,14,10,10]),15,8,block=12,breach=20)
+    s2=Unit(findGun('darra'),findArmour([14,14,14,14,10,10]),15,8,block=12,breach=20)
 
     for _ in range(1):
         unitsA.append(deepcopy(s1))

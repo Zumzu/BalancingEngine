@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import copy
 import numpy as np
 
-from Modules.Base import Unit,Gun
+from Modules.Base import Unit,Gun,Melee
 from Modules.Generator import GUN_LIST,MELEE_LIST,findArmour
 from Modules.Ammo import *
 from copy import deepcopy
@@ -18,8 +18,8 @@ def fightLength(attacker,dummy):
 
 def TTK(gun,iterations,armour,ws,body,cool):
     totalTurns=0
-    protoAttacker=Unit(gun,armour,ws,body,cool)
-    protoDummy=Unit(gun,armour,ws,body,cool)
+    protoAttacker=Unit(gun,armour,ws,body,cool,block=BLOCK,breach=BREACH)
+    protoDummy=Unit(gun,armour,ws,body,cool,block=BLOCK,breach=BREACH)
     for _ in range(iterations):
         attacker=copy.deepcopy(protoAttacker)
         dummy=copy.deepcopy(protoDummy)
@@ -29,8 +29,8 @@ def TTK(gun,iterations,armour,ws,body,cool):
 
 def Instakill(gun,iterations,armour,ws,body,cool):
     successes=0
-    protoAttacker=Unit(gun,armour,ws,body,cool)
-    protoDummy=Unit(gun,armour,ws,body,cool)
+    protoAttacker=Unit(gun,armour,ws,body,cool,block=BLOCK,breach=BREACH)
+    protoDummy=Unit(gun,armour,ws,body,cool,block=BLOCK,breach=BREACH)
     for _ in range(iterations):
         attacker=copy.deepcopy(protoAttacker)
         dummy=copy.deepcopy(protoDummy)
@@ -102,8 +102,11 @@ def plotInstakillOnCost(guns,mark:str='DoNotMark'):
 ITERATIONS=3000
 BODY=8
 COOL=5
-WS=13
-ARMOUR=findArmour([14,14,14,14,10,10])
+WS=16
+ARMOUR=findArmour([14,16,16,16,10,10])
+
+BLOCK=12
+BREACH=20
 
 if __name__=="__main__":
     melees=deepcopy(MELEE_LIST)
